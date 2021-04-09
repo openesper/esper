@@ -1,0 +1,2182 @@
+EESchema Schematic File Version 4
+EELAYER 30 0
+EELAYER END
+$Descr A3 16535 11693
+encoding utf-8
+Sheet 1 1
+Title ""
+Date ""
+Rev ""
+Comp ""
+Comment1 ""
+Comment2 ""
+Comment3 ""
+Comment4 ""
+$EndDescr
+$Comp
+L Device:Ferrite_Bead FB2
+U 1 1 60AD31E9
+P 5800 1650
+AR Path="/60AD31E9" Ref="FB2"  Part="1" 
+AR Path="/5DED2F9B/60AD31E9" Ref="FB?"  Part="1" 
+AR Path="/5DED3446/60AD31E9" Ref="FB?"  Part="1" 
+F 0 "FB2" V 5600 1650 50  0000 C CNN
+F 1 "Ferrite_Bead" V 5617 1650 50  0001 C CNN
+F 2 "Inductor_SMD:L_0805_2012Metric" V 5730 1650 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Sunlord-GZ2012D101TF_C1015.pdf" H 5800 1650 50  0001 C CNN
+F 4 "C1015" H 5800 1650 50  0001 C CNN "LCSC"
+	1    5800 1650
+	0    1    1    0   
+$EndComp
+$Comp
+L power:GND #PWR0101
+U 1 1 60AD31EF
+P 6100 2200
+AR Path="/60AD31EF" Ref="#PWR0101"  Part="1" 
+AR Path="/5DED2F9B/60AD31EF" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD31EF" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0101" H 6100 1950 50  0001 C CNN
+F 1 "GND" H 6105 2027 50  0000 C CNN
+F 2 "" H 6100 2200 50  0001 C CNN
+F 3 "" H 6100 2200 50  0001 C CNN
+	1    6100 2200
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:C C10
+U 1 1 60AD31F8
+P 6100 1900
+AR Path="/60AD31F8" Ref="C10"  Part="1" 
+AR Path="/5DED2F9B/60AD31F8" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD31F8" Ref="C?"  Part="1" 
+F 0 "C10" H 5985 1946 50  0000 R CNN
+F 1 "10uF" H 5985 1855 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 6138 1750 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" H 6100 1900 50  0001 C CNN
+F 4 "10V" H 5910 1770 50  0000 C CNN "Rating"
+F 5 "C15850" H 6100 1900 50  0001 C CNN "LCSC"
+	1    6100 1900
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	6100 1650 6100 1750
+Wire Wire Line
+	5500 1650 5650 1650
+Wire Wire Line
+	5950 1650 6100 1650
+Connection ~ 6100 1650
+Wire Wire Line
+	6100 2050 6100 2200
+Wire Wire Line
+	6100 1350 6100 1650
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33B5
+P 6100 1350
+AR Path="/5DED3446/60AD33B5" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33B5" Ref="#PWR0102"  Part="1" 
+F 0 "#PWR0102" H 6100 1200 50  0001 C CNN
+F 1 "+3.3VA" H 6115 1523 50  0000 C CNN
+F 2 "" H 6100 1350 50  0001 C CNN
+F 3 "" H 6100 1350 50  0001 C CNN
+	1    6100 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L RF_Module:ESP32-WROOM-32D U2
+U 1 1 60B2275C
+P 4750 5250
+AR Path="/60B2275C" Ref="U2"  Part="1" 
+AR Path="/5DED3446/60B2275C" Ref="U?"  Part="1" 
+AR Path="/5DED2F9B/60B2275C" Ref="U?"  Part="1" 
+F 0 "U2" H 4350 6600 50  0000 C CNN
+F 1 "ESP32-WROOM-32E" V 4750 5350 50  0000 C CNN
+F 2 "RF_Module:ESP32-WROOM-32" H 4750 3750 50  0001 C CNN
+F 3 "https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32e_esp32-wroom-32ue_datasheet_en.pdf" H 4450 5300 50  0001 C CNN
+F 4 "C701341" H 4750 5250 50  0001 C CNN "LCSC"
+	1    4750 5250
+	1    0    0    -1  
+$EndComp
+Text GLabel 5700 5650 2    50   Input ~ 0
+MDC
+Text GLabel 5700 5250 2    50   Input ~ 0
+MDIO
+Text GLabel 5700 5950 2    50   Input ~ 0
+CRS_DV
+Text GLabel 5700 5850 2    50   Input ~ 0
+RXD1
+Text GLabel 5700 5750 2    50   Input ~ 0
+RXD0
+Text GLabel 6700 5450 2    50   Input ~ 0
+TXEN
+Text GLabel 6700 5650 2    50   Input ~ 0
+TXD1
+Text GLabel 6700 5250 2    50   Input ~ 0
+TXD0
+Text GLabel 5700 4150 2    50   Input ~ 0
+RX
+Text GLabel 5700 4350 2    50   Input ~ 0
+TX
+Text GLabel 5700 4050 2    50   Input ~ 0
+IO0
+Text GLabel 6700 5050 2    50   Input ~ 0
+CLK50MHZ
+$Comp
+L Device:R R?
+U 1 1 60B22770
+P 6450 5450
+AR Path="/5DED2F9B/60B22770" Ref="R?"  Part="1" 
+AR Path="/60B22770" Ref="R7"  Part="1" 
+F 0 "R7" V 6550 5550 50  0000 C CNN
+F 1 "49.9" V 6550 5350 50  0000 C CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6380 5450 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6450 5450 50  0001 C CNN
+F 4 "C25120" H 6450 5450 50  0001 C CNN "LCSC"
+	1    6450 5450
+	0    -1   -1   0   
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 60B22778
+P 6450 5650
+AR Path="/5DED2F9B/60B22778" Ref="R?"  Part="1" 
+AR Path="/60B22778" Ref="R9"  Part="1" 
+F 0 "R9" V 6550 5750 50  0000 C CNN
+F 1 "49.9" V 6550 5550 50  0000 C CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6380 5650 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6450 5650 50  0001 C CNN
+F 4 "C25120" H 6450 5650 50  0001 C CNN "LCSC"
+	1    6450 5650
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5700 4350 5350 4350
+Wire Wire Line
+	5700 5250 5350 5250
+Wire Wire Line
+	5350 5650 5700 5650
+Wire Wire Line
+	5700 5750 5350 5750
+Wire Wire Line
+	5350 5850 5700 5850
+Wire Wire Line
+	5700 5950 5350 5950
+Wire Wire Line
+	5350 5350 6050 5350
+Wire Wire Line
+	6050 5350 6050 5250
+Wire Wire Line
+	5350 5550 6050 5550
+Wire Wire Line
+	6050 5550 6050 5650
+Wire Wire Line
+	6600 5650 6700 5650
+Wire Wire Line
+	6600 5450 6700 5450
+Wire Wire Line
+	6700 5250 6600 5250
+NoConn ~ 4150 5250
+NoConn ~ 4150 5350
+NoConn ~ 4150 5450
+NoConn ~ 4150 5550
+NoConn ~ 4150 5650
+NoConn ~ 4150 5750
+NoConn ~ 4150 4350
+NoConn ~ 4150 4250
+$Comp
+L power:GND #PWR?
+U 1 1 60B22793
+P 4750 6800
+AR Path="/5DED2F9B/60B22793" Ref="#PWR?"  Part="1" 
+AR Path="/60B22793" Ref="#PWR0103"  Part="1" 
+F 0 "#PWR0103" H 4750 6550 50  0001 C CNN
+F 1 "GND" H 4755 6627 50  0000 C CNN
+F 2 "" H 4750 6800 50  0001 C CNN
+F 3 "" H 4750 6800 50  0001 C CNN
+	1    4750 6800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4750 6800 4750 6650
+Wire Wire Line
+	4150 4050 4000 4050
+$Comp
+L power:+3.3V #PWR?
+U 1 1 60B2279B
+P 4750 3550
+AR Path="/5DED2F9B/60B2279B" Ref="#PWR?"  Part="1" 
+AR Path="/60B2279B" Ref="#PWR0104"  Part="1" 
+F 0 "#PWR0104" H 4750 3400 50  0001 C CNN
+F 1 "+3.3V" H 4765 3723 50  0000 C CNN
+F 2 "" H 4750 3550 50  0001 C CNN
+F 3 "" H 4750 3550 50  0001 C CNN
+	1    4750 3550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4000 4050 4000 3950
+Wire Wire Line
+	4000 3650 4000 3550
+$Comp
+L power:+3.3V #PWR?
+U 1 1 60B227A3
+P 4000 3550
+AR Path="/5DED2F9B/60B227A3" Ref="#PWR?"  Part="1" 
+AR Path="/60B227A3" Ref="#PWR0105"  Part="1" 
+F 0 "#PWR0105" H 4000 3400 50  0001 C CNN
+F 1 "+3.3V" H 4015 3723 50  0000 C CNN
+F 2 "" H 4000 3550 50  0001 C CNN
+F 3 "" H 4000 3550 50  0001 C CNN
+	1    4000 3550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 60B227AB
+P 4000 3800
+AR Path="/5DED2F9B/60B227AB" Ref="R?"  Part="1" 
+AR Path="/60B227AB" Ref="R2"  Part="1" 
+F 0 "R2" H 4150 3750 50  0000 C CNN
+F 1 "10K" H 4150 3850 50  0000 C CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 3930 3800 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 4000 3800 50  0001 C CNN
+F 4 "C25744" H 4000 3800 50  0001 C CNN "LCSC"
+	1    4000 3800
+	-1   0    0    1   
+$EndComp
+Text GLabel 3800 4050 0    50   Input ~ 0
+EN
+Wire Wire Line
+	4000 4050 3800 4050
+Connection ~ 4000 4050
+$Comp
+L Device:R R?
+U 1 1 60B227B6
+P 6450 5250
+AR Path="/5DED2F9B/60B227B6" Ref="R?"  Part="1" 
+AR Path="/60B227B6" Ref="R6"  Part="1" 
+F 0 "R6" V 6550 5350 50  0000 C CNN
+F 1 "49.9" V 6550 5150 50  0000 C CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6380 5250 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6450 5250 50  0001 C CNN
+F 4 "C25120" H 6450 5250 50  0001 C CNN "LCSC"
+	1    6450 5250
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	5350 4150 5700 4150
+NoConn ~ 5350 4250
+NoConn ~ 5350 4550
+Wire Wire Line
+	5350 4050 5700 4050
+Wire Wire Line
+	5350 5450 6300 5450
+Wire Wire Line
+	6050 5250 6300 5250
+Wire Wire Line
+	6050 5650 6300 5650
+Text Label 5400 5350 0    50   ~ 0
+TXD0_R
+Text Label 5400 5450 0    50   ~ 0
+TXEN_R
+Text Label 5400 5550 0    50   ~ 0
+TXD1_R
+Text Label 5400 5750 0    50   ~ 0
+RXD0
+Text Label 5400 5850 0    50   ~ 0
+RXD1
+$Comp
+L Mechanical:MountingHole_Pad H?
+U 1 1 60B227C8
+P 1500 1550
+AR Path="/5DED2F9B/60B227C8" Ref="H?"  Part="1" 
+AR Path="/60B227C8" Ref="H1"  Part="1" 
+F 0 "H1" H 1600 1596 50  0000 L CNN
+F 1 "MountingHole" H 1600 1505 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.2mm_M2_Pad" H 1500 1550 50  0001 C CNN
+F 3 "~" H 1500 1550 50  0001 C CNN
+	1    1500 1550
+	1    0    0    -1  
+$EndComp
+$Comp
+L Mechanical:MountingHole_Pad H?
+U 1 1 60B227CE
+P 1500 2200
+AR Path="/5DED2F9B/60B227CE" Ref="H?"  Part="1" 
+AR Path="/60B227CE" Ref="H2"  Part="1" 
+F 0 "H2" H 1600 2246 50  0000 L CNN
+F 1 "MountingHole" H 1600 2155 50  0000 L CNN
+F 2 "MountingHole:MountingHole_2.2mm_M2_Pad" H 1500 2200 50  0001 C CNN
+F 3 "~" H 1500 2200 50  0001 C CNN
+	1    1500 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60B227D4
+P 14100 6900
+AR Path="/5DED2F9B/60B227D4" Ref="#PWR?"  Part="1" 
+AR Path="/60B227D4" Ref="#PWR0106"  Part="1" 
+F 0 "#PWR0106" H 14100 6650 50  0001 C CNN
+F 1 "GND" H 14105 6727 50  0000 C CNN
+F 2 "" H 14100 6900 50  0001 C CNN
+F 3 "" H 14100 6900 50  0001 C CNN
+	1    14100 6900
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_NMOS_GSD Q?
+U 1 1 60B227DC
+P 13200 6600
+AR Path="/5DED2F9B/60B227DC" Ref="Q?"  Part="1" 
+AR Path="/60B227DC" Ref="Q3"  Part="1" 
+F 0 "Q3" H 13406 6646 50  0000 L CNN
+F 1 "2N7002" H 13406 6555 50  0001 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 13400 6700 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Changjiang-Electronics-Tech-CJ-2N7002_C8545.pdf" H 13200 6600 50  0001 C CNN
+F 4 "C8545" H 13200 6600 50  0001 C CNN "LCSC"
+	1    13200 6600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_NMOS_GSD Q?
+U 1 1 60B227E4
+P 13600 6350
+AR Path="/5DED2F9B/60B227E4" Ref="Q?"  Part="1" 
+AR Path="/60B227E4" Ref="Q2"  Part="1" 
+F 0 "Q2" H 13806 6350 50  0000 L CNN
+F 1 "2N7002" H 13806 6305 50  0001 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 13800 6450 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Changjiang-Electronics-Tech-CJ-2N7002_C8545.pdf" H 13600 6350 50  0001 C CNN
+F 4 "C8545" H 13600 6350 50  0001 C CNN "LCSC"
+	1    13600 6350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_NMOS_GSD Q?
+U 1 1 60B227EC
+P 14000 6100
+AR Path="/5DED2F9B/60B227EC" Ref="Q?"  Part="1" 
+AR Path="/60B227EC" Ref="Q1"  Part="1" 
+F 0 "Q1" H 14206 6100 50  0000 L CNN
+F 1 "2N7002" H 14206 6055 50  0001 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 14200 6200 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Changjiang-Electronics-Tech-CJ-2N7002_C8545.pdf" H 14000 6100 50  0001 C CNN
+F 4 "C8545" H 14000 6100 50  0001 C CNN "LCSC"
+	1    14000 6100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 60B227F5
+P 13700 5700
+AR Path="/5DED2F9B/60B227F5" Ref="R?"  Part="1" 
+AR Path="/60B227F5" Ref="R4"  Part="1" 
+F 0 "R4" H 13770 5746 50  0000 L CNN
+F 1 "47" H 13770 5655 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 13630 5700 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0603WAF470JT5E_C23182.pdf" H 13700 5700 50  0001 C CNN
+F 4 "1/10W" H 13900 5570 50  0000 C CNN "Rating"
+F 5 "C23182" H 13700 5700 50  0001 C CNN "LCSC"
+	1    13700 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	13000 6600 12750 6600
+Wire Wire Line
+	13400 6350 12750 6350
+Wire Wire Line
+	13800 6100 12750 6100
+Text GLabel 12750 6600 0    50   Input ~ 0
+Blue
+Text GLabel 12750 6350 0    50   Input ~ 0
+Green
+Text GLabel 12750 6100 0    50   Input ~ 0
+Red
+$Comp
+L power:VBUS #PWR0107
+U 1 1 60B22801
+P 10700 5400
+AR Path="/60B22801" Ref="#PWR0107"  Part="1" 
+AR Path="/5DED2F9B/60B22801" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22801" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0107" H 10700 5250 50  0001 C CNN
+F 1 "VBUS" H 10715 5573 50  0000 C CNN
+F 2 "" H 10700 5400 50  0001 C CNN
+F 3 "" H 10700 5400 50  0001 C CNN
+	1    10700 5400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R?
+U 1 1 60B22809
+P 10700 5650
+AR Path="/5DED2F9B/60B22809" Ref="R?"  Part="1" 
+AR Path="/60B22809" Ref="R8"  Part="1" 
+F 0 "R8" H 10770 5696 50  0000 L CNN
+F 1 "10K" H 10770 5605 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 10630 5650 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 10700 5650 50  0001 C CNN
+F 4 "C25744" H 10700 5650 50  0001 C CNN "LCSC"
+	1    10700 5650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR?
+U 1 1 60B2280F
+P 10700 6450
+AR Path="/5DED2F9B/60B2280F" Ref="#PWR?"  Part="1" 
+AR Path="/60B2280F" Ref="#PWR0108"  Part="1" 
+F 0 "#PWR0108" H 10700 6200 50  0001 C CNN
+F 1 "GND" H 10705 6277 50  0000 C CNN
+F 2 "" H 10700 6450 50  0001 C CNN
+F 3 "" H 10700 6450 50  0001 C CNN
+	1    10700 6450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10700 6350 10700 6450
+Wire Wire Line
+	10700 5500 10700 5400
+Wire Wire Line
+	10700 5850 10400 5850
+Connection ~ 10700 5850
+Wire Wire Line
+	10700 5850 10700 5800
+Text GLabel 10400 5850 0    50   Input ~ 0
+Block
+Wire Wire Line
+	13300 6800 13300 6850
+Wire Wire Line
+	13300 6850 13700 6850
+Wire Wire Line
+	14100 6850 14100 6900
+Wire Wire Line
+	14100 6300 14100 6850
+Connection ~ 14100 6850
+Wire Wire Line
+	13700 6550 13700 6850
+Connection ~ 13700 6850
+Wire Wire Line
+	13700 6850 14100 6850
+Wire Wire Line
+	10700 5850 10700 5950
+Wire Wire Line
+	5350 5050 5700 5050
+Wire Wire Line
+	5350 6050 5700 6050
+Wire Wire Line
+	5350 6150 5700 6150
+Text GLabel 5700 5050 2    50   Input ~ 0
+Blue
+Text GLabel 5700 6050 2    50   Input ~ 0
+Red
+Text GLabel 5700 6150 2    50   Input ~ 0
+Green
+Text GLabel 5700 6250 2    50   Input ~ 0
+Block
+Wire Wire Line
+	5350 6250 5700 6250
+Wire Wire Line
+	4750 3550 4750 3850
+Text Notes 4900 3850 0    50   ~ 0
+No decoupling needed\n10uf, 1uf, 0.1uf caps inside\n 
+$Comp
+L LED:ASMT-YTB7-0AA02 D?
+U 1 1 60B22830
+P 12900 5300
+AR Path="/5DED2F9B/60B22830" Ref="D?"  Part="1" 
+AR Path="/60B22830" Ref="D2"  Part="1" 
+F 0 "D2" H 12900 5667 50  0000 C CNN
+F 1 "RS-3535MWAR" H 12900 5576 50  0000 C CNN
+F 2 "LED_SMD:LED_RGB_PLCC-6" H 12700 4980 50  0001 L CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Foshan-NationStar-Optoelectronics-RS-3535MWAR-2JYJY-J_C110402.pdf" H 13050 5300 50  0001 L CNN
+F 4 " C110402" H 12900 5300 50  0001 C CNN "LCSC"
+	1    12900 5300
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VBUS #PWR0109
+U 1 1 60B22836
+P 12400 5000
+AR Path="/60B22836" Ref="#PWR0109"  Part="1" 
+AR Path="/5DED2F9B/60B22836" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22836" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0109" H 12400 4850 50  0001 C CNN
+F 1 "VBUS" H 12415 5173 50  0000 C CNN
+F 2 "" H 12400 5000 50  0001 C CNN
+F 3 "" H 12400 5000 50  0001 C CNN
+	1    12400 5000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	12400 5000 12400 5200
+Wire Wire Line
+	12400 5400 12600 5400
+Wire Wire Line
+	12600 5300 12400 5300
+Connection ~ 12400 5300
+Wire Wire Line
+	12400 5300 12400 5400
+Wire Wire Line
+	12600 5200 12400 5200
+Connection ~ 12400 5200
+Wire Wire Line
+	12400 5200 12400 5300
+Wire Wire Line
+	14100 5850 14100 5900
+Wire Wire Line
+	13700 5850 13700 6150
+Wire Wire Line
+	13300 5850 13300 6400
+$Comp
+L Device:R R?
+U 1 1 60B2284A
+P 13300 5700
+AR Path="/5DED2F9B/60B2284A" Ref="R?"  Part="1" 
+AR Path="/60B2284A" Ref="R3"  Part="1" 
+F 0 "R3" H 13370 5746 50  0000 L CNN
+F 1 "47" H 13370 5655 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 13230 5700 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0603WAF470JT5E_C23182.pdf" H 13300 5700 50  0001 C CNN
+F 4 "1/10W" H 13500 5570 50  0000 C CNN "Rating"
+F 5 "C23182" H 13300 5700 50  0001 C CNN "LCSC"
+	1    13300 5700
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	13200 5400 13300 5400
+Wire Wire Line
+	13300 5400 13300 5550
+Wire Wire Line
+	13200 5300 13700 5300
+Wire Wire Line
+	13700 5300 13700 5550
+Wire Wire Line
+	13200 5200 14100 5200
+Wire Wire Line
+	14100 5200 14100 5550
+$Comp
+L Switch:SW_SPST SW?
+U 1 1 60B22856
+P 10700 6150
+AR Path="/5DED2F9B/60B22856" Ref="SW?"  Part="1" 
+AR Path="/60B22856" Ref="SW1"  Part="1" 
+F 0 "SW1" V 10746 6062 50  0000 R CNN
+F 1 "PTS645VH83-2 LFS" V 10655 6062 50  0000 R CNN
+F 2 "Button_Switch_THT:SW_Tactile_SPST_Angled_PTS645Vx83-2LFS" H 10700 6150 50  0001 C CNN
+F 3 "https://www.ckswitches.com/media/1471/pts645.pdf" H 10700 6150 50  0001 C CNN
+	1    10700 6150
+	0    -1   -1   0   
+$EndComp
+Text Notes 12900 4750 0    50   ~ 0
+RED: 2.2V @ 40mA\nGREEN: 3.5V @ 40mA\nBLUE: 3.5V @ 40mA\n
+$Comp
+L Device:R R?
+U 1 1 60B22860
+P 14100 5700
+AR Path="/5DED2F9B/60B22860" Ref="R?"  Part="1" 
+AR Path="/60B22860" Ref="R5"  Part="1" 
+F 0 "R5" H 14170 5746 50  0000 L CNN
+F 1 "82" H 14170 5655 50  0000 L CNN
+F 2 "Resistor_SMD:R_1206_3216Metric" V 14030 5700 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-1206W4F825JT5E_C247183.pdf" H 14100 5700 50  0001 C CNN
+F 4 "1/4W" H 14280 5570 50  0000 C CNN "Rating"
+F 5 "C247183" H 14100 5700 50  0001 C CNN "LCSC"
+	1    14100 5700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:Earth #PWR?
+U 1 1 60B22866
+P 1500 1700
+AR Path="/5DED2F9B/60B22866" Ref="#PWR?"  Part="1" 
+AR Path="/60B22866" Ref="#PWR0110"  Part="1" 
+F 0 "#PWR0110" H 1500 1450 50  0001 C CNN
+F 1 "Earth" H 1500 1550 50  0001 C CNN
+F 2 "" H 1500 1700 50  0001 C CNN
+F 3 "~" H 1500 1700 50  0001 C CNN
+	1    1500 1700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:Earth #PWR?
+U 1 1 60B2286C
+P 1500 2350
+AR Path="/5DED2F9B/60B2286C" Ref="#PWR?"  Part="1" 
+AR Path="/60B2286C" Ref="#PWR0111"  Part="1" 
+F 0 "#PWR0111" H 1500 2100 50  0001 C CNN
+F 1 "Earth" H 1500 2200 50  0001 C CNN
+F 2 "" H 1500 2350 50  0001 C CNN
+F 3 "~" H 1500 2350 50  0001 C CNN
+	1    1500 2350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	1500 2350 1500 2300
+Wire Wire Line
+	1500 1700 1500 1650
+Wire Wire Line
+	5350 4950 5700 4950
+Wire Wire Line
+	5350 4850 5700 4850
+Wire Wire Line
+	5350 4750 5700 4750
+Wire Wire Line
+	5350 4650 5700 4650
+$Comp
+L Device:C C2
+U 1 1 60B2287F
+P 4300 1900
+AR Path="/60B2287F" Ref="C2"  Part="1" 
+AR Path="/5DED2F9B/60B2287F" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60B2287F" Ref="C?"  Part="1" 
+F 0 "C2" H 4415 1946 50  0000 L CNN
+F 1 "0.1uF" H 4415 1855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 4338 1750 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 4300 1900 50  0001 C CNN
+F 4 "10V" H 4490 1770 50  0000 C CNN "Rating"
+F 5 "C1525" H 4300 1900 50  0001 C CNN "LCSC"
+	1    4300 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4300 1750 4300 1650
+$Comp
+L power:GND #PWR0112
+U 1 1 60B22886
+P 4300 2200
+AR Path="/60B22886" Ref="#PWR0112"  Part="1" 
+AR Path="/5DED2F9B/60B22886" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22886" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0112" H 4300 1950 50  0001 C CNN
+F 1 "GND" H 4305 2027 50  0000 C CNN
+F 2 "" H 4300 2200 50  0001 C CNN
+F 3 "" H 4300 2200 50  0001 C CNN
+	1    4300 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0113
+U 1 1 60B2288C
+P 3000 2350
+AR Path="/60B2288C" Ref="#PWR0113"  Part="1" 
+AR Path="/5DED2F9B/60B2288C" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B2288C" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0113" H 3000 2100 50  0001 C CNN
+F 1 "GND" H 3005 2177 50  0000 C CNN
+F 2 "" H 3000 2350 50  0001 C CNN
+F 3 "" H 3000 2350 50  0001 C CNN
+	1    3000 2350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Regulator_Linear:AZ1117-3.3 U1
+U 1 1 60B22895
+P 4850 1650
+AR Path="/60B22895" Ref="U1"  Part="1" 
+AR Path="/5DED2F9B/60B22895" Ref="U?"  Part="1" 
+AR Path="/5DED3446/60B22895" Ref="U?"  Part="1" 
+F 0 "U1" H 4850 1892 50  0000 C CNN
+F 1 "AZ1117EH-3.3TRG1" H 4850 1801 50  0000 C CNN
+F 2 "Package_TO_SOT_SMD:SOT-223" H 4850 1900 50  0001 C CIN
+F 3 "https://datasheet.lcsc.com/szlcsc/Diodes-Incorporated-AZ1117EH-3-3TRG1_C108494.pdf" H 4850 1650 50  0001 C CNN
+F 4 "C108494" H 4850 1650 50  0001 C CNN "LCSC"
+	1    4850 1650
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VBUS #PWR0114
+U 1 1 60B2289B
+P 3900 1350
+AR Path="/60B2289B" Ref="#PWR0114"  Part="1" 
+AR Path="/5DED2F9B/60B2289B" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B2289B" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0114" H 3900 1200 50  0001 C CNN
+F 1 "VBUS" H 3915 1523 50  0000 C CNN
+F 2 "" H 3900 1350 50  0001 C CNN
+F 3 "" H 3900 1350 50  0001 C CNN
+	1    3900 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0115
+U 1 1 60B228A1
+P 3900 2200
+AR Path="/60B228A1" Ref="#PWR0115"  Part="1" 
+AR Path="/5DED2F9B/60B228A1" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B228A1" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0115" H 3900 1950 50  0001 C CNN
+F 1 "GND" H 3905 2027 50  0000 C CNN
+F 2 "" H 3900 2200 50  0001 C CNN
+F 3 "" H 3900 2200 50  0001 C CNN
+	1    3900 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C1
+U 1 1 60B228AA
+P 3900 1900
+AR Path="/60B228AA" Ref="C1"  Part="1" 
+AR Path="/5DED2F9B/60B228AA" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60B228AA" Ref="C?"  Part="1" 
+F 0 "C1" H 4015 1946 50  0000 L CNN
+F 1 "1uF" H 4015 1855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 3938 1750 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05A105KA5NQNC_C52923.pdf" H 3900 1900 50  0001 C CNN
+F 4 "10V" H 4090 1770 50  0000 C CNN "Rating"
+F 5 "C52923" H 3900 1900 50  0001 C CNN "LCSC"
+	1    3900 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3900 1350 3900 1650
+$Comp
+L power:GND #PWR0116
+U 1 1 60B228B1
+P 4850 2200
+AR Path="/60B228B1" Ref="#PWR0116"  Part="1" 
+AR Path="/5DED2F9B/60B228B1" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B228B1" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0116" H 4850 1950 50  0001 C CNN
+F 1 "GND" H 4855 2027 50  0000 C CNN
+F 2 "" H 4850 2200 50  0001 C CNN
+F 3 "" H 4850 2200 50  0001 C CNN
+	1    4850 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4850 1950 4850 2200
+$Comp
+L power:+3.3V #PWR0117
+U 1 1 60B228B8
+P 5500 1350
+AR Path="/60B228B8" Ref="#PWR0117"  Part="1" 
+AR Path="/5DED2F9B/60B228B8" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B228B8" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0117" H 5500 1200 50  0001 C CNN
+F 1 "+3.3V" H 5515 1523 50  0000 C CNN
+F 2 "" H 5500 1350 50  0001 C CNN
+F 3 "" H 5500 1350 50  0001 C CNN
+	1    5500 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0118
+U 1 1 60B228BE
+P 5500 2200
+AR Path="/60B228BE" Ref="#PWR0118"  Part="1" 
+AR Path="/5DED2F9B/60B228BE" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B228BE" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0118" H 5500 1950 50  0001 C CNN
+F 1 "GND" H 5505 2027 50  0000 C CNN
+F 2 "" H 5500 2200 50  0001 C CNN
+F 3 "" H 5500 2200 50  0001 C CNN
+	1    5500 2200
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5150 1650 5500 1650
+Connection ~ 5500 1650
+$Comp
+L Device:C C3
+U 1 1 60B228C9
+P 5500 1900
+AR Path="/60B228C9" Ref="C3"  Part="1" 
+AR Path="/5DED2F9B/60B228C9" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60B228C9" Ref="C?"  Part="1" 
+F 0 "C3" H 5615 1946 50  0000 L CNN
+F 1 "10uF" H 5615 1855 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0805_2012Metric" H 5538 1750 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL10A106KP8NNNC_C19702.pdf" H 5500 1900 50  0001 C CNN
+F 4 "10V" H 5690 1770 50  0000 C CNN "Rating"
+F 5 "C15850" H 5500 1900 50  0001 C CNN "LCSC"
+	1    5500 1900
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5500 1750 5500 1650
+Wire Wire Line
+	3900 1750 3900 1650
+Connection ~ 3900 1650
+Wire Wire Line
+	3900 2050 3900 2200
+Wire Wire Line
+	5500 1350 5500 1650
+NoConn ~ 3200 2050
+Wire Wire Line
+	5500 2050 5500 2200
+Wire Wire Line
+	4300 2050 4300 2200
+Connection ~ 4300 1650
+Wire Wire Line
+	4300 1650 3900 1650
+Wire Wire Line
+	4300 1650 4550 1650
+Wire Wire Line
+	2900 2250 2900 2300
+Wire Wire Line
+	2900 2300 3000 2300
+Wire Wire Line
+	3000 2300 3000 2350
+Wire Wire Line
+	2800 2250 2800 2300
+Wire Wire Line
+	2800 2300 2700 2300
+Wire Wire Line
+	2700 2300 2700 2350
+$Comp
+L power:Earth #PWR?
+U 1 1 60B228E0
+P 2700 2350
+AR Path="/5DED3446/60B228E0" Ref="#PWR?"  Part="1" 
+AR Path="/5DED2F9B/60B228E0" Ref="#PWR?"  Part="1" 
+AR Path="/60B228E0" Ref="#PWR0119"  Part="1" 
+F 0 "#PWR0119" H 2700 2100 50  0001 C CNN
+F 1 "Earth" H 2700 2200 50  0001 C CNN
+F 2 "" H 2700 2350 50  0001 C CNN
+F 3 "~" H 2700 2350 50  0001 C CNN
+	1    2700 2350
+	1    0    0    -1  
+$EndComp
+Text Notes 1950 5250 0    50   ~ 0
+Strapping Pins:\n• GPIO0: internal pull-up\n• GPIO2: internal pull-down\n• GPIO4: internal pull-down\n• GPIO5: internal pull-up\n• MTDI/GPIO12: internal pull-down\n• MTDO/GPIO15: internal pull-up
+Text Notes 1950 5700 0    50   ~ 0
+Can't use for LEDs, \nPulled up during startup:\n1, 3, 6, 7, 8, \n9, 10, 11, 14
+Text Notes 1950 5950 0    50   ~ 0
+Input Only:\n34, 35, SENSOR_VP, SENSOR_VN
+$Comp
+L power:GND #PWR0120
+U 1 1 60B228E9
+P 6850 2200
+AR Path="/60B228E9" Ref="#PWR0120"  Part="1" 
+AR Path="/5DED2F9B/60B228E9" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B228E9" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0120" H 6850 1950 50  0001 C CNN
+F 1 "GND" H 6855 2027 50  0000 C CNN
+F 2 "" H 6850 2200 50  0001 C CNN
+F 3 "" H 6850 2200 50  0001 C CNN
+	1    6850 2200
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R1
+U 1 1 60B228F2
+P 6850 1600
+AR Path="/60B228F2" Ref="R1"  Part="1" 
+AR Path="/5DED2F9B/60B228F2" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60B228F2" Ref="R?"  Part="1" 
+F 0 "R1" H 6920 1646 50  0000 L CNN
+F 1 "470" H 6920 1555 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6780 1600 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGD4700TCE_C270656.pdf" H 6850 1600 50  0001 C CNN
+F 4 "1/16W" H 7050 1470 50  0000 C CNN "Rating"
+F 5 " C25117" H 6850 1600 50  0001 C CNN "LCSC"
+	1    6850 1600
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:LED D1
+U 1 1 60B228FA
+P 6850 1950
+AR Path="/60B228FA" Ref="D1"  Part="1" 
+AR Path="/5DED2F9B/60B228FA" Ref="D?"  Part="1" 
+AR Path="/5DED3446/60B228FA" Ref="D?"  Part="1" 
+F 0 "D1" V 6889 1833 50  0000 R CNN
+F 1 "GRN" V 6798 1833 50  0000 R CNN
+F 2 "Diode_SMD:D_0603_1608Metric" H 6850 1950 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Everlight-Elec-19-217-GHC-YR1S2-3T_C72043.pdf" H 6850 1950 50  0001 C CNN
+F 4 "C72043" H 6850 1950 50  0001 C CNN "LCSC"
+	1    6850 1950
+	0    -1   -1   0   
+$EndComp
+Wire Wire Line
+	6850 1350 6850 1450
+Wire Wire Line
+	6850 1750 6850 1800
+Wire Wire Line
+	6850 2100 6850 2200
+$Comp
+L power:+3.3V #PWR0121
+U 1 1 60B22903
+P 6850 1350
+AR Path="/60B22903" Ref="#PWR0121"  Part="1" 
+AR Path="/5DED2F9B/60B22903" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22903" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0121" H 6850 1200 50  0001 C CNN
+F 1 "+3.3V" H 6865 1523 50  0000 C CNN
+F 2 "" H 6850 1350 50  0001 C CNN
+F 3 "" H 6850 1350 50  0001 C CNN
+	1    6850 1350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R22
+U 1 1 60B2290B
+P 6450 5050
+AR Path="/60B2290B" Ref="R22"  Part="1" 
+AR Path="/5DED2F9B/60B2290B" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60B2290B" Ref="R?"  Part="1" 
+F 0 "R22" V 6350 4900 50  0000 L CNN
+F 1 "49.9" V 6350 5100 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6380 5050 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6450 5050 50  0001 C CNN
+F 4 "C25120" H 6450 5050 50  0001 C CNN "LCSC"
+	1    6450 5050
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	6050 5150 6050 5050
+Wire Wire Line
+	6050 5050 6300 5050
+Wire Wire Line
+	5350 5150 6050 5150
+Wire Wire Line
+	6600 5050 6700 5050
+Text Label 5400 5150 0    50   ~ 0
+CLK_R
+Wire Wire Line
+	5350 4450 5700 4450
+Text GLabel 5700 4450 2    50   Input ~ 0
+nRST
+Text Label 5400 4450 0    50   ~ 0
+nRST
+Text Label 5400 5650 0    50   ~ 0
+MDC
+Text Label 5400 5250 0    50   ~ 0
+MDIO
+Wire Wire Line
+	5350 6350 5700 6350
+Text GLabel 5700 6350 2    50   Input ~ 0
+nINT
+Text Label 5400 6350 0    50   ~ 0
+nINT
+Wire Wire Line
+	3200 1950 3400 1950
+Wire Wire Line
+	3200 1850 3400 1850
+Text Label 3300 1850 0    50   ~ 0
+D+
+Text Label 3300 1950 0    50   ~ 0
+D-
+NoConn ~ 11300 1550
+$Comp
+L power:+3.3V #PWR0122
+U 1 1 60B22923
+P 11200 1450
+AR Path="/60B22923" Ref="#PWR0122"  Part="1" 
+AR Path="/5DED2F9B/60B22923" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22923" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0122" H 11200 1300 50  0001 C CNN
+F 1 "+3.3V" H 11150 1600 50  0000 C CNN
+F 2 "" H 11200 1450 50  0001 C CNN
+F 3 "" H 11200 1450 50  0001 C CNN
+	1    11200 1450
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:VBUS #PWR0123
+U 1 1 60B22929
+P 11400 1450
+AR Path="/60B22929" Ref="#PWR0123"  Part="1" 
+AR Path="/5DED2F9B/60B22929" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22929" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0123" H 11400 1300 50  0001 C CNN
+F 1 "VBUS" H 11400 1600 50  0000 C CNN
+F 2 "" H 11400 1450 50  0001 C CNN
+F 3 "" H 11400 1450 50  0001 C CNN
+	1    11400 1450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11400 1550 11400 1450
+Wire Wire Line
+	11200 1550 11200 1450
+Wire Wire Line
+	10800 1950 10650 1950
+Wire Wire Line
+	10800 2050 10650 2050
+Text Label 10650 1950 0    50   ~ 0
+D+
+Text Label 10650 2050 0    50   ~ 0
+D-
+$Comp
+L power:VBUS #PWR0124
+U 1 1 60B22935
+P 10450 2050
+AR Path="/60B22935" Ref="#PWR0124"  Part="1" 
+AR Path="/5DED2F9B/60B22935" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B22935" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0124" H 10450 1900 50  0001 C CNN
+F 1 "VBUS" H 10450 2200 50  0000 C CNN
+F 2 "" H 10450 2050 50  0001 C CNN
+F 3 "" H 10450 2050 50  0001 C CNN
+	1    10450 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10800 2150 10650 2150
+Wire Wire Line
+	10450 2150 10450 2050
+Wire Wire Line
+	11600 2250 11800 2250
+Wire Wire Line
+	11600 2150 11800 2150
+Wire Wire Line
+	11600 2350 11800 2350
+Wire Wire Line
+	10800 2350 10650 2350
+Wire Wire Line
+	10800 2250 10650 2250
+Wire Wire Line
+	10650 2250 10650 2150
+Connection ~ 10650 2150
+Wire Wire Line
+	10650 2150 10450 2150
+Text GLabel 10650 2350 0    50   Input ~ 0
+RX
+Text GLabel 11800 2350 2    50   Input ~ 0
+DTR
+Text GLabel 11800 2250 2    50   Input ~ 0
+TX
+Text GLabel 11800 2150 2    50   Input ~ 0
+RTS
+NoConn ~ 11600 2450
+NoConn ~ 11600 2550
+NoConn ~ 11600 2650
+NoConn ~ 11600 2750
+NoConn ~ 11600 2850
+NoConn ~ 11600 2950
+NoConn ~ 10800 3050
+NoConn ~ 10800 2950
+NoConn ~ 10800 2850
+NoConn ~ 10800 2750
+NoConn ~ 10800 2650
+NoConn ~ 10800 2550
+NoConn ~ 10800 2450
+NoConn ~ 11600 2050
+NoConn ~ 11600 1950
+NoConn ~ 10800 1850
+NoConn ~ 10800 1750
+$Comp
+L power:GND #PWR0125
+U 1 1 60B2295A
+P 11200 3450
+AR Path="/60B2295A" Ref="#PWR0125"  Part="1" 
+AR Path="/5DED2F9B/60B2295A" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B2295A" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0125" H 11200 3200 50  0001 C CNN
+F 1 "GND" H 11205 3277 50  0000 C CNN
+F 2 "" H 11200 3450 50  0001 C CNN
+F 3 "" H 11200 3450 50  0001 C CNN
+	1    11200 3450
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	11200 3350 11200 3400
+Wire Wire Line
+	11200 3400 11300 3400
+Wire Wire Line
+	11300 3400 11300 3350
+Connection ~ 11200 3400
+Wire Wire Line
+	11200 3400 11200 3450
+$Comp
+L Device:Q_NMOS_GSD Q?
+U 1 1 60B22969
+P 13350 2050
+AR Path="/5DED2F9B/60B22969" Ref="Q?"  Part="1" 
+AR Path="/60B22969" Ref="Q5"  Part="1" 
+F 0 "Q5" H 13554 2096 50  0000 L CNN
+F 1 "2N7002" H 13554 2005 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 13550 2150 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/2N7002E-D.PDF" H 13350 2050 50  0001 C CNN
+F 4 "C8545" H 13350 2050 50  0001 C CNN "LCSC"
+	1    13350 2050
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:Q_NMOS_GSD Q?
+U 1 1 60B22973
+P 13350 2650
+AR Path="/5DED2F9B/60B22973" Ref="Q?"  Part="1" 
+AR Path="/60B22973" Ref="Q4"  Part="1" 
+F 0 "Q4" H 13554 2604 50  0000 L CNN
+F 1 "2N7002" H 13554 2695 50  0000 L CNN
+F 2 "Package_TO_SOT_SMD:SOT-23" H 13550 2750 50  0001 C CNN
+F 3 "https://www.onsemi.com/pub/Collateral/2N7002E-D.PDF" H 13350 2650 50  0001 C CNN
+F 4 "C8545" H 13350 2650 50  0001 C CNN "LCSC"
+	1    13350 2650
+	1    0    0    1   
+$EndComp
+Wire Wire Line
+	13450 2850 13450 2950
+Wire Wire Line
+	13450 2950 13650 2950
+Wire Wire Line
+	13450 1850 13450 1750
+Wire Wire Line
+	14000 1750 14200 1750
+Wire Wire Line
+	13150 2050 13100 2050
+Wire Wire Line
+	13150 2650 13050 2650
+Text GLabel 12850 2050 0    50   Input ~ 0
+DTR
+Text GLabel 12850 2650 0    50   Input ~ 0
+RTS
+Text GLabel 14200 1750 2    50   Input ~ 0
+EN
+Text GLabel 13650 2950 2    50   Input ~ 0
+IO0
+Wire Wire Line
+	13450 2450 13450 2400
+Wire Wire Line
+	13450 2400 13100 2400
+Wire Wire Line
+	13100 2400 13100 2050
+Connection ~ 13100 2050
+Wire Wire Line
+	13100 2050 12850 2050
+Wire Wire Line
+	13450 2250 13450 2300
+Wire Wire Line
+	13450 2300 13050 2300
+Wire Wire Line
+	13050 2300 13050 2650
+Connection ~ 13050 2650
+Wire Wire Line
+	13050 2650 12850 2650
+Text Notes 8950 1100 0    50   ~ 0
+Automatically puts ESP32 in programming mode when using ESP-IDF.\n\nhttps://github.com/espressif/esptool/wiki/ESP32-Boot-Mode-Selection#automatic-bootloader
+Wire Wire Line
+	3200 1650 3900 1650
+$Comp
+L Connector:USB_B_Micro J1
+U 1 1 60B2298F
+P 2900 1850
+AR Path="/60B2298F" Ref="J1"  Part="1" 
+AR Path="/5DED2F9B/60B2298F" Ref="J?"  Part="1" 
+F 0 "J1" H 2957 2317 50  0000 C CNN
+F 1 "USB_B_Micro" H 2957 2226 50  0000 C CNN
+F 2 "Connector_USB:USB_Micro-B_Molex-105017-0001" H 3050 1800 50  0001 C CNN
+F 3 "~" H 3050 1800 50  0001 C CNN
+	1    2900 1850
+	1    0    0    -1  
+$EndComp
+Text Notes 13150 3600 0    50   ~ 0
+Auto program\nDTR RTS-->EN IO0\n 1   1       1   1\n 0   0       1   1\n 1   0       0   1\n 0   1       1   0
+$Comp
+L Device:C C12
+U 1 1 60B22999
+P 14000 2050
+AR Path="/60B22999" Ref="C12"  Part="1" 
+AR Path="/5DED2F9B/60B22999" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60B22999" Ref="C?"  Part="1" 
+F 0 "C12" H 14115 2096 50  0000 L CNN
+F 1 "1uF" H 14115 2005 50  0000 L CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 14038 1900 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05A105KA5NQNC_C52923.pdf" H 14000 2050 50  0001 C CNN
+F 4 "10V" H 14190 1920 50  0000 C CNN "Rating"
+F 5 "C52923" H 14000 2050 50  0001 C CNN "LCSC"
+	1    14000 2050
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	14000 1900 14000 1750
+Wire Wire Line
+	14000 1750 13450 1750
+Connection ~ 14000 1750
+Wire Wire Line
+	14000 2200 14000 2250
+$Comp
+L power:GND #PWR0126
+U 1 1 60B229A3
+P 14000 2250
+AR Path="/60B229A3" Ref="#PWR0126"  Part="1" 
+AR Path="/5DED2F9B/60B229A3" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60B229A3" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0126" H 14000 2000 50  0001 C CNN
+F 1 "GND" H 14005 2077 50  0000 C CNN
+F 2 "" H 14000 2250 50  0001 C CNN
+F 3 "" H 14000 2250 50  0001 C CNN
+	1    14000 2250
+	1    0    0    -1  
+$EndComp
+Text Notes 13650 1700 0    50   ~ 0
+Need 1uF for \ncircuit to work
+$Comp
+L EsperSymbols:CP2102-GMR_NRND U?
+U 1 1 60B229B3
+P 11100 2350
+AR Path="/5DED2F9B/60B229B3" Ref="U?"  Part="1" 
+AR Path="/60B229B3" Ref="U4"  Part="1" 
+F 0 "U4" H 10600 1300 60  0000 C CNN
+F 1 "CP2102-GMR_NRND" H 10600 1200 60  0000 C CNN
+F 2 "EsperFootprints:VFQFN-28-1EP_5x5mm" H 11300 2550 60  0001 L CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/SILICON-LABS-CP2102-GMR_C6568.pdf" H 11300 2650 60  0001 L CNN
+F 4 " C6568" H 11100 2350 50  0001 C CNN "LCSC"
+	1    11100 2350
+	1    0    0    -1  
+$EndComp
+Text Notes 600  750  0    197  ~ 0
+5V Vbus to 3.3V
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33BB
+P 13400 8850
+AR Path="/5DED3446/60AD33BB" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33BB" Ref="#PWR0127"  Part="1" 
+F 0 "#PWR0127" H 13400 8700 50  0001 C CNN
+F 1 "+3.3VA" H 13415 9023 50  0000 C CNN
+F 2 "" H 13400 8850 50  0001 C CNN
+F 3 "" H 13400 8850 50  0001 C CNN
+	1    13400 8850
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0128
+U 1 1 60AD3349
+P 12500 9450
+AR Path="/60AD3349" Ref="#PWR0128"  Part="1" 
+AR Path="/5DED2F9B/60AD3349" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3349" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0128" H 12500 9200 50  0001 C CNN
+F 1 "GND" H 12505 9277 50  0000 C CNN
+F 2 "" H 12500 9450 50  0001 C CNN
+F 3 "" H 12500 9450 50  0001 C CNN
+	1    12500 9450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12500 9350 12500 9450
+Connection ~ 12500 9350
+Wire Wire Line
+	13400 9350 12950 9350
+Connection ~ 12950 9350
+$Comp
+L Device:C C6
+U 1 1 60AD333F
+P 13400 9150
+AR Path="/60AD333F" Ref="C6"  Part="1" 
+AR Path="/5DED2F9B/60AD333F" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD333F" Ref="C?"  Part="1" 
+F 0 "C6" H 13285 9196 50  0000 R CNN
+F 1 "0.1uF" H 13285 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 13438 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 13400 9150 50  0001 C CNN
+F 4 "10V" H 13210 9020 50  0000 C CNN "Rating"
+F 5 "C1525" H 13400 9150 50  0001 C CNN "LCSC"
+	1    13400 9150
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:C C5
+U 1 1 60AD3336
+P 12950 9150
+AR Path="/60AD3336" Ref="C5"  Part="1" 
+AR Path="/5DED2F9B/60AD3336" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD3336" Ref="C?"  Part="1" 
+F 0 "C5" H 12835 9196 50  0000 R CNN
+F 1 "0.1uF" H 12835 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 12988 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 12950 9150 50  0001 C CNN
+F 4 "10V" H 12760 9020 50  0000 C CNN "Rating"
+F 5 "C1525" H 12950 9150 50  0001 C CNN "LCSC"
+	1    12950 9150
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12950 9350 12950 9300
+Wire Wire Line
+	13400 9350 13400 9300
+Wire Wire Line
+	12950 8950 13400 8950
+Connection ~ 12950 8950
+Connection ~ 13400 8950
+Wire Wire Line
+	13400 8950 13400 8850
+Wire Wire Line
+	13400 9000 13400 8950
+$Comp
+L power:+3.3V #PWR0129
+U 1 1 60AD3326
+P 13950 8850
+AR Path="/60AD3326" Ref="#PWR0129"  Part="1" 
+AR Path="/5DED2F9B/60AD3326" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3326" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0129" H 13950 8700 50  0001 C CNN
+F 1 "+3.3V" H 13965 9023 50  0000 C CNN
+F 2 "" H 13950 8850 50  0001 C CNN
+F 3 "" H 13950 8850 50  0001 C CNN
+	1    13950 8850
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C7
+U 1 1 60AD3320
+P 13950 9150
+AR Path="/60AD3320" Ref="C7"  Part="1" 
+AR Path="/5DED2F9B/60AD3320" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD3320" Ref="C?"  Part="1" 
+F 0 "C7" H 13835 9196 50  0000 R CNN
+F 1 "0.1uF" H 13835 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 13988 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 13950 9150 50  0001 C CNN
+F 4 "10V" H 13760 9020 50  0000 C CNN "Rating"
+F 5 "C1525" H 13950 9150 50  0001 C CNN "LCSC"
+	1    13950 9150
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0130
+U 1 1 60AD3317
+P 13950 9450
+AR Path="/60AD3317" Ref="#PWR0130"  Part="1" 
+AR Path="/5DED2F9B/60AD3317" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3317" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0130" H 13950 9200 50  0001 C CNN
+F 1 "GND" H 13955 9277 50  0000 C CNN
+F 2 "" H 13950 9450 50  0001 C CNN
+F 3 "" H 13950 9450 50  0001 C CNN
+	1    13950 9450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	13950 9000 13950 8850
+Wire Wire Line
+	13950 9450 13950 9300
+Wire Wire Line
+	12950 9000 12950 8950
+Text GLabel 15000 8800 2    50   Input ~ 0
+VDDCR
+$Comp
+L Device:C C8
+U 1 1 60AD330D
+P 14500 9150
+AR Path="/60AD330D" Ref="C8"  Part="1" 
+AR Path="/5DED2F9B/60AD330D" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD330D" Ref="C?"  Part="1" 
+F 0 "C8" H 14385 9196 50  0000 R CNN
+F 1 "0.1uF" H 14385 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 14538 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 14500 9150 50  0001 C CNN
+F 4 "10V" H 14310 9020 50  0000 C CNN "Rating"
+F 5 "C1525" H 14500 9150 50  0001 C CNN "LCSC"
+	1    14500 9150
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0131
+U 1 1 60AD3304
+P 14500 9450
+AR Path="/60AD3304" Ref="#PWR0131"  Part="1" 
+AR Path="/5DED2F9B/60AD3304" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3304" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0131" H 14500 9200 50  0001 C CNN
+F 1 "GND" H 14505 9277 50  0000 C CNN
+F 2 "" H 14500 9450 50  0001 C CNN
+F 3 "" H 14500 9450 50  0001 C CNN
+	1    14500 9450
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	14500 9450 14500 9350
+Connection ~ 14500 9350
+Wire Wire Line
+	14950 8800 15000 8800
+Text Notes 13200 8500 0    50   ~ 0
+Decoupling Caps, place near U2
+Wire Wire Line
+	14950 8800 14950 8950
+Connection ~ 14950 8950
+$Comp
+L Device:C C9
+U 1 1 60AD32F7
+P 14950 9150
+AR Path="/60AD32F7" Ref="C9"  Part="1" 
+AR Path="/5DED2F9B/60AD32F7" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD32F7" Ref="C?"  Part="1" 
+F 0 "C9" H 14835 9196 50  0000 R CNN
+F 1 "1uF" H 14835 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 14988 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05A105KA5NQNC_C52923.pdf" H 14950 9150 50  0001 C CNN
+F 4 "10V" H 14760 9020 50  0000 C CNN "Rating"
+F 5 "C52923" H 14950 9150 50  0001 C CNN "LCSC"
+	1    14950 9150
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	14950 9300 14950 9350
+Wire Wire Line
+	14950 9350 14500 9350
+Wire Wire Line
+	14500 9350 14500 9300
+Wire Wire Line
+	14500 9000 14500 8950
+Wire Wire Line
+	14500 8950 14950 8950
+Wire Wire Line
+	14950 8950 14950 9000
+$Comp
+L Device:C C4
+U 1 1 60AD32E8
+P 12500 9150
+AR Path="/60AD32E8" Ref="C4"  Part="1" 
+AR Path="/5DED2F9B/60AD32E8" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD32E8" Ref="C?"  Part="1" 
+F 0 "C4" H 12385 9196 50  0000 R CNN
+F 1 "1uF" H 12385 9105 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 12538 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05A105KA5NQNC_C52923.pdf" H 12500 9150 50  0001 C CNN
+F 4 "10V" H 12310 9020 50  0000 C CNN "Rating"
+F 5 "C52923" H 12500 9150 50  0001 C CNN "LCSC"
+	1    12500 9150
+	-1   0    0    -1  
+$EndComp
+Wire Wire Line
+	12500 9000 12500 8950
+Wire Wire Line
+	12500 8950 12950 8950
+Wire Wire Line
+	12950 9350 12500 9350
+Wire Wire Line
+	12500 9350 12500 9300
+Text GLabel 1500 9150 0    50   Input ~ 0
+RXD0
+Text GLabel 1500 9350 0    50   Input ~ 0
+RXD1
+Text GLabel 1500 9550 0    50   Input ~ 0
+CRS_DV
+Text GLabel 2250 9100 0    50   Input ~ 0
+TXEN
+Text GLabel 2250 9000 0    50   Input ~ 0
+TXD1
+Text GLabel 2250 8900 0    50   Input ~ 0
+TXD0
+Wire Wire Line
+	2250 9100 3650 9100
+Wire Wire Line
+	2250 9000 3650 9000
+Text GLabel 2250 9700 0    50   Input ~ 0
+MDC
+Text GLabel 2250 9600 0    50   Input ~ 0
+MDIO
+Text GLabel 2250 10200 0    50   Input ~ 0
+CLK50MHZ
+Text GLabel 2250 9900 0    50   Input ~ 0
+nRST
+Text GLabel 2250 10000 0    50   Input ~ 0
+nINT
+Wire Wire Line
+	2600 9600 2250 9600
+Wire Wire Line
+	2250 9700 3650 9700
+Wire Wire Line
+	2250 10200 3650 10200
+Wire Wire Line
+	2250 9900 2900 9900
+Wire Wire Line
+	2250 10000 3200 10000
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33D3
+P 10900 8800
+AR Path="/5DED3446/60AD33D3" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33D3" Ref="#PWR0132"  Part="1" 
+F 0 "#PWR0132" H 10900 8650 50  0001 C CNN
+F 1 "+3.3VA" H 10915 8973 50  0000 C CNN
+F 2 "" H 10900 8800 50  0001 C CNN
+F 3 "" H 10900 8800 50  0001 C CNN
+	1    10900 8800
+	-1   0    0    -1  
+$EndComp
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33CD
+P 2600 8000
+AR Path="/5DED3446/60AD33CD" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33CD" Ref="#PWR0133"  Part="1" 
+F 0 "#PWR0133" H 2600 7850 50  0001 C CNN
+F 1 "+3.3VA" H 2615 8173 50  0000 C CNN
+F 2 "" H 2600 8000 50  0001 C CNN
+F 3 "" H 2600 8000 50  0001 C CNN
+	1    2600 8000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33C7
+P 4550 8000
+AR Path="/5DED3446/60AD33C7" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33C7" Ref="#PWR0134"  Part="1" 
+F 0 "#PWR0134" H 4550 7850 50  0001 C CNN
+F 1 "+3.3VA" H 4565 8173 50  0000 C CNN
+F 2 "" H 4550 8000 50  0001 C CNN
+F 3 "" H 4550 8000 50  0001 C CNN
+	1    4550 8000
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:+3.3VA #PWR?
+U 1 1 60AD33C1
+P 6050 8000
+AR Path="/5DED3446/60AD33C1" Ref="#PWR?"  Part="1" 
+AR Path="/60AD33C1" Ref="#PWR0135"  Part="1" 
+F 0 "#PWR0135" H 6050 7850 50  0001 C CNN
+F 1 "+3.3VA" H 6065 8173 50  0000 C CNN
+F 2 "" H 6050 8000 50  0001 C CNN
+F 3 "" H 6050 8000 50  0001 C CNN
+	1    6050 8000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	2900 9900 3650 9900
+Wire Wire Line
+	3200 8500 3200 10000
+Text Label 3250 9700 0    50   ~ 0
+MDC
+Text Label 3250 9600 0    50   ~ 0
+MDIO
+Connection ~ 3200 10000
+Connection ~ 2900 9900
+Wire Wire Line
+	3200 10000 3650 10000
+Wire Wire Line
+	2600 9600 3650 9600
+Wire Wire Line
+	1950 9500 3650 9500
+Wire Wire Line
+	3100 9400 3650 9400
+Wire Wire Line
+	1950 9300 3650 9300
+Wire Wire Line
+	1950 9200 3650 9200
+Wire Wire Line
+	2250 8900 3650 8900
+Text Label 3250 10200 0    50   ~ 0
+CLK
+$Comp
+L Device:R R21
+U 1 1 60AD33A0
+P 10900 9700
+AR Path="/60AD33A0" Ref="R21"  Part="1" 
+AR Path="/5DED2F9B/60AD33A0" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD33A0" Ref="R?"  Part="1" 
+F 0 "R21" H 10970 9746 50  0000 L CNN
+F 1 "270" H 10970 9655 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 10830 9700 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0603WAF2700T5E_C22966.pdf" H 10900 9700 50  0001 C CNN
+F 4 "1/10W" H 11100 9570 50  0000 C CNN "Rating"
+F 5 "C22966" H 10900 9700 50  0001 C CNN "LCSC"
+	1    10900 9700
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0136
+U 1 1 60AD3397
+P 10900 9870
+AR Path="/60AD3397" Ref="#PWR0136"  Part="1" 
+AR Path="/5DED2F9B/60AD3397" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3397" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0136" H 10900 9620 50  0001 C CNN
+F 1 "GND" H 10905 9697 50  0000 C CNN
+F 2 "" H 10900 9870 50  0001 C CNN
+F 3 "" H 10900 9870 50  0001 C CNN
+	1    10900 9870
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10900 9500 10900 9550
+Wire Wire Line
+	7950 9600 7650 9600
+Wire Wire Line
+	5150 9800 5600 9800
+Wire Wire Line
+	5600 9900 5150 9900
+Wire Wire Line
+	7950 9900 7650 9900
+Text GLabel 5600 9800 2    50   Input ~ 0
+LED1_REGOFF
+Text GLabel 5600 9900 2    50   Input ~ 0
+LED2_nINTSEL
+Wire Wire Line
+	9800 9800 9800 10100
+Wire Wire Line
+	9750 9800 9800 9800
+$Comp
+L power:Earth #PWR?
+U 1 1 60AD3388
+P 9800 10100
+AR Path="/5DED3446/60AD3388" Ref="#PWR?"  Part="1" 
+AR Path="/60AD3388" Ref="#PWR0137"  Part="1" 
+F 0 "#PWR0137" H 9800 9850 50  0001 C CNN
+F 1 "Earth" H 9800 9950 50  0001 C CNN
+F 2 "" H 9800 10100 50  0001 C CNN
+F 3 "~" H 9800 10100 50  0001 C CNN
+	1    9800 10100
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:GND #PWR0138
+U 1 1 60AD3382
+P 8850 10100
+AR Path="/60AD3382" Ref="#PWR0138"  Part="1" 
+AR Path="/5DED2F9B/60AD3382" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3382" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0138" H 8850 9850 50  0001 C CNN
+F 1 "GND" H 8855 9927 50  0000 C CNN
+F 2 "" H 8850 10100 50  0001 C CNN
+F 3 "" H 8850 10100 50  0001 C CNN
+	1    8850 10100
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7300 9900 7300 10100
+Text Label 7650 9900 0    50   ~ 0
+LEDY_K
+Text Label 7650 9800 0    50   ~ 0
+LEDY_A
+Wire Wire Line
+	7950 9800 7650 9800
+Text Label 7650 9700 0    50   ~ 0
+LEDG_K
+Text Label 7650 9600 0    50   ~ 0
+LEDG_A
+Wire Wire Line
+	7950 9700 7650 9700
+Text Label 10800 9300 2    50   ~ 0
+LEDY_K
+Text Label 10800 9200 2    50   ~ 0
+LEDY_A
+Text Label 10800 9500 2    50   ~ 0
+LEDG_K
+Text Label 10800 9400 2    50   ~ 0
+LEDG_A
+$Comp
+L Device:R R17
+U 1 1 60AD3371
+P 10900 9000
+AR Path="/60AD3371" Ref="R17"  Part="1" 
+AR Path="/5DED2F9B/60AD3371" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3371" Ref="R?"  Part="1" 
+F 0 "R17" H 10970 9046 50  0000 L CNN
+F 1 "270" H 10970 8955 50  0000 L CNN
+F 2 "Resistor_SMD:R_0603_1608Metric" V 10830 9000 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0603WAF2700T5E_C22966.pdf" H 10900 9000 50  0001 C CNN
+F 4 "1/10W" H 11100 8870 50  0000 C CNN "Rating"
+F 5 "C22966" H 10900 9000 50  0001 C CNN "LCSC"
+	1    10900 9000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	10900 8850 10900 8800
+Wire Wire Line
+	10900 9200 10900 9150
+Wire Wire Line
+	10900 9200 10500 9200
+Wire Wire Line
+	10900 9870 10900 9850
+Wire Wire Line
+	10900 9500 10500 9500
+Wire Wire Line
+	10500 9400 10850 9400
+Text GLabel 10850 9400 2    50   Input ~ 0
+LED1_REGOFF
+Wire Wire Line
+	10850 9300 10500 9300
+Text GLabel 10850 9300 2    50   Input ~ 0
+LED2_nINTSEL
+$Comp
+L Connector:RJ45_Amphenol_RJMG1BD3B8K1ANR J?
+U 1 1 60AD335F
+P 8850 9400
+AR Path="/5DED3446/60AD335F" Ref="J?"  Part="1" 
+AR Path="/60AD335F" Ref="J3"  Part="1" 
+F 0 "J3" H 8850 10125 50  0000 C CNN
+F 1 "RJ45_Amphenol_RJMG1BD3B8K1ANR" H 8850 10034 50  0000 C CNN
+F 2 "Connector_RJ:RJ45_Amphenol_RJMG1BD3B8K1ANR" H 8850 10100 50  0001 C CNN
+F 3 "https://www.amphenolcanada.com/ProductSearch/Drawings/AC/RJMG1BD3B8K1ANR.PDF" H 8850 10200 50  0001 C CNN
+	1    8850 9400
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R20
+U 1 1 60AD3359
+P 1750 9550
+AR Path="/60AD3359" Ref="R20"  Part="1" 
+AR Path="/5DED2F9B/60AD3359" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3359" Ref="R?"  Part="1" 
+F 0 "R20" V 1650 9400 50  0000 L CNN
+F 1 "49.9" V 1650 9600 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 1680 9550 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 1750 9550 50  0001 C CNN
+F 4 "C25120" H 1750 9550 50  0001 C CNN "LCSC"
+	1    1750 9550
+	0    1    1    0   
+$EndComp
+$Comp
+L Device:R R19
+U 1 1 60AD3351
+P 1750 9350
+AR Path="/60AD3351" Ref="R19"  Part="1" 
+AR Path="/5DED2F9B/60AD3351" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3351" Ref="R?"  Part="1" 
+F 0 "R19" V 1650 9200 50  0000 L CNN
+F 1 "49.9" V 1650 9400 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 1680 9350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 1750 9350 50  0001 C CNN
+F 4 "C25120" H 1750 9350 50  0001 C CNN "LCSC"
+	1    1750 9350
+	0    1    1    0   
+$EndComp
+Text Notes 650  8450 0    50   ~ 0
+MODE[2:0] have internal pull-ups\nCurrently configured for:\n-10/100BASE\n-Auto-negoation enabled\n-SMI address = 0x00\n-nINT enabled, REFCLKO disabled\n-VDDCR enabled
+Text Label 3250 9100 0    50   ~ 0
+TXEN
+Text Label 3250 9000 0    50   ~ 0
+TXD1
+Text Label 3250 8900 0    50   ~ 0
+TXD0
+Text Label 3250 9500 0    50   ~ 0
+CRS_DV_R
+Wire Wire Line
+	3100 9400 3100 10400
+Text Label 3250 9300 0    50   ~ 0
+RX1_R
+Text Label 3250 9200 0    50   ~ 0
+RX0_R
+Text Label 5200 9600 0    50   ~ 0
+RBIAS
+Text Label 3250 9400 0    50   ~ 0
+PHYAD0
+Text Label 3250 10000 0    50   ~ 0
+nINT
+Text Label 3250 9900 0    50   ~ 0
+nRST
+Wire Wire Line
+	1950 9550 1950 9500
+Wire Wire Line
+	1900 9550 1950 9550
+Wire Wire Line
+	1500 9550 1600 9550
+Text Label 7800 9400 0    50   ~ 0
+RD-
+Text Label 7800 8900 0    50   ~ 0
+TD+
+Text Label 7800 9100 0    50   ~ 0
+TD-
+Text Label 7800 9200 0    50   ~ 0
+RD+
+Text Label 7800 9000 0    50   ~ 0
+CT
+Wire Wire Line
+	7300 9000 7300 8100
+Connection ~ 7300 9000
+Wire Wire Line
+	7950 9000 7300 9000
+Wire Wire Line
+	7300 9300 7300 9000
+Connection ~ 7300 9300
+Wire Wire Line
+	7950 9300 7300 9300
+Wire Wire Line
+	1600 9350 1500 9350
+Wire Wire Line
+	1950 9350 1900 9350
+Wire Wire Line
+	1950 9300 1950 9350
+Wire Wire Line
+	1600 9150 1500 9150
+Wire Wire Line
+	1950 9150 1900 9150
+Wire Wire Line
+	1950 9200 1950 9150
+$Comp
+L Device:R R18
+U 1 1 60AD32BC
+P 1750 9150
+AR Path="/60AD32BC" Ref="R18"  Part="1" 
+AR Path="/5DED2F9B/60AD32BC" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD32BC" Ref="R?"  Part="1" 
+F 0 "R18" V 1650 9000 50  0000 L CNN
+F 1 "49.9" V 1650 9200 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 1680 9150 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 1750 9150 50  0001 C CNN
+F 4 "C25120" H 1750 9150 50  0001 C CNN "LCSC"
+	1    1750 9150
+	0    1    1    0   
+$EndComp
+NoConn ~ 3650 10300
+Wire Wire Line
+	3200 8100 3200 8200
+Wire Wire Line
+	2900 8100 2900 8200
+Connection ~ 2900 8100
+Wire Wire Line
+	3200 8100 2900 8100
+Wire Wire Line
+	2900 8100 2600 8100
+Wire Wire Line
+	2600 8100 2600 8200
+Connection ~ 2600 8100
+Wire Wire Line
+	2600 8000 2600 8100
+$Comp
+L Device:R R10
+U 1 1 60AD32AB
+P 2600 8350
+AR Path="/60AD32AB" Ref="R10"  Part="1" 
+AR Path="/5DED2F9B/60AD32AB" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD32AB" Ref="R?"  Part="1" 
+F 0 "R10" H 2670 8396 50  0000 L CNN
+F 1 "10K" H 2670 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 2530 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 2600 8350 50  0001 C CNN
+F 4 "C25744" H 2600 8350 50  0001 C CNN "LCSC"
+	1    2600 8350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R11
+U 1 1 60AD32A3
+P 2900 8350
+AR Path="/60AD32A3" Ref="R11"  Part="1" 
+AR Path="/5DED2F9B/60AD32A3" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD32A3" Ref="R?"  Part="1" 
+F 0 "R11" H 2970 8396 50  0000 L CNN
+F 1 "10K" H 2970 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 2830 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 2900 8350 50  0001 C CNN
+F 4 "C25744" H 2900 8350 50  0001 C CNN "LCSC"
+	1    2900 8350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R12
+U 1 1 60AD329B
+P 3200 8350
+AR Path="/60AD329B" Ref="R12"  Part="1" 
+AR Path="/5DED2F9B/60AD329B" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD329B" Ref="R?"  Part="1" 
+F 0 "R12" H 3270 8396 50  0000 L CNN
+F 1 "10K" H 3270 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 3130 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 3200 8350 50  0001 C CNN
+F 4 "C25744" H 3200 8350 50  0001 C CNN "LCSC"
+	1    3200 8350
+	1    0    0    -1  
+$EndComp
+Connection ~ 2600 9600
+Wire Wire Line
+	2600 9600 2600 8500
+Wire Wire Line
+	2900 9900 2900 8500
+$Comp
+L Device:R R16
+U 1 1 60AD3290
+P 6950 8350
+AR Path="/60AD3290" Ref="R16"  Part="1" 
+AR Path="/5DED2F9B/60AD3290" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3290" Ref="R?"  Part="1" 
+F 0 "R16" H 7020 8396 50  0000 L CNN
+F 1 "49.9" H 7020 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6880 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6950 8350 50  0001 C CNN
+F 4 "C25120" H 6950 8350 50  0001 C CNN "LCSC"
+	1    6950 8350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	3100 10800 3100 10700
+$Comp
+L power:GND #PWR0139
+U 1 1 60AD3287
+P 3100 10800
+AR Path="/60AD3287" Ref="#PWR0139"  Part="1" 
+AR Path="/5DED2F9B/60AD3287" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3287" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0139" H 3100 10550 50  0001 C CNN
+F 1 "GND" H 3105 10627 50  0000 C CNN
+F 2 "" H 3100 10800 50  0001 C CNN
+F 3 "" H 3100 10800 50  0001 C CNN
+	1    3100 10800
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	6950 9400 5450 9400
+Connection ~ 6950 9400
+Wire Wire Line
+	4150 8000 4150 8300
+Wire Wire Line
+	4350 8100 4350 8300
+Wire Wire Line
+	4550 8000 4550 8200
+Connection ~ 4550 8200
+$Comp
+L Device:R R24
+U 1 1 60AD327B
+P 3100 10550
+AR Path="/60AD327B" Ref="R24"  Part="1" 
+AR Path="/5DED2F9B/60AD327B" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD327B" Ref="R?"  Part="1" 
+F 0 "R24" H 3170 10596 50  0000 L CNN
+F 1 "10K" H 3170 10505 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 3030 10550 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1002TCE_C25744.pdf" H 3100 10550 50  0001 C CNN
+F 4 "C25744" H 3100 10550 50  0001 C CNN "LCSC"
+	1    3100 10550
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4250 8300 4150 8300
+Text GLabel 4350 8100 1    50   Input ~ 0
+VDDCR
+Wire Wire Line
+	4450 8200 4550 8200
+Wire Wire Line
+	4450 8300 4450 8200
+Wire Wire Line
+	4550 8300 4550 8200
+$Comp
+L power:+3.3V #PWR0140
+U 1 1 60AD326E
+P 4150 8000
+AR Path="/60AD326E" Ref="#PWR0140"  Part="1" 
+AR Path="/5DED2F9B/60AD326E" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD326E" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0140" H 4150 7850 50  0001 C CNN
+F 1 "+3.3V" H 4123 8173 50  0000 C CNN
+F 2 "" H 4150 8000 50  0001 C CNN
+F 3 "" H 4150 8000 50  0001 C CNN
+	1    4150 8000
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4450 10750 4450 10600
+$Comp
+L power:GND #PWR0141
+U 1 1 60AD3267
+P 4450 10750
+AR Path="/60AD3267" Ref="#PWR0141"  Part="1" 
+AR Path="/5DED2F9B/60AD3267" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3267" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0141" H 4450 10500 50  0001 C CNN
+F 1 "GND" H 4455 10577 50  0000 C CNN
+F 2 "" H 4450 10750 50  0001 C CNN
+F 3 "" H 4450 10750 50  0001 C CNN
+	1    4450 10750
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5350 10400 5350 10750
+Wire Wire Line
+	5350 9600 5350 10100
+Wire Wire Line
+	5150 9600 5350 9600
+$Comp
+L power:GND #PWR0142
+U 1 1 60AD325E
+P 5350 10750
+AR Path="/60AD325E" Ref="#PWR0142"  Part="1" 
+AR Path="/5DED2F9B/60AD325E" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD325E" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0142" H 5350 10500 50  0001 C CNN
+F 1 "GND" H 5355 10577 50  0000 C CNN
+F 2 "" H 5350 10750 50  0001 C CNN
+F 3 "" H 5350 10750 50  0001 C CNN
+	1    5350 10750
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R23
+U 1 1 60AD3258
+P 5350 10250
+AR Path="/60AD3258" Ref="R23"  Part="1" 
+AR Path="/5DED2F9B/60AD3258" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3258" Ref="R?"  Part="1" 
+F 0 "R23" H 5420 10296 50  0000 L CNN
+F 1 "12.1K" H 5420 10205 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 5280 10250 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF1212TCE_C25852.pdf" H 5350 10250 50  0001 C CNN
+F 4 "1%" H 5480 10120 50  0000 C CNN "Rating"
+F 5 "C25852" H 5350 10250 50  0001 C CNN "LCSC"
+	1    5350 10250
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	7300 9600 7300 9300
+Wire Wire Line
+	6950 8500 6950 9400
+Wire Wire Line
+	5150 9200 6650 9200
+Connection ~ 6650 9200
+Wire Wire Line
+	6650 9200 7950 9200
+Wire Wire Line
+	6650 8500 6650 9200
+Wire Wire Line
+	6350 9100 5150 9100
+Connection ~ 6350 9100
+Wire Wire Line
+	6350 9100 7950 9100
+Wire Wire Line
+	6350 8500 6350 9100
+Wire Wire Line
+	5450 8900 6050 8900
+Connection ~ 6050 8900
+Wire Wire Line
+	6050 8900 7950 8900
+Wire Wire Line
+	6050 8500 6050 8900
+Wire Wire Line
+	7300 8100 6950 8100
+Connection ~ 6950 8100
+Wire Wire Line
+	6950 8200 6950 8100
+Wire Wire Line
+	6650 8100 6950 8100
+Connection ~ 6650 8100
+Wire Wire Line
+	6650 8200 6650 8100
+Wire Wire Line
+	6350 8100 6650 8100
+Connection ~ 6350 8100
+Wire Wire Line
+	6050 8100 6350 8100
+Connection ~ 6050 8100
+Wire Wire Line
+	6050 8200 6050 8100
+Wire Wire Line
+	6050 8100 6050 8000
+Wire Wire Line
+	6350 8200 6350 8100
+$Comp
+L power:GND #PWR0143
+U 1 1 60AD3233
+P 7300 10100
+AR Path="/60AD3233" Ref="#PWR0143"  Part="1" 
+AR Path="/5DED2F9B/60AD3233" Ref="#PWR?"  Part="1" 
+AR Path="/5DED3446/60AD3233" Ref="#PWR?"  Part="1" 
+F 0 "#PWR0143" H 7300 9850 50  0001 C CNN
+F 1 "GND" H 7305 9927 50  0000 C CNN
+F 2 "" H 7300 10100 50  0001 C CNN
+F 3 "" H 7300 10100 50  0001 C CNN
+	1    7300 10100
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:C C11
+U 1 1 60AD322D
+P 7300 9750
+AR Path="/60AD322D" Ref="C11"  Part="1" 
+AR Path="/5DED2F9B/60AD322D" Ref="C?"  Part="1" 
+AR Path="/5DED3446/60AD322D" Ref="C?"  Part="1" 
+F 0 "C11" H 7185 9796 50  0000 R CNN
+F 1 "0.1uF" H 7185 9705 50  0000 R CNN
+F 2 "Capacitor_SMD:C_0402_1005Metric" H 7338 9600 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Samsung-Electro-Mechanics-CL05B104KO5NNNC_C1525.pdf" H 7300 9750 50  0001 C CNN
+F 4 "10V" H 7300 9750 50  0001 C CNN "Rating"
+F 5 "C1525" H 7300 9750 50  0001 C CNN "LCSC"
+	1    7300 9750
+	-1   0    0    -1  
+$EndComp
+$Comp
+L Device:R R13
+U 1 1 60AD3224
+P 6050 8350
+AR Path="/60AD3224" Ref="R13"  Part="1" 
+AR Path="/5DED2F9B/60AD3224" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3224" Ref="R?"  Part="1" 
+F 0 "R13" H 6120 8396 50  0000 L CNN
+F 1 "49.9" H 6120 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 5980 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6050 8350 50  0001 C CNN
+F 4 "C25120" H 6050 8350 50  0001 C CNN "LCSC"
+	1    6050 8350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R15
+U 1 1 60AD321C
+P 6650 8350
+AR Path="/60AD321C" Ref="R15"  Part="1" 
+AR Path="/5DED2F9B/60AD321C" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD321C" Ref="R?"  Part="1" 
+F 0 "R15" H 6720 8396 50  0000 L CNN
+F 1 "49.9" H 6720 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6580 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6650 8350 50  0001 C CNN
+F 4 "C25120" H 6650 8350 50  0001 C CNN "LCSC"
+	1    6650 8350
+	1    0    0    -1  
+$EndComp
+$Comp
+L Device:R R14
+U 1 1 60AD3214
+P 6350 8350
+AR Path="/60AD3214" Ref="R14"  Part="1" 
+AR Path="/5DED2F9B/60AD3214" Ref="R?"  Part="1" 
+AR Path="/5DED3446/60AD3214" Ref="R?"  Part="1" 
+F 0 "R14" H 6420 8396 50  0000 L CNN
+F 1 "49.9" H 6420 8305 50  0000 L CNN
+F 2 "Resistor_SMD:R_0402_1005Metric" V 6280 8350 50  0001 C CNN
+F 3 "https://datasheet.lcsc.com/szlcsc/Uniroyal-Elec-0402WGF499JTCE_C25120.pdf" H 6350 8350 50  0001 C CNN
+F 4 "C25120" H 6350 8350 50  0001 C CNN "LCSC"
+	1    6350 8350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	5450 9300 5150 9300
+Wire Wire Line
+	5450 9400 5450 9300
+Wire Wire Line
+	7950 9400 6950 9400
+Wire Wire Line
+	5450 9000 5150 9000
+Wire Wire Line
+	5450 8900 5450 9000
+$Comp
+L Interface_Ethernet:LAN8720A U3
+U 1 1 60AD3207
+P 4450 9500
+AR Path="/60AD3207" Ref="U3"  Part="1" 
+AR Path="/5DED2F9B/60AD3207" Ref="U?"  Part="1" 
+AR Path="/5DED3446/60AD3207" Ref="U?"  Part="1" 
+F 0 "U3" H 3850 8450 50  0000 C CNN
+F 1 "LAN8720A" H 4000 8350 50  0000 C CNN
+F 2 "Package_DFN_QFN:QFN-24-1EP_4x4mm_P0.5mm_EP2.6x2.6mm_ThermalVias" H 4500 8450 50  0001 L CNN
+F 3 "http://ww1.microchip.com/downloads/en/DeviceDoc/8720a.pdf" H 4250 8550 50  0001 C CNN
+F 4 "C45223" H 4450 9500 50  0001 C CNN "LCSC"
+	1    4450 9500
+	1    0    0    -1  
+$EndComp
+Wire Notes Line
+	500  7450 16050 7450
+Wire Notes Line
+	8750 7450 8750 500 
+Wire Notes Line
+	8750 2900 500  2900
+Wire Notes Line
+	8750 3800 16050 3800
+Text Notes 600  3250 0    197  ~ 0
+ESP32
+Text Notes 8950 800  0    197  ~ 0
+Programming
+Text Notes 8850 4150 0    197  ~ 0
+Button & LEDs
+Text Notes 600  7800 0    197  ~ 0
+Ethernet
+Text Label 5400 4650 0    50   ~ 0
+MTDI
+Text Label 5400 4750 0    50   ~ 0
+MTCK
+Text Label 5400 4850 0    50   ~ 0
+MTMS
+Text Label 5400 4950 0    50   ~ 0
+MTDO
+NoConn ~ 5700 4950
+NoConn ~ 5700 4850
+NoConn ~ 5700 4750
+NoConn ~ 5700 4650
+$EndSCHEMATC

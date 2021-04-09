@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <url>
+    <loc>http://example.org/application/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/application/blacklist/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/configuration/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/application/home/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/configuration/wifi_select/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/application/settings/</loc>
+  </url>
+  
+  <url>
+    <loc>http://example.org/configuration/connected/</loc>
+  </url>
+  
+</urlset>

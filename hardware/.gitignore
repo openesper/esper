@@ -1,0 +1,7 @@
+*.gcode
+_autosave*
+*-bak
+*-cache.lib
+*-rescue.*
+*.FCStd1
+*.xsl

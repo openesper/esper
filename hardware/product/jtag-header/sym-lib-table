@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name EsperSymbols)(type Legacy)(uri "${KIPRJMOD}/../../custom components/EsperSymbols.lib")(options "")(descr ""))
+)
