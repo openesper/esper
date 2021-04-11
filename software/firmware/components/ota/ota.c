@@ -48,6 +48,7 @@ static void check_for_update_task(void *pvParameter)
     while(1)
     {
         xTaskNotifyWait(0, 0xFFFFFFFF, NULL, portMAX_DELAY);
+        clear_bit(UPDATE_AVAILABLE_BIT);
         
         // Get update server from flash
         char updatesrv[MAX_URL_LENGTH];
@@ -151,7 +152,8 @@ static void ota_task(void *pvParameter)
     // Most of this code if from the OTA example app
     while(1)
     {
-        xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
+        vTaskSuspend(NULL);
+        // xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
         esp_err_t err;
         /* update handle : set by esp_ota_begin(), must be freed via esp_ota_end() */
         esp_ota_handle_t update_handle = 0 ;
@@ -348,7 +350,8 @@ eTaskState get_ota_task_status()
 
 esp_err_t start_ota()
 {
-    xTaskNotify(ota_task_handle, 1, eSetValueWithoutOverwrite);    
+    // xTaskNotify(ota_task_handle, 1, eSetValueWithoutOverwrite);  
+    vTaskResume(ota_task_handle);  
     return ESP_OK;
 }
 

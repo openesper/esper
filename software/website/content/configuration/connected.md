@@ -1,5 +1,5 @@
 ---
-title: "Settings"
+title: "Connected!"
 layout: connected
 draft: false
 ---

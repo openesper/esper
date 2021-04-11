@@ -15,6 +15,10 @@
   </url>
   
   <url>
+    <loc>http://example.org/configuration/connected/</loc>
+  </url>
+  
+  <url>
     <loc>http://example.org/</loc>
   </url>
   
@@ -28,10 +32,6 @@
   
   <url>
     <loc>http://example.org/application/settings/</loc>
-  </url>
-  
-  <url>
-    <loc>http://example.org/configuration/connected/</loc>
   </url>
   
 </urlset>

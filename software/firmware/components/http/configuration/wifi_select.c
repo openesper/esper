@@ -77,7 +77,6 @@ static esp_err_t wifi_json_get_handler(httpd_req_t *req)
         ESP_LOGD(TAG, "Rescan: %s", param);
         if (strcmp("true", param) == 0)
         {
-            ESP_LOGI(TAG, "Starting scan");
             wifi_scan();
         }
     }

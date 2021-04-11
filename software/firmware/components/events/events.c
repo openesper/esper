@@ -25,9 +25,15 @@ esp_err_t init_event_group()
 {
     event_group = xEventGroupCreate();
     if( event_group == NULL )
+    {
+        ESP_LOGE(TAG, "Failed to start event group!");
         return ESP_FAIL;
+    }
     else
+    {
+        ESP_LOGI(TAG, "Event Group Started");
         return ESP_OK;
+    }
 }
 
 esp_err_t set_bit(int bit)

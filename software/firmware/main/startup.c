@@ -68,13 +68,11 @@ void task_stacks(void* params)
 esp_err_t initialize()
 {
     ESP_LOGI(TAG, "Initializing...");
-    ERROR_CHECK(set_bit(INITIALIZING_BIT))
     ERROR_CHECK(initialize_interfaces())
     ERROR_CHECK(initialize_blocklists())
     ERROR_CHECK(initialize_logging())
     ERROR_CHECK(start_webserver())
     ERROR_CHECK(start_dns())
-    ERROR_CHECK(clear_bit(INITIALIZING_BIT))
 
     return ESP_OK;
 }
@@ -170,6 +168,7 @@ void app_main()
     CHECK(initialize_flash())
     CHECK(initialize_gpio())
     CHECK(init_event_group())
+    set_bit(INITIALIZING_BIT);
     CHECK(initialize())
 
     if( !check_bit(PROVISIONED_BIT) )
@@ -178,5 +177,8 @@ void app_main()
     }
 
     CHECK(start_application())
+    clear_bit(INITIALIZING_BIT);
     cancel_rollback();
+
+    // xTaskCreate(task_stacks, "Debugging", 4000, NULL, 2, NULL);
 }

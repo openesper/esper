@@ -17,7 +17,7 @@
 #include "lwip/ip_addr.h"
 #include "esp_netif.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "DNS";
 
@@ -202,10 +202,10 @@ static IRAM_ATTR esp_err_t capture_query(Packet* packet)
         // If not provisioning, return current IP
         esp_netif_ip_info_t info;
         get_network_info(&info);
-        ip = info.ip.addr;
+        ip = ntohl(info.ip.addr);
     }
 
-    return answer_query(packet, htonl(ip));
+    return answer_query(packet, ip);
 }
 
 static IRAM_ATTR esp_err_t block_query(Packet* packet)

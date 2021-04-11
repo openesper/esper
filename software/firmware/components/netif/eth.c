@@ -5,6 +5,7 @@
 #include "esp_eth.h"
 #include "esp_netif.h"
 #include "esp_event.h"
+#include "esp_wifi.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -18,9 +19,11 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
     switch (event_id) {
         case ETHERNET_EVENT_CONNECTED:
             ESP_LOGI(TAG, "ETHERNET_EVENT_CONNECTED");
+            esp_wifi_disconnect();
             break;
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "ETHERNET_EVENT_DISCONNECTED");
+            esp_wifi_connect();
             break;
         case ETHERNET_EVENT_START:
             ESP_LOGI(TAG, "ETHERNET_EVENT_START");

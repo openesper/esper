@@ -144,6 +144,28 @@ esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, 
 esp_err_t get_gpio_config(bool* enabled, int* button, int* red, int* green, int* blue);
 
 /**
+  * @brief Get provisioning status from flash
+  *
+  * @param provisioned pointer to bool that will be filled with provisioning status
+  *
+  * @return
+  *    - ESP_OK Success
+  *    - ESP_FAIL unable to get info from flash
+  */
+esp_err_t get_provisioning_status(bool* provisioned);
+
+/**
+  * @brief Set provisioning status in flash
+  *
+  * @param provisioned provisioning status
+  *
+  * @return
+  *    - ESP_OK Success
+  *    - ESP_FAIL unable to get info from flash
+  */
+esp_err_t set_provisioning_status(bool provisioned);
+
+/**
   * @brief Get current position & status of log file
   *
   * @param head pointer to fill with location of beginning of log

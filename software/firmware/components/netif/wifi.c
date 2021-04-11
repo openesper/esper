@@ -42,13 +42,13 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         {
             ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
             // (wifi_event_sta_connected_t*)event_data;
-            // ERROR_CHECK(set_bit(CONNECTED_BIT);
             break;
         }
         case WIFI_EVENT_STA_DISCONNECTED:
         {
             wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
             ESP_LOGW(TAG, "WIFI_EVENT_STA_DISCONNECTED %d", event->reason);
+            set_bit(DISCONNECTED_BIT);
             // wifi_err_reason_t err;
             break;
         }
@@ -196,7 +196,7 @@ esp_err_t attempt_to_connect(bool* result)
     ERROR_CHECK(clear_bit(CONNECTED_BIT | DISCONNECTED_BIT))
     ERROR_CHECK(esp_wifi_connect())
 
-    wait_for(CONNECTED_BIT | DISCONNECTED_BIT, portMAX_DELAY);
+    wait_for(CONNECTED_BIT | DISCONNECTED_BIT, 10000 / portTICK_PERIOD_MS);
     if( check_bit(CONNECTED_BIT) )
         *result = true;
     else if ( check_bit(DISCONNECTED_BIT) )

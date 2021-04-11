@@ -201,8 +201,8 @@ while(tb.firstChild)
 tb.removeChild(tb.firstChild);
 }
 
-for (let i = 0; i < data.blacklist.length; i++){
-let url = data.blacklist[i];
+for (let i = data.blacklist.length; i > 0; i--){
+let url = data.blacklist[i-1];
 
 let row = tb.insertRow();
 let domain = row.insertCell();

@@ -90,6 +90,7 @@ static esp_err_t finish_setup_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "Finishing setup");
 
     ESP_LOGI(TAG, "Configuration finished");
+    ERROR_CHECK(set_provisioning_status(true))
     xTimerHandle restartTimer = xTimerCreate("Restart timer", pdMS_TO_TICKS(1000), pdFALSE, (void*)0, restart);
     xTimerStart(restartTimer, 0);
     

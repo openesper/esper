@@ -15,15 +15,6 @@
 #include "esp_log.h"
 static const char *TAG = "GPIO";
 
-// Define common colors
-
-#define PURPLE      148,0,211
-#define BLUE        0,0,255
-#define WEAK_BLUE   0,0,60
-#define GREEN       0,255,0
-#define RED         255,0,0
-#define YELLOW      255,255,0
-
 #define LED_SPEED_MODE LEDC_LOW_SPEED_MODE      // LED PWM speed mode
 #define MAX_DUTY_CYCLE 1023                     // Duty cycle, picked 1023 so 0-255 values can be used for color 
 #define FADE_TIME 1000                          // Fade time of 1 second
@@ -54,51 +45,52 @@ static void button_task(void* args)             // Task keeping track of time be
     while(1)
     {
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-        ESP_LOGD(TAG, "Reset Pin intr, val: %d\n", gpio_get_level(button));
 
-        if(gpio_get_level(button) == 0) // Button is pressed down
+        if( gpio_enabled )
         {
-            press_timestamp = esp_log_timestamp();
-        }
-        else    // Button is released
-        {
-            length = esp_log_timestamp() - press_timestamp;
-            if( length > 5000 )
+            ESP_LOGD(TAG, "Reset Pin intr, val: %d\n", gpio_get_level(button));
+
+            if(gpio_get_level(button) == 0) // Button is pressed down
             {
-                ESP_LOGW(TAG, "Resetting device");
-                reset_device();
-                esp_restart();
+                press_timestamp = esp_log_timestamp();
             }
-            else if( length > 10000 )
+            else    // Button is released
             {
-                ESP_LOGW(TAG, "Rolling back");
-                rollback_ota();
-                esp_restart();
-            }
-            else
-            {
-                toggle_bit(BLOCKING_BIT);
+                length = esp_log_timestamp() - press_timestamp;
+                if( length > 5000 )
+                {
+                    ESP_LOGW(TAG, "Resetting device");
+                    reset_device();
+                    esp_restart();
+                }
+                else if( length > 10000 )
+                {
+                    ESP_LOGW(TAG, "Rolling back");
+                    rollback_ota();
+                    esp_restart();
+                }
+                else
+                {
+                    toggle_bit(BLOCKING_BIT);
+                }
             }
         }
     }
 }
 
-static esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue)
+esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
-    // ledc_set_fade_with_time(LED_SPEED_MODE, RED_LED_CHANNEL, red*4, FADE_TIME);
-    // ledc_fade_start(LED_SPEED_MODE, RED_LED_CHANNEL, LEDC_FADE_NO_WAIT);
-    ledc_set_duty(LED_SPEED_MODE, RED_LED_CHANNEL, red*4);
-    ledc_update_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
+    if( gpio_enabled )
+    {
+        ledc_set_duty(LED_SPEED_MODE, RED_LED_CHANNEL, red*4);
+        ledc_update_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
 
-    // ledc_set_fade_with_time(LED_SPEED_MODE, GREEN_LED_CHANNEL, green*4, FADE_TIME);
-    // ledc_fade_start(LED_SPEED_MODE, GREEN_LED_CHANNEL, LEDC_FADE_NO_WAIT);
-    ledc_set_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL, green*4);
-    ledc_update_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
+        ledc_set_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL, green*4);
+        ledc_update_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
 
-    // ledc_set_fade_with_time(LED_SPEED_MODE, BLUE_LED_CHANNEL, blue*4, FADE_TIME);
-    // ledc_fade_start(LED_SPEED_MODE, BLUE_LED_CHANNEL, LEDC_FADE_NO_WAIT);
-    ledc_set_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL, blue*4);
-    ledc_update_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
+        ledc_set_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL, blue*4);
+        ledc_update_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
+    }
 
     return ESP_OK;
 }
@@ -117,36 +109,43 @@ static void led_task(void* args)
     {
         xTaskNotifyWait(0, 0, &state, portMAX_DELAY);
         
-        if( check_bit(ERROR_BIT) )
+        if( gpio_enabled )
         {
-            set_rgb(RED);
-        }
-        else if( check_bit(INITIALIZING_BIT) )
-        {
-            set_rgb(PURPLE);
-        }
-        else if( check_bit(PROVISIONING_BIT) )
-        {
-            set_rgb(GREEN);
-        }
-        else if( check_bit(BLOCKING_BIT) )
-        {
-            set_rgb(BLUE);
-        }
-        else 
-        {
-            set_rgb(WEAK_BLUE);
+            if( check_bit(ERROR_BIT) )
+            {
+                set_rgb(RED);
+            }
+            else if( check_bit(PROVISIONING_BIT) )
+            {
+                set_rgb(GREEN);
+            }
+            else if( check_bit(INITIALIZING_BIT) )
+            {
+                set_rgb(PURPLE);
+            }
+            else if( check_bit(BLOCKING_BIT) )
+            {
+                set_rgb(BLUE);
+            }
+            else 
+            {
+                set_rgb(WEAK_BLUE);
+            }
         }
     }
 }
 
 esp_err_t initialize_gpio()
 {
+    xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY);
+    xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY);
+
     ERROR_CHECK(get_gpio_config(&gpio_enabled, &button, &red_led, &green_led, &blue_led))
-
     if( !gpio_enabled )
+    {
+        ESP_LOGI(TAG, "GPIO Disabled");
         return ESP_OK;
-
+    }
     // Set button settings and assign interrupt handler
     gpio_pad_select_gpio(button);
     gpio_set_direction(button, GPIO_MODE_DEF_INPUT);
@@ -196,9 +195,6 @@ esp_err_t initialize_gpio()
     ledc_channel_config(&led_channel_config_green);
     // ledc_fade_func_install(0);
     set_rgb(0,0,0);
-
-    xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY);
-    xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY);
     
     ESP_LOGI(TAG, "GPIO Initialized");
     return ESP_OK;

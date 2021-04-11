@@ -3,7 +3,7 @@ import sys
 from shutil import copyfile
 
 script_dir, script_path = os.path.split(os.path.abspath(sys.argv[0]))
-output_dir = script_dir + r'/../firmware/components/http/'
+output_dir = script_dir + r'/../firmware/components/http'
 input_dir = script_dir + r'/../website/public'
 
 files = [
