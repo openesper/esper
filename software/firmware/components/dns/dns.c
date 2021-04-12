@@ -210,6 +210,7 @@ static IRAM_ATTR esp_err_t capture_query(Packet* packet)
 
 static IRAM_ATTR esp_err_t block_query(Packet* packet)
 {
+    set_bit(BLOCKED_QUERY_BIT);
     // Answer query with 0.0.0.0
     return answer_query(packet, 0);
 }
@@ -291,7 +292,7 @@ static IRAM_ATTR void dns_t(void* parameters)
         URL url = convert_qname_to_url(packet->dns.qname);
         if( packet->dns.header->qr == ANSWER ) // Forward all answers
         {
-            ESP_LOGI(TAG, "Forwarding answer for %*s", url.length, url.string);
+            ESP_LOGI(TAG, "Forwarding answer for %.*s", url.length, url.string);
             forward_answer(packet);
         }
         else if( packet->dns.header->qr == QUERY )
@@ -301,17 +302,17 @@ static IRAM_ATTR void dns_t(void* parameters)
             {
                 if( qtype == A || qtype == AAAA )
                 {
-                    ESP_LOGW(TAG, "Capturing DNS request %*s", url.length, url.string);
+                    ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
                 }
                 else
                 {
-                    ESP_LOGW(TAG, "Blocking query for %*s", url.length, url.string);
+                    ESP_LOGW(TAG, "Blocking query for %.*s", url.length, url.string);
                 }
             }
             else if( !(qtype == A || qtype == AAAA) ) // Forward all queries that are not A & AAAA
             {
-                ESP_LOGI(TAG, "Forwarding question for %*s", url.length, url.string);
+                ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                 forward_query(packet);
                 log_query(url, false, packet->src.sin_addr.s_addr);
             }
@@ -320,19 +321,19 @@ static IRAM_ATTR void dns_t(void* parameters)
                 xSemaphoreTake(device_url_mutex, portMAX_DELAY);
                 if( memcmp(url.string, device_url, url.length) == 0 ) // Check is qname matches current device url
                 {
-                    ESP_LOGW(TAG, "Capturing DNS request %*s", url.length, url.string);
+                    ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
                     log_query(url, false, packet->src.sin_addr.s_addr);
                 }
                 else if( check_bit(BLOCKING_BIT) && in_blacklist(url) ) // check if url is in blacklist
                 {
-                    ESP_LOGW(TAG, "Blocking question for %*s", url.length, url.string);
+                    ESP_LOGW(TAG, "Blocking question for %.*s", url.length, url.string);
                     block_query(packet);
                     log_query(url, true, packet->src.sin_addr.s_addr);
                 }
                 else
                 {
-                    ESP_LOGI(TAG, "Forwarding question for %*s", url.length, url.string);
+                    ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                     forward_query(packet);
                     log_query(url, false, packet->src.sin_addr.s_addr);
                 }

@@ -78,6 +78,18 @@ static void button_task(void* args)             // Task keeping track of time be
     }
 }
 
+static esp_err_t get_rgb(uint8_t* red, uint8_t* green, uint8_t* blue)
+{
+    if( gpio_enabled )
+    {
+        *red = ledc_get_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
+        *green = ledc_get_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
+        *blue = ledc_get_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
+    }
+
+    return ESP_OK;
+}
+
 esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
     if( gpio_enabled )
@@ -122,6 +134,17 @@ static void led_task(void* args)
             else if( check_bit(INITIALIZING_BIT) )
             {
                 set_rgb(PURPLE);
+            }
+            else if( check_bit(BLOCKED_QUERY_BIT) )
+            {
+                // uint8_t red, green, blue;
+                // get_rgb(&red, &green, &blue);
+
+                set_rgb(OFF);
+                vTaskDelay( 50/portTICK_PERIOD_MS );
+
+                // set_rgb(red, green, blue);
+                clear_bit(BLOCKED_QUERY_BIT);
             }
             else if( check_bit(BLOCKING_BIT) )
             {
