@@ -78,18 +78,6 @@ static void button_task(void* args)             // Task keeping track of time be
     }
 }
 
-static esp_err_t get_rgb(uint8_t* red, uint8_t* green, uint8_t* blue)
-{
-    if( gpio_enabled )
-    {
-        *red = ledc_get_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
-        *green = ledc_get_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
-        *blue = ledc_get_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
-    }
-
-    return ESP_OK;
-}
-
 esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
     if( gpio_enabled )

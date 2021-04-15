@@ -21,7 +21,7 @@ CONFIG_UPSTREAM_DNS_CLOUDFARE=y
 # CONFIG_UPSTREAM_DNS_OPENDNS is not set
 # CONFIG_UPSTREAM_DNS_ADGUARD is not set
 CONFIG_DEFAULT_DEVICE_URL="esper.com"
-CONFIG_DEFAULT_UPDATE_URI="http://openesper.com/OpenEsper.bin"
+CONFIG_DEFAULT_UPDATE_URI="update.openesper.com"
 # end of Application Configuration
 
 #

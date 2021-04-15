@@ -31,6 +31,12 @@ static char ota_status_string[100] = "";                // String containing sta
 static TaskHandle_t ota_task_handle = NULL;             // Handle for OTA task
 static char ota_write_data[BUFFSIZE + 1] = { 0 };       // Buffer for ota data
 
+static esp_http_client_config_t config = {              // Default http configuration
+    .host = NULL,
+    .path = "/OpenEsper.bin",
+    .transport_type = HTTP_TRANSPORT_OVER_TCP,
+    .timeout_ms = 2000,
+};
 
 esp_err_t rollback_ota()
 {
@@ -50,13 +56,11 @@ static void check_for_update_task(void *pvParameter)
         xTaskNotifyWait(0, 0xFFFFFFFF, NULL, portMAX_DELAY);
         clear_bit(UPDATE_AVAILABLE_BIT);
         
-        // Get update server from flash
+        // Point to update server
         char updatesrv[MAX_URL_LENGTH];
         get_update_url(updatesrv);
-        esp_http_client_config_t config = {
-            .url = updatesrv,
-            .timeout_ms = 2000,
-        };
+        config.host = updatesrv;
+        
         ESP_LOGI(TAG, "Checking %s for update...", updatesrv);
 
         // Initialize HTTP connection
@@ -172,12 +176,10 @@ static void ota_task(void *pvParameter)
         ESP_LOGI(TAG, "Running partition type %d subtype %d (offset 0x%08x)",
                 running->type, running->subtype, running->address);
 
+        // Point to update server
         char updatesrv[MAX_URL_LENGTH];
         get_update_url(updatesrv);
-        esp_http_client_config_t config = {
-            .url = updatesrv,
-            .timeout_ms = 2000,
-        };
+        config.host = updatesrv;
 
         esp_http_client_handle_t client = esp_http_client_init(&config);
         if (client == NULL) {

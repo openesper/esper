@@ -337,11 +337,11 @@
         http.send();
 
         http.onreadystatechange = function() {
-            if (http.readyState == 4)
+            if (http.readyState == 4){
                 if(http.status == 200){
                     window.location.href = '/settings';
                 } else {
-                    http.send();
+                    setTimeout(redirect, 1500);
                 }
             }
         }
