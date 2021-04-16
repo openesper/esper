@@ -23,6 +23,7 @@
 - remaining memory
     - total and for each task
 ### OTA Updates
+- Don't let user rollback if there is nothing to roll back to
 - progress bar
 ### DATETIME
 - Add timezone select
