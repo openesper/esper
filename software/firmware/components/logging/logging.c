@@ -165,7 +165,7 @@ static void logging_task(void* args)
                 }
 
                 log_head--;
-                ESP_LOGV(TAG, "Adding %*s to log address %d(%d)", entry.url.length, entry.url.string, log_head, log_head*sizeof(Log_Entry));
+                ESP_LOGV(TAG, "Adding %.*s to log address %d(%d)", entry.url.length, entry.url.string, log_head, log_head*sizeof(Log_Entry));
 
                 // Move to position on log
                 if(fseek(log, log_head*sizeof(Log_Entry), SEEK_SET))
@@ -178,7 +178,7 @@ static void logging_task(void* args)
                 }
                 else
                 {
-                    ESP_LOGW(TAG, "Error adding %*s to log address %d", entry.url.length, entry.url.string, log_head);
+                    ESP_LOGW(TAG, "Error adding %.*s to log address %d", entry.url.length, entry.url.string, log_head);
                 }
             }
         }

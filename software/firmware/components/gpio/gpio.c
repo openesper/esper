@@ -57,16 +57,16 @@ static void button_task(void* args)             // Task keeping track of time be
             else    // Button is released
             {
                 length = esp_log_timestamp() - press_timestamp;
-                if( length > 5000 )
-                {
-                    ESP_LOGW(TAG, "Resetting device");
-                    reset_device();
-                    esp_restart();
-                }
-                else if( length > 10000 )
+                if( length > 8000 )
                 {
                     ESP_LOGW(TAG, "Rolling back");
                     rollback_ota();
+                    esp_restart();
+                }
+                else if( length > 3000 )
+                {
+                    ESP_LOGW(TAG, "Resetting device");
+                    reset_device();
                     esp_restart();
                 }
                 else
@@ -122,6 +122,17 @@ static void led_task(void* args)
             else if( check_bit(INITIALIZING_BIT) )
             {
                 set_rgb(PURPLE);
+            }
+            else if( check_bit(BLOCKED_QUERY_BIT) )
+            {
+                // uint8_t red, green, blue;
+                // get_rgb(&red, &green, &blue);
+
+                set_rgb(OFF);
+                vTaskDelay( 50/portTICK_PERIOD_MS );
+
+                // set_rgb(red, green, blue);
+                clear_bit(BLOCKED_QUERY_BIT);
             }
             else if( check_bit(BLOCKING_BIT) )
             {

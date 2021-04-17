@@ -20,6 +20,9 @@ const int INITIALIZING_BIT = BIT7;
 const int ERROR_BIT = BIT8;
 const int OTA_BIT = BIT9;
 const int UPDATE_AVAILABLE_BIT = BIT10;
+const int ETHERNET_CONNECTED_BIT = BIT11;
+const int WIFI_CONNECTED_BIT = BIT12;
+const int BLOCKED_QUERY_BIT = BIT13;
 
 esp_err_t init_event_group()
 {

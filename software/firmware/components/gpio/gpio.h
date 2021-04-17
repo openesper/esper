@@ -6,6 +6,7 @@
 #include "freertos/task.h"
 
 // Define common colors
+#define OFF         0,0,0
 #define PURPLE      148,0,211
 #define BLUE        0,0,255
 #define WEAK_BLUE   0,0,60

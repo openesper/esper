@@ -1,13 +1,5 @@
 ## TODO:
 
-### Version 0.1
-- Make LED blink when blocking
-- Run through tests
-- Set up Tindie
-    - Packaging?
-- How to use guide
-- Basic site at openesper.com
-- Push to official repo
 
 ### Tests:
 - Start writing test doc
@@ -31,6 +23,7 @@
 - remaining memory
     - total and for each task
 ### OTA Updates
+- Don't let user rollback if there is nothing to roll back to
 - progress bar
 ### DATETIME
 - Add timezone select

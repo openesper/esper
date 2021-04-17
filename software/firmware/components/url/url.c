@@ -100,15 +100,15 @@ esp_err_t remove_from_blacklist(URL removal)
     while(fread(&url.length, sizeof(url.length), 1, f) == sizeof(url.length))
     {
         fread(&url.string, url.length, 1, f);
-        ESP_LOGD(TAG, "Read %*s(%d) from list.txt", url.length, url.string, url.length);
+        ESP_LOGD(TAG, "Read %.*s(%d) from list.txt", url.length, url.string, url.length);
         if(memcmp(&url, &removal, sizeof(url.length)+url.length) == 0)
         {
-            ESP_LOGI(TAG, "Removing %*s(%d) from list.txt", url.length, url.string, url.length);
+            ESP_LOGI(TAG, "Removing %.*s(%d) from list.txt", url.length, url.string, url.length);
             found_url = true;
         }
         else
         {
-            ESP_LOGD(TAG, "Writing %*s(%d) to list.txt", url.length, url.string, url.length);
+            ESP_LOGD(TAG, "Writing %.*s(%d) to list.txt", url.length, url.string, url.length);
             fwrite(&url, sizeof(url.length)+url.length, 1, tmp);
         }
 
@@ -224,7 +224,7 @@ static IRAM_ATTR bool wildcmp(char *pattern, char *string)
 
 IRAM_ATTR bool in_blacklist(URL url)
 {
-    ESP_LOGD(TAG, "Checking Blacklist for %*s", url.length, url.string);
+    ESP_LOGD(TAG, "Checking Blacklist for %.*s", url.length, url.string);
     xSemaphoreTake(blacklist_mutex, portMAX_DELAY);
 
     bool match = false;
@@ -234,7 +234,7 @@ IRAM_ATTR bool in_blacklist(URL url)
         URL comparison = {0};
         comparison.length = blacklist[array_index];
         memcpy(comparison.string, blacklist+array_index+sizeof(comparison.length), comparison.length);
-        ESP_LOGV(TAG, "Comparing %*s and %*s", url.length, url.string, comparison.length, comparison.string);
+        ESP_LOGV(TAG, "Comparing %.*s and %.*s", url.length, url.string, comparison.length, comparison.string);
         match = wildcmp(comparison.string, url.string); // \0 initialized array means strings are already \0 terminated
         array_index += comparison.length + sizeof(comparison.length);
     }
