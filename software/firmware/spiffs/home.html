@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Esper</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+font-size: 1rem;
+line-height: 1.42857143;
+
+margin: 0;
+background-color: white;
+text-align: center;
+height: 100%;
+}
+h1 {
+font-size: 2.5em;
+}
+.navbar {
+background-color: #f8f8f8;
+border-bottom: 1px solid #e7e7e7;
+min-height: 3rem;
+border-top: 0.25rem solid red;
+margin-bottom: 1.5rem;
+}
+.nav-container{
+box-sizing: border-box;
+width: 100%;
+max-width: 80rem;
+min-height: 3rem;
+padding-right: 1rem;
+padding-left: 1rem;
+margin-right: auto;
+margin-left: auto;
+}
+.nav{
+float: left;
+margin: 0;
+padding-left: 0;
+list-style: none;
+}
+.nav li{
+float: left;
+padding: 0;
+}
+.nav li a{
+color: #777;
+line-height: 20px;
+padding: 15px;
+display: block;
+text-decoration: none;
+}
+button{
+background-color: red;
+color: white;
+border-radius: 0.3rem;
+border: 0px solid white;
+font-weight: bold;
+
+outline: none;
+}
+button.altbtn {
+background-color: white;
+color: red;
+border: 1px solid red;
+}
+button.txtbtn {
+padding: 0.2em;
+}
+button:hover {
+cursor: pointer;
+}
+button:active {
+color: white;
+background-color: darkred;
+}
+button.altbtn:active {
+color: black;
+background-color: lightgray;
+}
+</style>
+<style>
+table {
+margin: auto;
+table-layout: fixed;
+border-collapse: collapse;
+text-align: left;
+width: 95%;
+max-width: 45em;
+}
+tr:hover {
+background-color: #ddd;
+}
+thead tr:nth-of-type(1):hover {
+background-color: white;
+}
+th {
+padding: 0.2em;
+border: 1px solid #e7e7e7;
+}
+th#Time{
+width: 6em;
+}
+th#Client{
+width: 8em;
+}
+th#Block{
+width: 3em;
+}
+td {
+overflow: hidden;
+text-overflow: ellipsis;
+}
+button {
+width: 100%;
+border-width: 0px;
+border-radius: 0.3rem;
+font-weight: bold;
+font-size: 1.5rem;
+padding: 0;
+}
+button.altbtn {
+font-size: 1.3rem;
+}
+.blocked {
+color: red;
+}
+.error {
+visibility: hidden;
+color: red;
+}
+@media only screen and (max-width: 480px) {
+table, thead, tbody, th, td, tr { 
+display: block; 
+}
+thead tr { 
+position: absolute;
+top: -9999px;
+left: -9999px;
+}
+tr { 
+border: 1px solid #ccc;
+display: flex; 
+flex-direction: row;
+flex-wrap: wrap;
+}
+tr:hover {
+background-color: white;
+}
+td { 
+border: none;
+border-bottom: 1px solid #eee; 
+padding: 0.5em;
+box-sizing: border-box;
+}
+td:nth-of-type(1) { 
+width: 50%;
+order: 1;
+}
+td:nth-of-type(2) {
+width: 100%; 
+order: 3;
+}
+td:nth-of-type(3) { 
+width: 50%;
+order: 2;
+text-align: right;
+}
+td:nth-of-type(4) {
+padding: 1% 25%;
+width: 100%;
+order: 4;
+}
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+<div class="nav-container">
+<ul class="nav">
+<ul class="nav">
+<li><a href="/">Home</a></li>
+<li><a href="/blacklist">Blacklist</a></li>
+<li><a href="/settings">Settings</a></li>
+</ul>
+</ul>
+</div>
+</nav>
+<main>
+<div class="intro">
+<h1>Esper</h1>
+</div>
+<div class="recentQueries">
+<h3>Recent Queries</h3>
+<div class='size'>
+<label class='sizelabel'>Entries per page</label>
+<select id='sizeselect' onchange=refreshTable()>
+<option value='10'>10</option>
+<option value='20'>25</option>
+<option value='50'>50</option>
+</select>
+</div>
+<div class='error' id='error'>
+Error
+</div>
+<table>
+<thead>
+<tr>
+<th id="Time">Time</th>
+<th id="Domain">Domain</th>
+<th id="Client">Client</th>
+<th id="Block"></th>
+</tr>
+</thead>
+<tbody>
+</tbody>
+</table>
+</div>
+</main>
+<footer>
+<p></p>
+</footer>
+</body>
+</html>
+<script>
+refreshTable();
+
+function refreshTable(){
+let err = document.getElementById('error');
+err.style.visibility = 'hidden'
+
+var size = document.getElementById('sizeselect').value;
+var page = 0;
+let url = 'log.json?size=' + size + '&page=' + page;
+
+let http = new XMLHttpRequest();
+http.open("GET", url);
+http.setRequestHeader("Accept", "application/json")
+http.send();
+
+http.onreadystatechange = function() {
+if (http.readyState == 4){
+if (http.status == 200){
+generateTable(JSON.parse(http.response))
+}
+else if (http.status == 400){
+err.innerHTML = req.responseText;
+err.style.visibility = 'visible'
+}
+else if (http.status == 500){
+err.innerHTML = req.responseText;
+err.style.visibility = 'visible'
+}
+}
+};
+}
+
+function generateTable(data){
+let tb = document.getElementsByTagName('tbody')[0];
+while(tb.firstChild)
+{
+tb.removeChild(tb.firstChild);
+}
+
+for (let i = 0; i < data.log_entries.length; i++){
+let entry = data.log_entries[i];
+let row = tb.insertRow();
+row.insertCell().innerHTML = entry.time;
+row.insertCell().innerHTML = entry.url;
+row.insertCell().innerHTML = entry.client;
+
+let button = document.createElement('button');
+if (entry.blocked == true){
+button.className = 'altbtn';
+button.innerHTML = "&check;"
+row.style.color = "#FF0000";
+}
+else{
+button.innerHTML = "&times;"
+button.onclick = function(){sumbitURL("blacklist", entry.url)};
+}
+
+row.insertCell().appendChild(button);
+}
+}
+
+function sumbitURL(list, domain){
+let http = new XMLHttpRequest();
+http.open("POST", list+"/add");
+http.setRequestHeader('Content-Type','application/json')
+
+let data = { url: domain }
+http.send(JSON.stringify(data));
+
+http.onreadystatechange = function(){
+if (http.readyState == 4)
+{
+if (http.status == 200)
+{
+window.location.href = '/blacklist';
+}
+else
+{
+let err = document.getElementById('error');
+console.log("Error " + http.status + " adding " + domain)
+err.innerHTML = http.responseText;
+err.style.visibility = 'visible'
+}
+}
+};
+}
+</script>

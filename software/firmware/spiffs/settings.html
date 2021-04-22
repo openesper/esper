@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Esper</title>
+<style>
+body {
+font-family: Arial, sans-serif;
+font-size: 1rem;
+line-height: 1.42857143;
+
+margin: 0;
+background-color: white;
+text-align: center;
+height: 100%;
+}
+h1 {
+font-size: 2.5em;
+}
+.navbar {
+background-color: #f8f8f8;
+border-bottom: 1px solid #e7e7e7;
+min-height: 3rem;
+border-top: 0.25rem solid red;
+margin-bottom: 1.5rem;
+}
+.nav-container{
+box-sizing: border-box;
+width: 100%;
+max-width: 80rem;
+min-height: 3rem;
+padding-right: 1rem;
+padding-left: 1rem;
+margin-right: auto;
+margin-left: auto;
+}
+.nav{
+float: left;
+margin: 0;
+padding-left: 0;
+list-style: none;
+}
+.nav li{
+float: left;
+padding: 0;
+}
+.nav li a{
+color: #777;
+line-height: 20px;
+padding: 15px;
+display: block;
+text-decoration: none;
+}
+button{
+background-color: red;
+color: white;
+border-radius: 0.3rem;
+border: 0px solid white;
+font-weight: bold;
+
+outline: none;
+}
+button.altbtn {
+background-color: white;
+color: red;
+border: 1px solid red;
+}
+button.txtbtn {
+padding: 0.2em;
+}
+button:hover {
+cursor: pointer;
+}
+button:active {
+color: white;
+background-color: darkred;
+}
+button.altbtn:active {
+color: black;
+background-color: lightgray;
+}
+</style>
+<style>
+button#blockStatus {
+height: 2em;
+font-size: 1.5em;
+margin: auto auto 1rem auto;
+padding-left: 1rem;
+padding-right: 1rem;
+}
+.error {
+visibility: hidden;
+color: red;
+}
+.settings {
+margin: 2rem auto;
+width: 30rem;
+max-width: 100%;
+}
+.setting {
+margin: 1rem auto;
+text-align: left;
+}
+label {
+display: inline-block;
+box-sizing: border-box;
+text-align: right;
+width: 45%;
+padding-right: 1rem;
+}
+input, select, #version {
+display: inline-block;
+max-width: 50%;
+}
+#savebtn {
+padding:0.3rem;
+}
+#update_available {
+visibility: hidden;
+}
+.loader {
+display: inline-block;
+border: 4px solid #f3f3f3;
+border-top: 4px solid #3498db;
+border-radius: 50%;
+width: 15px;
+height: 15px;
+animation: spin 2s linear infinite;
+}
+@keyframes spin {
+0% { transform: rotate(0deg); }
+100% { transform: rotate(360deg); }
+}
+.modal {
+display: none;
+position: fixed;
+z-index: 1;
+padding-top: 100px;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgb(0,0,0);
+background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+background-color: #fefefe;
+margin: auto;
+padding: 20px;
+border: 1px solid #888;
+width: 80%;
+max-width: 40rem;
+}
+</style>
+</head>
+<body>
+<nav class="navbar">
+<div class="nav-container">
+<ul class="nav">
+<ul class="nav">
+<li><a href="/">Home</a></li>
+<li><a href="/blacklist">Blacklist</a></li>
+<li><a href="/settings">Settings</a></li>
+</ul>
+</ul>
+</div>
+</nav>
+<main>
+<div class="intro">
+<h1>Settings</h1>
+</div>
+<div>
+<button id="blockStatus" onclick=toggleBlockingStatus()>Blocking On</button>
+<div class="settings" id="settings">
+<div class='error' id='error'>
+Error
+</div>
+<div class="setting" >
+<label for="ip">Device IP</label>
+<input name="ip" type="text" autocorrect="off" autocapitalize="none"/>
+</div>
+<div class="setting">
+<label for="url">Device URL</label>
+<input name="url" type="text" autocorrect="off" autocapitalize="none"/>
+</div>
+<div class='setting'>
+<label for="dnssrv">Server</label>
+<select name='dnssrv' id='dnssrv'>
+<option value='8.8.8.8'>Google</option>
+<option value='1.1.1.1'>Cloudfare</option>
+<option value='208.67.222.222'>OpenDNS</option>
+<option value='94.140.14.14'>AdGuard</option>
+</select>
+</div>
+<div class="setting">
+<label for='updatesrv'>Update Server</label>
+<input name="updatesrv" type="text" autocorrect="off" autocapitalize="none"/>
+</div>
+<div class="setting">
+<label>Version</label><div id="version"></div>
+</div>
+<br>
+<div>
+<button class="txtbtn" id="savebtn" onclick=saveSettings()>Save</button>
+</div>
+</div>
+<br>
+
+<div id="update_available">
+<p>Update Available!</p>
+<button class="txtbtn" id="updateButton" onclick='updateFirmware()'>Update Firmware</button>
+</div>
+<div class='modal' id='updateModal'>
+<div class="modal-content">
+<p>Updating firmware, this may take a few minutes...</p>
+<div class="loader"></div>
+<br><br>
+<button class="txtbtn altbtn" onclick='cancelUpdate()'>Cancel</button>
+</div>
+</div>
+<div class='modal' id='restartModal'>
+<div class="modal-content">
+<p>Restarting...</p>
+<div class="loader"></div>
+<br><br>
+</div>
+</div>
+</div>
+</main>
+<footer>
+<p></p>
+</footer>
+</body>
+</html>
+<script>
+var err = document.getElementById('error');
+var button = document.getElementById("blockStatus")
+var version = document.getElementById("version");
+var updatesrv = document.getElementsByName("updatesrv")[0];
+var dnssrv = document.getElementsByName("dnssrv")[0];
+var url = document.getElementsByName("url")[0];
+var ip = document.getElementsByName("ip")[0];
+var updateButton = document.getElementById("updateButton");
+var updateModal = document.getElementById("updateModal");
+var restartModal = document.getElementById("restartModal");
+var update_available = document.getElementById("update_available");
+
+getSettings();
+function getSettings() {
+let http = new XMLHttpRequest();
+http.open("GET", "settings.json");
+http.send();
+
+http.onreadystatechange = function(){
+if (http.readyState == 4){
+if (http.status == 200){
+let settings = JSON.parse(http.response);
+
+ip.value = settings.ip;
+url.value = settings.url;
+updatesrv.value = settings.updatesrv;
+version.innerHTML = settings.version;
+
+for(let j = 0; j < dnssrv.options.length; j++)
+{
+if (dnssrv.options[j].value == settings.dnssrv)
+{
+dnssrv.selectedIndex = j;
+}
+}
+
+if(settings.blocking == true)
+{
+button.innerHTML = 'Blocking On';
+button.className = "";
+}
+else
+{
+button.className = "altbtn";
+button.innerHTML = 'Blocking Off';
+}
+
+if( settings.update_status )
+{
+err.innerHTML = settings.update_status;
+err.style.visibility = 'visible'
+}
+else
+{
+err.style.visibility = 'hidden'
+}
+
+if(settings.update == true)
+{
+update_available.style.visibility = 'visible';
+}
+else
+{
+update_available.style.visibility = 'hidden';
+}
+
+}
+else{
+err.innerHTML = http.responseText;
+err.style.visibility = 'visible'
+}
+}
+}
+}
+
+function saveSettings(){
+let http = new XMLHttpRequest();
+http.open("POST", "settings.json");
+
+let data = {
+ip: ip.value,
+url: url.value,
+dnssrv: dnssrv.value,
+updatesrv: updatesrv.value
+};
+
+console.log(data)
+http.setRequestHeader("Content-Type", "application/json");
+http.send(JSON.stringify(data));
+
+http.onreadystatechange = function() {
+if (http.readyState == 4){
+if (http.status == 200){
+window.location.href = '/settings';
+}
+else{
+let err = document.getElementById('error');
+err.innerHTML = http.responseText;
+err.style.visibility = 'visible'
+}
+}
+}
+}
+
+function toggleBlockingStatus(){
+let http = new XMLHttpRequest();
+http.open("POST", "toggleblock");
+http.send();
+
+http.onreadystatechange = function() {
+if (http.readyState == 4){
+if (http.status == 200){
+let json = JSON.parse(http.response);
+if(json.blocking == true)
+{
+button.innerHTML = 'Blocking On';
+button.className = "";
+}
+else if (json.blocking == false)
+{
+button.className = "altbtn";
+button.innerHTML = 'Blocking Off';
+}
+}
+else{
+let err = document.getElementById('error');
+err.innerHTML = http.responseText;
+err.style.visibility = 'visible'
+}
+}
+}
+}
+
+var interval_handle;
+function updateFirmware(){
+let http = new XMLHttpRequest();
+http.open("POST", 'updatefirmware');
+http.send();
+
+http.onreadystatechange = function() {
+if (http.readyState == 4 && http.status == 200){
+updateModal.style.display = 'block';
+interval_handle = setInterval(checkUpgradeStatus, 2000);
+}
+}
+}
+
+function cancelUpdate(){
+updateModal.style.display = 'none';
+clearInterval(interval_handle);
+}
+
+function checkUpgradeStatus(){
+let http = new XMLHttpRequest();
+let url = 'updatestatus';
+http.open("GET", url);
+http.send();
+
+http.onreadystatechange = function() {
+if (http.readyState == 4 && http.status == 200){
+let status = JSON.parse(http.response);
+if( status.running == false )
+{
+updateModal.style.display = 'none';
+clearInterval(interval_handle);
+
+if( status.update_status )
+{
+err.innerHTML = status.update_status;
+err.style.visibility = 'visible'
+}
+else
+{
+restartModal.style.display = 'block';
+
+let req = new XMLHttpRequest();
+req.open("POST", 'restart');
+req.send();
+
+setTimeout(redirect, 1500);
+}
+}
+}
+}
+}
+
+function redirect(){
+let http = new XMLHttpRequest();
+let url = 'settings';
+http.open("GET", url);
+http.send();
+
+http.onreadystatechange = function() {
+if (http.readyState == 4){
+if(http.status == 200){
+window.location.href = '/settings';
+} else {
+setTimeout(redirect, 1500);
+}
+}
+}
+}
+</script>

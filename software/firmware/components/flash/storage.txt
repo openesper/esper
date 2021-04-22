@@ -1,0 +1,46 @@
+Files:
+
+favicon.ico
+stylesheet.css
+homepage.html
+querylog.csv
+blacklist.html
+blacklist.txt
+settings.html
+settings.json
+update.txt
+ipaddr.json
+network.json
+
+Key/Values:
+
+initialized,        uint8,      spiffs/nvs initialized
+provisioned,        uint8,      device has gone through provisioning
+upstream_server,    str,        IP string for upstream upstream_server
+url,                str,        device hostname
+update_url,         str,        hostname for update upstream_server
+log_head,           uint16,     current position of log file
+log_full,           uint8,      log full bool
+network_info,       blob,       esp_netif_ip_info_t with network info
+
+Key/Values History:
+
+initialized,        uint8,      spiffs/nvs initialized
+provisioned,        uint8,      device has gone through provisioning
+gpio,               int8,       GPIO enabled
+button,             int32,      button pin
+red_led,            int32,      red led pin
+green_led,          int32,      green led pin
+blue_led,           int32,      blue led pin
+ethernet,           uint8,      ethernet enabled/disabled
+phy_addr,           uint32,     PHY address
+phy_rst,            uint32,     PHY reset pin
+phy_mdio,           uint32,     PHY MDIO pin
+phy_mdc,            uint32,     PHY MDC pin
+wifi,               uint8,      wifi enabled/disabled
+upstream_server,    str,        IP string for upstream upstream_server
+url,                str,        device hostname
+update_url,         str,        hostname for update upstream_server
+log_head,           uint16,     current position of log file
+log_full,           uint8,      log full bool
+network_info,       blob,       esp_netif_ip_info_t with network info

@@ -10,7 +10,7 @@
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t initialize_interfaces();
+esp_err_t init_interfaces();
 
 /**
   * @brief Set Esper to accesspoint mode
@@ -38,5 +38,14 @@ esp_err_t turn_off_accesspoint();
   *    - ESP_FAIL Failure
   */
 esp_err_t start_interfaces();
+
+/**
+  * @brief Initialize TCP/IP stack & event loop
+  *
+  * @return
+  *    - ESP_OK Success
+  *    - ESP_FAIL Failure
+  */
+esp_err_t init_tcpip();
 
 #endif

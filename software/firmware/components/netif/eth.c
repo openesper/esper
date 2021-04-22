@@ -38,6 +38,9 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
 
 esp_err_t init_eth_netif(esp_netif_t** eth_netif)
 {
+    // ATTEMPT(esp_netif_init())
+    ATTEMPT(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
+
     esp_netif_config_t netif_cfg =     {
         .base = ESP_NETIF_BASE_DEFAULT_ETH,      
         .driver = NULL,                          
@@ -48,7 +51,7 @@ esp_err_t init_eth_netif(esp_netif_t** eth_netif)
     NULL_CHECK(eth_netif)
 
     // Set default handlers to process TCP/IP stuffs
-    ERROR_CHECK(esp_eth_set_default_handlers(*eth_netif))
+     ATTEMPT(esp_eth_set_default_handlers(*eth_netif))
 
     return ESP_OK;
 }
@@ -98,10 +101,10 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
     return ESP_OK;
 }
 
-esp_err_t init_eth()
-{
-    ESP_LOGI(TAG, "Initializing Ethernet...");
-    ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
+// esp_err_t init_eth()
+// {
+//     ESP_LOGI(TAG, "Initializing Ethernet...");
+//     ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
 
-    return ESP_OK;
-}
+//     return ESP_OK;
+// }

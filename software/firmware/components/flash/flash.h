@@ -111,7 +111,7 @@ esp_err_t set_network_info(esp_netif_ip_info_t info);
   *    - ESP_OK Success
   *    - ESP_FAIL unable to get info from flash
   */
-esp_err_t get_enabled_interfaces(bool* eth, bool* wifi);
+// esp_err_t get_enabled_interfaces(bool* eth, bool* wifi);
 
 /**
   * @brief Get PHY hardware configuration 
@@ -141,7 +141,7 @@ esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, 
   *    - ESP_OK Success
   *    - ESP_FAIL unable to get info from flash
   */
-esp_err_t get_gpio_config(bool* enabled, int* button, int* red, int* green, int* blue);
+esp_err_t get_gpio_config(int* button, int* red, int* green, int* blue);
 
 /**
   * @brief Get provisioning status from flash
@@ -200,6 +200,12 @@ esp_err_t update_log_data(uint16_t head, bool full);
   */
 esp_err_t reset_device();
 
+esp_err_t initialize_event_bits();
+
+esp_err_t init_nvs();
+
+esp_err_t init_spiffs();
+
 /**
   * @brief Initialize flash. Sets up key/value storage and spiffs 
   *
@@ -207,6 +213,6 @@ esp_err_t reset_device();
   *    - ESP_OK Success
   *    - ESP_FAIL unable to get info from flash
   */
-esp_err_t initialize_flash();
+// esp_err_t initialize_flash();
 
 #endif

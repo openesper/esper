@@ -20,16 +20,23 @@ const int INITIALIZING_BIT = BIT7;
 const int ERROR_BIT = BIT8;
 const int OTA_BIT = BIT9;
 const int UPDATE_AVAILABLE_BIT = BIT10;
-const int ETHERNET_CONNECTED_BIT = BIT11;
-const int WIFI_CONNECTED_BIT = BIT12;
 const int BLOCKED_QUERY_BIT = BIT13;
+
+const int GPIO_ENABLED_BIT = BIT17;
+const int ETH_ENABLED_BIT = BIT18;
+const int ETH_INITIALIZED_BIT = BIT19;
+const int ETH_CONNECTED_BIT = BIT20;
+const int WIFI_ENABLED_BIT = BIT21;
+const int WIFI_INITIALIZED_BIT = BIT22;
+const int WIFI_CONNECTED_BIT = BIT23;
+
 
 esp_err_t init_event_group()
 {
     event_group = xEventGroupCreate();
     if( event_group == NULL )
     {
-        ESP_LOGE(TAG, "Failed to start event group!");
+        log_error(EVENT_ERR_INIT, "xEventGroupCreate()");
         return ESP_FAIL;
     }
     else
@@ -47,9 +54,9 @@ esp_err_t set_bit(int bit)
     }
 
     // notify LED task of state change
-    TaskHandle_t led_task = getLEDTaskHandle();
-    xTaskNotify(led_task, xEventGroupGetBits(event_group), eSetValueWithOverwrite);
-    ESP_LOGD(TAG, "Current state %X", xEventGroupGetBits(event_group));
+    // TaskHandle_t led_task = getLEDTaskHandle();
+    // xTaskNotify(led_task, xEventGroupGetBits(event_group), eSetValueWithOverwrite);
+    // ESP_LOGD(TAG, "Current state %X", xEventGroupGetBits(event_group));
 
     return ESP_OK;
 }
@@ -62,9 +69,9 @@ esp_err_t clear_bit(int bit)
     }
 
     // notify LED task of state change
-    TaskHandle_t led_task = getLEDTaskHandle();
-    xTaskNotify(led_task, xEventGroupGetBits(event_group), eSetValueWithOverwrite);
-    ESP_LOGD(TAG, "Current state %X", xEventGroupGetBits(event_group));
+    // TaskHandle_t led_task = getLEDTaskHandle();
+    // xTaskNotify(led_task, xEventGroupGetBits(event_group), eSetValueWithOverwrite);
+    // ESP_LOGD(TAG, "Current state %X", xEventGroupGetBits(event_group));
     
     return ESP_OK;
 }

@@ -1,5 +1,6 @@
 #include "flash.h"
 #include "error.h"
+#include "events.h"
 #include "url.h"
 #include "wifi.h"
 #include "logging.h"
@@ -96,13 +97,6 @@ esp_err_t update_log_data(uint16_t head, bool full)
     return ESP_OK;
 }
 
-esp_err_t get_enabled_interfaces(bool* eth, bool* wifi)
-{
-    ERROR_CHECK(nvs_get_u8(nvs, "ethernet", (uint8_t*)eth))
-    ERROR_CHECK(nvs_get_u8(nvs, "wifi", (uint8_t*)wifi))
-    return ESP_OK;
-}
-
 esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, uint32_t* mdc, uint32_t* mdio)
 {
     ERROR_CHECK(nvs_get_u32(nvs, "phy", phy))
@@ -113,9 +107,8 @@ esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, 
     return ESP_OK;
 }
 
-esp_err_t get_gpio_config(bool* enabled, int* button, int* red, int* green, int* blue)
+esp_err_t get_gpio_config(int* button, int* red, int* green, int* blue)
 {
-    ERROR_CHECK(nvs_get_i8(nvs, "gpio", (int8_t*)enabled))
     ERROR_CHECK(nvs_get_i32(nvs, "button", button))
     ERROR_CHECK(nvs_get_i32(nvs, "red_led", red))
     ERROR_CHECK(nvs_get_i32(nvs, "green_led", green))
@@ -136,99 +129,6 @@ esp_err_t set_provisioning_status(bool provisioned)
     return ESP_OK;
 }
 
-static esp_err_t init_settings()
-{
-    ESP_LOGI(TAG, "Saving Settings");
-#if CONFIG_UPSTREAM_DNS_GOOGLE
-    ERROR_CHECK(nvs_set_str(nvs, "upstream_server", GOOGLE_IP, IP4_STRLEN_MAX))
-#elif CONFIG_UPSTREAM_DNS_CLOUDFARE
-    ERROR_CHECK(nvs_set_str(nvs, "upstream_server", CLOUDFARE_IP))
-#elif CONFIG_UPSTREAM_DNS_OPENDNS
-    ERROR_CHECK(nvs_set_str(nvs, "upstream_server", OPENDNS_IP, IP4_STRLEN_MAX))
-#elif CONFIG_UPSTREAM_DNS_ADGUARD
-    ERROR_CHECK(nvs_set_str(nvs, "upstream_server", ADGUARD_IP, IP4_STRLEN_MAX))
-#endif
-    ERROR_CHECK(nvs_set_str(nvs, "url", CONFIG_DEFAULT_DEVICE_URL))
-    ERROR_CHECK(nvs_set_str(nvs, "update_url", CONFIG_DEFAULT_UPDATE_URI))
-    return ESP_OK;
-}
-
-static esp_err_t init_interfaces()
-{
-    ESP_LOGI(TAG, "Saving Interface Configuration");
-    
-#ifdef CONFIG_ETHERNET_ENABLE
-    ERROR_CHECK(nvs_set_u8(nvs, "ethernet", true))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", CONFIG_ETH_PHY_ADDR))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", CONFIG_ETH_PHY_RST_GPIO))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", CONFIG_ETH_MDC_GPIO))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", CONFIG_ETH_MDIO_GPIO))
-#ifdef CONFIG_ETH_PHY_LAN8720
-    ERROR_CHECK(nvs_set_u32(nvs, "phy", 1))
-#elif CONFIG_ETH_PHY_IP101
-    ERROR_CHECK(nvs_set_u32(nvs, "phy", 2))
-#elif CONFIG_ETH_PHY_RTL8201
-    ERROR_CHECK(nvs_set_u32(nvs, "phy", 3))
-#elif CONFIG_ETH_PHY_DP83848
-    ERROR_CHECK(nvs_set_u32(nvs, "phy", 4))
-#endif
-#else
-    ERROR_CHECK(nvs_set_u8(nvs, "ethernet", false))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy", 0))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", 0))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", 0))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", 0))
-    ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", 0))
-#endif
-
-#ifdef CONFIG_WIFI_ENABLE
-    ERROR_CHECK(nvs_set_u8(nvs, "wifi", true))
-#else
-    ERROR_CHECK(nvs_set_u8(nvs, "wifi", false))
-#endif
-
-    // Initialize network info to 0
-    esp_netif_ip_info_t info = {0};
-    ERROR_CHECK(set_network_info(info))
-    ERROR_CHECK(nvs_set_u8(nvs, "provisioned", false))
-
-    return ESP_OK;
-}
-
-static esp_err_t init_gpio()
-{
-    ESP_LOGI(TAG, "Saving GPIO Configuration");
-#ifdef CONFIG_GPIO_ENABLE
-    ERROR_CHECK(nvs_set_i8(nvs, "gpio", true))
-    ERROR_CHECK(nvs_set_i32(nvs, "button", CONFIG_BUTTON))
-    ERROR_CHECK(nvs_set_i32(nvs, "red_led", CONFIG_RED_LED))
-    ERROR_CHECK(nvs_set_i32(nvs, "green_led", CONFIG_GREEN_LED))
-    ERROR_CHECK(nvs_set_i32(nvs, "blue_led", CONFIG_BLUE_LED))
-#else
-    ERROR_CHECK(nvs_set_i8(nvs, "gpio", false))
-    ERROR_CHECK(nvs_set_i32(nvs, "button", -1))
-    ERROR_CHECK(nvs_set_i32(nvs, "red_led", -1))
-    ERROR_CHECK(nvs_set_i32(nvs, "green_led", -1))
-    ERROR_CHECK(nvs_set_i32(nvs, "blue_led", -1))
-#endif
-
-    return ESP_OK;
-}
-
-static esp_err_t first_power_on()
-{
-    ESP_LOGI(TAG, "First power up");
-    ERROR_CHECK(init_settings())
-    ERROR_CHECK(init_interfaces())
-    ERROR_CHECK(init_gpio())
-    ERROR_CHECK(create_log_file())
-    ERROR_CHECK(store_default_blacklists())
-
-    ERROR_CHECK(nvs_set_u8(nvs, "initialized", (uint8_t)true))
-    
-    return ESP_OK;
-}
-
 esp_err_t reset_device()
 {
     ESP_LOGI(TAG, "Resetting Device");
@@ -236,7 +136,33 @@ esp_err_t reset_device()
     return ESP_OK;
 }
 
-static esp_err_t init_nvs()
+esp_err_t initialize_event_bits()
+{
+    bool eth;
+    ATTEMPT(nvs_get_u8(nvs, "ethernet", (uint8_t*)&eth))
+    if( eth )
+    {
+        set_bit(ETH_ENABLED_BIT);
+    }
+
+    bool wifi;
+    ATTEMPT(nvs_get_u8(nvs, "wifi", (uint8_t*)&wifi))
+    if( wifi )
+    {
+        set_bit(WIFI_ENABLED_BIT);
+    }
+
+    bool gpio;
+    ATTEMPT(nvs_get_u8(nvs, "gpio", (uint8_t*)&gpio))
+    if( gpio )
+    {
+        set_bit(GPIO_ENABLED_BIT);
+    }
+
+    return ESP_OK;
+}
+
+esp_err_t init_nvs()
 {
     ESP_LOGI(TAG, "Initializing NVS...");
     esp_err_t err = nvs_flash_init();
@@ -258,9 +184,9 @@ static esp_err_t init_nvs()
     return ESP_OK;
 }
 
-static esp_err_t init_spiffs()
+esp_err_t init_spiffs()
 {
-    ESP_LOGI(TAG, "Initializing SPIFFS");
+    ESP_LOGI(TAG, "Initializing SPIFFS...");
     esp_vfs_spiffs_conf_t conf = {
       .base_path = "/spiffs",
       .partition_label = NULL,
@@ -287,22 +213,115 @@ static esp_err_t init_spiffs()
         return ESP_FAIL;
     }
 
-    ESP_LOGD(TAG, "Spiffs Partition size: total: %d, used: %d", total, used);
+    ESP_LOGI(TAG, "Spiffs Partition size: total: %d, used: %d", total, used);
     return ESP_OK;
 }
 
-esp_err_t initialize_flash()
-{    
-    ERROR_CHECK(init_nvs())
-    ERROR_CHECK(init_spiffs())
+// esp_err_t initialize_flash()
+// {    
+//     ERROR_CHECK(init_nvs())
+//     ERROR_CHECK(init_spiffs())
 
 
-    bool initialized = false;
-    if( nvs_get_u8(nvs, "initialized", (uint8_t*)&initialized) == ESP_ERR_NVS_NOT_FOUND || initialized == false)
-    {
-        ERROR_CHECK(first_power_on())
-    }
+//     bool initialized = false;
+//     if( nvs_get_u8(nvs, "initialized", (uint8_t*)&initialized) == ESP_ERR_NVS_NOT_FOUND || initialized == false)
+//     {
+//         ERROR_CHECK(first_power_on())
+//     }
 
-    ESP_LOGI(TAG, "Flash Initialized");
-    return ESP_OK;
-}
+//     ESP_LOGI(TAG, "Flash Initialized");
+//     return ESP_OK;
+// }
+// 
+// static esp_err_t init_settings()
+// {
+//     ESP_LOGI(TAG, "Saving Settings");
+// #if CONFIG_UPSTREAM_DNS_GOOGLE
+//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", GOOGLE_IP))
+// #elif CONFIG_UPSTREAM_DNS_CLOUDFARE
+//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", CLOUDFARE_IP))
+// #elif CONFIG_UPSTREAM_DNS_OPENDNS
+//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", OPENDNS_IP))
+// #elif CONFIG_UPSTREAM_DNS_ADGUARD
+//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", ADGUARD_IP))
+// #endif
+//     ERROR_CHECK(nvs_set_str(nvs, "url", CONFIG_DEFAULT_DEVICE_URL))
+//     ERROR_CHECK(nvs_set_str(nvs, "update_url", CONFIG_DEFAULT_UPDATE_URI))
+//     return ESP_OK;
+// }
+
+// static esp_err_t init_interfaces()
+// {
+//     ESP_LOGI(TAG, "Saving Interface Configuration");
+    
+// #ifdef CONFIG_ETHERNET_ENABLE
+//     ERROR_CHECK(nvs_set_u8(nvs, "ethernet", true))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", CONFIG_ETH_PHY_ADDR))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", CONFIG_ETH_PHY_RST_GPIO))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", CONFIG_ETH_MDC_GPIO))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", CONFIG_ETH_MDIO_GPIO))
+// #ifdef CONFIG_ETH_PHY_LAN8720
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 1))
+// #elif CONFIG_ETH_PHY_IP101
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 2))
+// #elif CONFIG_ETH_PHY_RTL8201
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 3))
+// #elif CONFIG_ETH_PHY_DP83848
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 4))
+// #endif
+// #else
+//     ERROR_CHECK(nvs_set_u8(nvs, "ethernet", false))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 0))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", 0))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", 0))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", 0))
+//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", 0))
+// #endif
+
+// #ifdef CONFIG_WIFI_ENABLE
+//     ERROR_CHECK(nvs_set_u8(nvs, "wifi", true))
+// #else
+//     ERROR_CHECK(nvs_set_u8(nvs, "wifi", false))
+// #endif
+
+//     // Initialize network info to 0
+//     esp_netif_ip_info_t info = {0};
+//     ERROR_CHECK(set_network_info(info))
+//     ERROR_CHECK(nvs_set_u8(nvs, "provisioned", false))
+
+//     return ESP_OK;
+// }
+
+// static esp_err_t init_gpio()
+// {
+//     ESP_LOGI(TAG, "Saving GPIO Configuration");
+// #ifdef CONFIG_GPIO_ENABLE
+//     ERROR_CHECK(nvs_set_i8(nvs, "gpio", true))
+//     ERROR_CHECK(nvs_set_i32(nvs, "button", CONFIG_BUTTON))
+//     ERROR_CHECK(nvs_set_i32(nvs, "red_led", CONFIG_RED_LED))
+//     ERROR_CHECK(nvs_set_i32(nvs, "green_led", CONFIG_GREEN_LED))
+//     ERROR_CHECK(nvs_set_i32(nvs, "blue_led", CONFIG_BLUE_LED))
+// #else
+//     ERROR_CHECK(nvs_set_i8(nvs, "gpio", false))
+//     ERROR_CHECK(nvs_set_i32(nvs, "button", -1))
+//     ERROR_CHECK(nvs_set_i32(nvs, "red_led", -1))
+//     ERROR_CHECK(nvs_set_i32(nvs, "green_led", -1))
+//     ERROR_CHECK(nvs_set_i32(nvs, "blue_led", -1))
+// #endif
+
+//     return ESP_OK;
+// }
+
+// static esp_err_t first_power_on()
+// {
+//     ESP_LOGI(TAG, "First power up");
+//     ERROR_CHECK(init_settings())
+//     ERROR_CHECK(init_interfaces())
+//     ERROR_CHECK(init_gpio())
+//     ERROR_CHECK(create_log_file())
+//     ERROR_CHECK(store_default_blacklists())
+
+//     ERROR_CHECK(nvs_set_u8(nvs, "initialized", (uint8_t)true))
+    
+//     return ESP_OK;
+// }

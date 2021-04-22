@@ -14,6 +14,14 @@
 #define RED         255,0,0
 #define YELLOW      255,255,0
 
+// Define color codes
+#define INITIALIZING    PURPLE
+#define BLOCKING        BLUE
+#define NOT_BLOCKING    WEAK_BLUE
+#define PROVISIONING    GREEN
+#define ERROR           RED
+#define OTA             YELLOW
+
 /**
   * @brief Get handle for LED task
   *
@@ -39,6 +47,7 @@ esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue);
   *    - ESP_OK Success
   *    - ESP_FAIL unable to set update url in flash
   */
-esp_err_t initialize_gpio();
+esp_err_t init_gpio();
+
 
 #endif

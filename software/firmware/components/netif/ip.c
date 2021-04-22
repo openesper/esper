@@ -11,9 +11,6 @@
 #include "esp_log.h"
 static const char *TAG = "IP";
 
-static bool eth_en = false;
-static bool wifi_en = false;
-
 static esp_netif_t* wifi_sta_netif = NULL;
 static esp_netif_t* wifi_ap_netif = NULL;
 static esp_netif_t* eth_netif = NULL;
@@ -64,47 +61,82 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
     }
 }
 
-esp_err_t initialize_interfaces()
+esp_err_t init_tcpip()
+{
+    // Initialize TCP/IP stack
+    ATTEMPT(esp_netif_init())
+    ATTEMPT(esp_event_loop_create_default())
+    ATTEMPT(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &ip_event_handler, NULL))
+
+    return ESP_OK;
+}
+
+static esp_err_t init_eth()
+{
+    ATTEMPT(init_eth_netif(&eth_netif))
+    ATTEMPT(init_eth_handle(&eth_handle))
+    ATTEMPT(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)))
+    ATTEMPT(set_bit(PROVISIONED_BIT))
+    ESP_LOGI(TAG, "Ethernet initialized");
+
+    return ESP_OK;
+}
+
+static esp_err_t init_wifi()
+{
+    ATTEMPT(configure_wifi())
+    ATTEMPT(init_wifi_sta_netif(&wifi_sta_netif))
+    ATTEMPT(esp_wifi_set_mode(WIFI_MODE_STA))
+    // ATTEMPT(esp_wifi_start())
+    ESP_LOGI(TAG, "Wifi initialized");
+
+    return ESP_OK;
+}
+
+esp_err_t init_interfaces()
 {
     ESP_LOGI(TAG, "Initializing Interfaces");
 
-    // Initialize TCP/IP stack
-    esp_netif_init();
-    esp_event_loop_create_default();
-    ERROR_CHECK(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &ip_event_handler, NULL))
-
     // Turn on available interfaces
-    ERROR_CHECK(get_enabled_interfaces(&eth_en, &wifi_en))
-    if( eth_en )
+    if( check_bit(ETH_ENABLED_BIT) )
     {
-        ERROR_CHECK(init_eth())
-        ERROR_CHECK(init_eth_netif(&eth_netif))
-        ERROR_CHECK(init_eth_handle(&eth_handle))
-        ERROR_CHECK(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)))
-    }
-
-    if( wifi_en )
-    {
-        ERROR_CHECK(init_wifi())
-        ERROR_CHECK(init_wifi_sta_netif(&wifi_sta_netif))
-        ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
-        ERROR_CHECK(esp_wifi_start())
-
-        // Check provisioning status
-        // wifi_config_t config = {0};
-        // ERROR_CHECK(esp_wifi_get_config(ESP_IF_WIFI_STA, &config))
-        bool provisioned = false;
-        ERROR_CHECK(get_provisioning_status(&provisioned))
-        if( provisioned )
-            ERROR_CHECK(set_bit(PROVISIONED_BIT))
+        if( init_eth() != ESP_OK )
+        {
+            log_error(ESP_FAIL, "Failed to init ethernet");
+        }
         else
-            ERROR_CHECK(clear_bit(PROVISIONED_BIT))
+        {
+            set_bit(ETH_INITIALIZED_BIT);
+        }
     }
-    else
+    else if ( check_bit(WIFI_ENABLED_BIT) )
     {
-        // Set provisioning status if wifi is disabled
-        ERROR_CHECK(set_bit(PROVISIONED_BIT))
+        if( init_wifi() != ESP_OK )
+        {
+            log_error(ESP_FAIL, "Failed to init WIFI");
+        }
+        else
+        {
+            set_bit(WIFI_INITIALIZED_BIT);
+        }
     }
+
+    if( !check_bit(ETH_INITIALIZED_BIT) && !check_bit(WIFI_INITIALIZED_BIT))
+    {
+        log_error(IP_ERR_INIT, "Failed to initialize any interfaces");
+        return ESP_FAIL;
+    }
+
+            // if( !eth_en )
+        // {
+        //     // Check provisioning status if ethernet is not enabled
+        //     bool provisioned = false;
+        //     ERROR_CHECK(get_provisioning_status(&provisioned))
+        //     if( provisioned )
+        //         ERROR_CHECK(set_bit(PROVISIONED_BIT))
+        //     else
+        //         ERROR_CHECK(clear_bit(PROVISIONED_BIT))
+        // }
 
     return ESP_OK;
 }
@@ -156,16 +188,18 @@ esp_err_t start_interfaces()
 {
     ESP_LOGI(TAG, "Starting interfaces");
 
-    if( eth_en )
+    if( check_bit(ETH_INITIALIZED_BIT) )
     {
-        ERROR_CHECK(esp_eth_start(eth_handle))
-        ERROR_CHECK(set_static_ip(eth_netif))
+        ESP_LOGI(TAG, "Starting Ethernet");
+        ATTEMPT(esp_eth_start(eth_handle))
+        // ERROR_CHECK(set_static_ip(eth_netif))
     }
 
-    if( wifi_en )
+    if( check_bit(WIFI_INITIALIZED_BIT) )
     {
-        ERROR_CHECK(set_static_ip(wifi_sta_netif))
+        // ERROR_CHECK(set_static_ip(wifi_sta_netif))
         // ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
+        ESP_LOGI(TAG, "Starting Wifi");
         ERROR_CHECK(esp_wifi_connect())
     }
 

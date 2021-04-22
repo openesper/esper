@@ -1,0 +1,36 @@
+APP
+
+GET     /favicon.ico
+GET     /stylesheet.css
+
+GET     /
+GET     /homepage.html
+GET     /querylog.csv
+
+GET     /blacklist
+GET     /blacklist.html
+GET     /blacklist.txt
+PUT     /blacklist.txt
+POST    /blacklist
+DELETE  /blacklist
+
+GET     /settings
+GET     /settings.html
+PUT     /settings.json
+POST    /toggleblock
+POST    /update
+GET     /update
+GET     /update.txt
+POST    /restart
+
+PROV
+
+GET     /hotspot-detect.html
+GET     /connecttest.txt
+GET     /connection.json
+GET     /connected
+POST    /finish
+GET     /
+GET     /wifi.json
+POST    /submitauth
+

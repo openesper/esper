@@ -36,7 +36,7 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif);
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t init_wifi();
+esp_err_t configure_wifi();
 
 /**
   * @brief Start a wifi scan, non-blocking

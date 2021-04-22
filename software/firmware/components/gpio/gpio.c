@@ -23,7 +23,6 @@ static const char *TAG = "GPIO";
 #define GREEN_LED_CHANNEL LEDC_CHANNEL_1        // Green LED Channel
 #define BLUE_LED_CHANNEL LEDC_CHANNEL_2         // Blue LED Channel
 
-static bool gpio_enabled = true;                // GPIO enabled status
 static int button = -1;                         // Button GPIO
 static int red_led = -1;                        // Red LED GPIO
 static int green_led = -1;                      // Green LED GPIO
@@ -46,33 +45,30 @@ static void button_task(void* args)             // Task keeping track of time be
     {
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 
-        if( gpio_enabled )
-        {
-            ESP_LOGD(TAG, "Reset Pin intr, val: %d\n", gpio_get_level(button));
+        ESP_LOGD(TAG, "Reset Pin intr, val: %d\n", gpio_get_level(button));
 
-            if(gpio_get_level(button) == 0) // Button is pressed down
+        if(gpio_get_level(button) == 0) // Button is pressed down
+        {
+            press_timestamp = esp_log_timestamp();
+        }
+        else    // Button is released
+        {
+            length = esp_log_timestamp() - press_timestamp;
+            if( length > 8000 )
             {
-                press_timestamp = esp_log_timestamp();
+                ESP_LOGW(TAG, "Rolling back");
+                rollback_ota();
+                esp_restart();
             }
-            else    // Button is released
+            else if( length > 3000 )
             {
-                length = esp_log_timestamp() - press_timestamp;
-                if( length > 8000 )
-                {
-                    ESP_LOGW(TAG, "Rolling back");
-                    rollback_ota();
-                    esp_restart();
-                }
-                else if( length > 3000 )
-                {
-                    ESP_LOGW(TAG, "Resetting device");
-                    reset_device();
-                    esp_restart();
-                }
-                else
-                {
-                    toggle_bit(BLOCKING_BIT);
-                }
+                ESP_LOGW(TAG, "Resetting device");
+                reset_device();
+                esp_restart();
+            }
+            else
+            {
+                toggle_bit(BLOCKING_BIT);
             }
         }
     }
@@ -80,17 +76,15 @@ static void button_task(void* args)             // Task keeping track of time be
 
 esp_err_t set_rgb(uint8_t red, uint8_t green, uint8_t blue)
 {
-    if( gpio_enabled )
-    {
-        ledc_set_duty(LED_SPEED_MODE, RED_LED_CHANNEL, red*4);
-        ledc_update_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
 
-        ledc_set_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL, green*4);
-        ledc_update_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
+    ledc_set_duty(LED_SPEED_MODE, RED_LED_CHANNEL, red*4);
+    ledc_update_duty(LED_SPEED_MODE, RED_LED_CHANNEL);
 
-        ledc_set_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL, blue*4);
-        ledc_update_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
-    }
+    ledc_set_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL, green*4);
+    ledc_update_duty(LED_SPEED_MODE, GREEN_LED_CHANNEL);
+
+    ledc_set_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL, blue*4);
+    ledc_update_duty(LED_SPEED_MODE, BLUE_LED_CHANNEL);
 
     return ESP_OK;
 }
@@ -109,62 +103,50 @@ static void led_task(void* args)
     {
         xTaskNotifyWait(0, 0, &state, portMAX_DELAY);
         
-        if( gpio_enabled )
+        if( check_bit(ERROR_BIT) )
         {
-            if( check_bit(ERROR_BIT) )
-            {
-                set_rgb(RED);
-            }
-            else if( check_bit(PROVISIONING_BIT) )
-            {
-                set_rgb(GREEN);
-            }
-            else if( check_bit(INITIALIZING_BIT) )
-            {
-                set_rgb(PURPLE);
-            }
-            else if( check_bit(BLOCKED_QUERY_BIT) )
-            {
-                // uint8_t red, green, blue;
-                // get_rgb(&red, &green, &blue);
+            set_rgb(RED);
+        }
+        else if( check_bit(PROVISIONING_BIT) )
+        {
+            set_rgb(GREEN);
+        }
+        else if( check_bit(INITIALIZING_BIT) )
+        {
+            set_rgb(PURPLE);
+        }
+        else if( check_bit(BLOCKED_QUERY_BIT) )
+        {
+            set_rgb(OFF);
+            vTaskDelay( 50/portTICK_PERIOD_MS );
 
-                set_rgb(OFF);
-                vTaskDelay( 50/portTICK_PERIOD_MS );
-
-                // set_rgb(red, green, blue);
-                clear_bit(BLOCKED_QUERY_BIT);
-            }
-            else if( check_bit(BLOCKING_BIT) )
-            {
-                set_rgb(BLUE);
-            }
-            else 
-            {
-                set_rgb(WEAK_BLUE);
-            }
+            clear_bit(BLOCKED_QUERY_BIT);
+        }
+        else if( check_bit(BLOCKING_BIT) )
+        {
+            set_rgb(BLUE);
+        }
+        else 
+        {
+            set_rgb(WEAK_BLUE);
         }
     }
 }
 
-esp_err_t initialize_gpio()
+static esp_err_t init_button()
 {
-    xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY);
-    xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY);
-
-    ERROR_CHECK(get_gpio_config(&gpio_enabled, &button, &red_led, &green_led, &blue_led))
-    if( !gpio_enabled )
-    {
-        ESP_LOGI(TAG, "GPIO Disabled");
-        return ESP_OK;
-    }
-    // Set button settings and assign interrupt handler
     gpio_pad_select_gpio(button);
-    gpio_set_direction(button, GPIO_MODE_DEF_INPUT);
-    gpio_set_pull_mode(button, GPIO_PULLUP_ONLY);
-    gpio_set_intr_type(button, GPIO_INTR_ANYEDGE);
-    gpio_install_isr_service(0);
-    gpio_isr_handler_add(button, button_state_change, NULL);
+    ATTEMPT(gpio_set_direction(button, GPIO_MODE_DEF_INPUT))
+    ATTEMPT(gpio_set_pull_mode(button, GPIO_PULLUP_ONLY))
+    ATTEMPT(gpio_set_intr_type(button, GPIO_INTR_ANYEDGE))
+    ATTEMPT(gpio_install_isr_service(0))
+    ATTEMPT(gpio_isr_handler_add(button, button_state_change, NULL))
+    
+    return ESP_OK;
+}
 
+static esp_err_t init_leds()
+{
     // Set up LED PWM timer configs 
     ledc_timer_config_t led_timer_config = {
         .speed_mode = LED_SPEED_MODE,
@@ -172,9 +154,9 @@ esp_err_t initialize_gpio()
         .freq_hz = 5000,
         .duty_resolution = LEDC_TIMER_10_BIT,
     };
-    ledc_timer_config(&led_timer_config);
-
-    // Set up LED PWM channel configs 
+    ATTEMPT(ledc_timer_config(&led_timer_config))
+    
+    // Configure Blue LED
     ledc_channel_config_t led_channel_config_blue = {
         .gpio_num = blue_led,
         .speed_mode = LEDC_LOW_SPEED_MODE,
@@ -183,8 +165,9 @@ esp_err_t initialize_gpio()
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
     };
-    ledc_channel_config(&led_channel_config_blue);
-
+    ATTEMPT(ledc_channel_config(&led_channel_config_blue))
+    
+    // Configure Red LED
     ledc_channel_config_t led_channel_config_red = {
         .gpio_num = red_led,
         .speed_mode = LEDC_LOW_SPEED_MODE,
@@ -193,8 +176,10 @@ esp_err_t initialize_gpio()
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
     };
-    ledc_channel_config(&led_channel_config_red);
+    ATTEMPT(ledc_channel_config(&led_channel_config_red))
+    
 
+    // Configure Green LED
     ledc_channel_config_t led_channel_config_green = {
         .gpio_num = green_led,
         .speed_mode = LEDC_LOW_SPEED_MODE,
@@ -203,10 +188,38 @@ esp_err_t initialize_gpio()
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
     };
-    ledc_channel_config(&led_channel_config_green);
-    // ledc_fade_func_install(0);
-    set_rgb(0,0,0);
+    ATTEMPT(ledc_channel_config(&led_channel_config_green))
     
-    ESP_LOGI(TAG, "GPIO Initialized");
+    set_rgb(INITIALIZING);
+    return ESP_OK;
+}
+
+esp_err_t init_gpio()
+{
+    get_gpio_config(&button, &red_led, &green_led, &blue_led);
+    if( check_bit(GPIO_ENABLED_BIT) )
+    {
+        ATTEMPT(init_leds())
+        ATTEMPT(init_button())
+
+        if( xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY) == pdFAIL )
+        {
+            log_error(GPIO_ERR_INIT, "Failed to start led_task");
+            return GPIO_ERR_INIT;
+        }
+
+        if( xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY) == pdFAIL )
+        {
+            log_error(GPIO_ERR_INIT, "Failed to start button_task");
+            return GPIO_ERR_INIT;
+        }
+
+        ESP_LOGI(TAG, "GPIO Initialized");
+    }
+    else
+    {
+        ESP_LOGI(TAG, "GPIO Disabled");
+    }
+    
     return ESP_OK;
 }

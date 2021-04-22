@@ -40,6 +40,6 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle);
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t init_eth();
+// esp_err_t init_eth();
 
 #endif

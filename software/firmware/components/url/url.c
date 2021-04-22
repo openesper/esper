@@ -7,6 +7,7 @@
 #include "esp_spiffs.h"
 #include <sys/stat.h>
 #include <sys/unistd.h>
+#include "esp_spiffs.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -225,22 +226,38 @@ static IRAM_ATTR bool wildcmp(char *pattern, char *string)
 IRAM_ATTR bool in_blacklist(URL url)
 {
     ESP_LOGD(TAG, "Checking Blacklist for %.*s", url.length, url.string);
-    xSemaphoreTake(blacklist_mutex, portMAX_DELAY);
+    // xSemaphoreTake(blacklist_mutex, portMAX_DELAY);
+    int64_t start = esp_timer_get_time();
 
-    bool match = false;
-    int array_index = 0;
-    while(match == false && array_index < blacklist_size)
-    {
-        URL comparison = {0};
-        comparison.length = blacklist[array_index];
-        memcpy(comparison.string, blacklist+array_index+sizeof(comparison.length), comparison.length);
-        ESP_LOGV(TAG, "Comparing %.*s and %.*s", url.length, url.string, comparison.length, comparison.string);
-        match = wildcmp(comparison.string, url.string); // \0 initialized array means strings are already \0 terminated
-        array_index += comparison.length + sizeof(comparison.length);
+    bool inBlacklist = false;
+    FILE* log = fopen("/spiffs/defaultblacklist.txt", "r");
+    if( log == NULL ){
+        ESP_LOGE(TAG, "Could not open blacklist");
+        return false;
     }
-    xSemaphoreGive(blacklist_mutex);
 
-    return match;
+    char hostname[255];
+    ESP_LOGI(TAG, "Reading blacklist");
+    while( fgets(hostname, 255, log) != NULL )
+    {
+        ESP_LOGI(TAG, "%s", hostname);
+    }
+
+    int64_t end = esp_timer_get_time();
+    ESP_LOGI(TAG, "Processing Time: %lld ms", (end-start)/1000);
+    // int array_index = 0;
+    // while(match == false && array_index < blacklist_size)
+    // {
+    //     URL comparison = {0};
+    //     comparison.length = blacklist[array_index];
+    //     memcpy(comparison.string, blacklist+array_index+sizeof(comparison.length), comparison.length);
+    //     ESP_LOGV(TAG, "Comparing %.*s and %.*s", url.length, url.string, comparison.length, comparison.string);
+    //     match = wildcmp(comparison.string, url.string); // \0 initialized array means strings are already \0 terminated
+    //     array_index += comparison.length + sizeof(comparison.length);
+    // }
+    // xSemaphoreGive(blacklist_mutex);
+
+    return inBlacklist;
 }
 
 IRAM_ATTR URL convert_qname_to_url(char* qname_ptr)

@@ -142,9 +142,8 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
     return ESP_OK;
 }
 
-esp_err_t init_wifi()
+esp_err_t configure_wifi()
 {
-    ESP_LOGI(TAG, "Initializing Wifi");
     ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
 
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();

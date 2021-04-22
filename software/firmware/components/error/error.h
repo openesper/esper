@@ -1,6 +1,8 @@
 #ifndef ERROR_H
 #define ERROR_H
 
+#include "esp_system.h"
+
 #define STRING(x) #x
 
 /**
@@ -16,18 +18,26 @@
   * @param x function with esp_err_t return type
   */
 #define ERROR_CHECK(x) do {                                                                 \
-            esp_err_t tmp_err = (x);                                                        \
-            if (tmp_err != ESP_OK) {                                                        \
-                ESP_LOGE(TAG, STRING(x) " (%s)(%X)", esp_err_to_name(tmp_err), tmp_err);    \
-                return ESP_FAIL;                                                            \
-            }                                                                               \
-        } while(0);
+    esp_err_t tmp_err = (x);                                                        \
+    if (tmp_err != ESP_OK) {                                                        \
+        ESP_LOGE(TAG, STRING(x) " (%s)(%X)", esp_err_to_name(tmp_err), tmp_err);    \
+        return tmp_err;                                                            \
+    }                                                                               \
+} while(0);
 
+#define ATTEMPT(func) do { \
+    esp_err_t tmp_err; \
+    if( (tmp_err = func) != ESP_OK ) { \
+        log_error(tmp_err, STRING(func)); \
+        return ESP_FAIL; \
+    }  \
+} while(0);
 
 #define WIFI_ERR_BASE               0x200
 #define WIFI_ERR_MODE_NULL          (WIFI_ERR_BASE + 1)     // Wifi does not currently have a mode
 #define WIFI_ERR_NULL_NETIF         (WIFI_ERR_BASE + 2)     // Wifi netif is null, needs to be initialized
 #define WIFI_ERR_NOT_CONFIGURED     (WIFI_ERR_BASE + 3)     // Wifi has not been configured yet
+#define WIFI_ERR_INIT               (WIFI_ERR_BASE + 3)     
 
 #define URL_ERR_BASE                0x300
 #define URL_ERR_TOO_LONG            (URL_ERR_BASE + 1)      // URL string is too long
@@ -44,8 +54,22 @@
 #define IO_ERR_BUTTON_INIT          (IO_ERR_BASE + 1)       // Cannot initialize button
 #define IO_ERR_LED_INIT             (IO_ERR_BASE + 2)       // Cannot initialize LEDs
 
-#define DNS_ERR_BASE                 0x600
-#define DNS_ERR_SOCKET_INIT          (DNS_ERR_BASE + 1)     // Error initialzing socket
-#define DNS_ERR_INVALID_QNAME        (DNS_ERR_BASE + 2)     // Invalid qname (too long)
+#define DNS_ERR_BASE                0x600
+#define DNS_ERR_SOCKET_INIT         (DNS_ERR_BASE + 1)     // Error initialzing socket
+#define DNS_ERR_INVALID_QNAME       (DNS_ERR_BASE + 2)     // Invalid qname (too long)
+
+#define GPIO_ERR_BASE               0x700
+#define GPIO_ERR_INIT               (GPIO_ERR_BASE + 1)    // Failed to initialize button  
+
+#define EVENT_ERR_BASE              0x700
+#define EVENT_ERR_INIT              (EVENT_ERR_BASE + 1)    // Failed to initialize event group
+
+#define IP_ERR_BASE                 0x800
+#define IP_ERR_INIT                 (IP_ERR_BASE + 1)       // Failed to initializ ip
+
+#define ETH_ERR_BASE                 0x900
+#define ETH_ERR_INIT                 (ETH_ERR_BASE + 1)       // Failed to initialize eth
+
+void log_error(esp_err_t err, char* error_str);
 
 #endif
