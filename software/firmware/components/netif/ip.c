@@ -75,8 +75,7 @@ static esp_err_t init_wifi()
 {
     ATTEMPT(configure_wifi())
     ATTEMPT(init_wifi_sta_netif(&wifi_sta_netif))
-    ATTEMPT(esp_wifi_set_mode(WIFI_MODE_STA))
-    // ATTEMPT(esp_wifi_start())
+    ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
     ESP_LOGI(TAG, "Wifi initialized");
 
     return ESP_OK;
@@ -84,8 +83,6 @@ static esp_err_t init_wifi()
 
 esp_err_t init_interfaces()
 {
-    ESP_LOGI(TAG, "Initializing Interfaces");
-
     // Turn on available interfaces
     if( check_bit(ETH_ENABLED_BIT) )
     {
@@ -157,8 +154,6 @@ esp_err_t set_static_ip(esp_netif_t* interface)
 
 esp_err_t start_interfaces()
 {
-    ESP_LOGI(TAG, "Starting interfaces");
-
     if( check_bit(ETH_INITIALIZED_BIT) )
     {
         ESP_LOGI(TAG, "Starting Ethernet");
@@ -168,10 +163,20 @@ esp_err_t start_interfaces()
 
     if( check_bit(WIFI_INITIALIZED_BIT) )
     {
-        // ERROR_CHECK(set_static_ip(wifi_sta_netif))
-        // ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
-        ESP_LOGI(TAG, "Starting Wifi");
-        ERROR_CHECK(esp_wifi_connect())
+        if( check_bit(PROVISIONING_BIT) )
+        {
+            ESP_LOGI(TAG, "Starting Wifi AP");
+            esp_wifi_set_mode(WIFI_MODE_APSTA);
+            esp_wifi_start();
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Starting Wifi Station");
+            esp_wifi_set_mode(WIFI_MODE_STA);
+            esp_wifi_start();
+            esp_wifi_connect();
+        }   
+        
     }
 
     return ESP_OK;

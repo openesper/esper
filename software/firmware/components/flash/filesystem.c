@@ -23,7 +23,7 @@ FILE* open_file(const char* filename, const char* mode){
     strcpy(path, base_path);
     strcat(path, filename);
 
-    ESP_LOGI(TAG, "Opening %s", path);
+    ESP_LOGD(TAG, "Opening %s", path);
     return fopen(path, mode);
 }
 
@@ -36,7 +36,7 @@ int stat_file(const char* filename, struct stat* s)
     strcpy(path, base_path);
     strcat(path, filename);
 
-    ESP_LOGI(TAG, "Stating %s", path);
+    ESP_LOGD(TAG, "Stating %s", path);
     return stat(path, s);
 }
 
@@ -157,7 +157,6 @@ esp_err_t init_filesystem()
     const esp_partition_t *running = esp_ota_get_running_partition();
     strcat(base_path, running->label);
     ESP_LOGI(TAG, "Spiffs base: %s", base_path);
-
 
     FILE* ver = open_file("/version.txt", "r");
     if( ver == NULL ){

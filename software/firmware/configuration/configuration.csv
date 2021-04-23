@@ -5,7 +5,7 @@ button,data,i32,34
 red_led,data,i32,32
 green_led,data,i32,33
 blue_led,data,i32,16
-ethernet,data,u8,1
+ethernet,data,u8,0
 phy,data,u32,1
 phy_addr,data,u32,0
 phy_rst,data,u32,4

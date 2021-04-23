@@ -23,7 +23,7 @@ function loadQueries(){
 function loadBlacklist(){
     let err = document.getElementById('error');
     const http = new XMLHttpRequest();
-    http.open("GET", 'blacklist.txt');
+    http.open("GET", '/blacklist.txt');
 
     http.onreadystatechange = function() {
         if (http.readyState == 4){

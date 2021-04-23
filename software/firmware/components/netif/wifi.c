@@ -108,6 +108,16 @@ esp_err_t init_wifi_sta_netif(esp_netif_t** sta_netif)
     
     ERROR_CHECK(esp_netif_attach_wifi_station(*sta_netif))
     ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers())
+
+    wifi_config_t sta_config = {0};
+    esp_wifi_get_config(ESP_IF_WIFI_STA, &sta_config);
+
+    if( sta_config.sta.ssid[0] == 0 )
+    {
+        ESP_LOGI(TAG, "No Wifi config, going into provisioning mode");
+        set_bit(PROVISIONING_BIT);
+    }
+
     return ESP_OK;
 }
 
@@ -136,7 +146,6 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
             .authmode = WIFI_AUTH_OPEN
         },
     };
-    ESP_LOGI(TAG, "AP SSID (%s) PASS (%s)", ap_config.ap.ssid, ap_config.ap.password);
     ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config))
 
     return ESP_OK;
@@ -165,8 +174,8 @@ esp_err_t wifi_scan()
 		.scan_time.active.max = 150,
     };
 
-    ERROR_CHECK(esp_wifi_scan_start(&scanConf, false))
-    ERROR_CHECK(clear_bit(SCAN_FINISHED_BIT))
+    ATTEMPT(esp_wifi_scan_start(&scanConf, false))
+    clear_bit(SCAN_FINISHED_BIT);
 
     return ESP_OK;
 }
