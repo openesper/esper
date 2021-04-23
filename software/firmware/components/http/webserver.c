@@ -1,15 +1,15 @@
 #include "webserver.h"
 #include "error.h"
 #include "events.h"
+#include "filesystem.h"
 #include "esp_http_server.h"
-#include "sys/stat.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char* TAG = "HTTP";
 
-static const char* app_directory = "/spiffs/application";
-static const char* prov_directory = "/spiffs/provisioning";
+static const char* app_directory = "/app";
+static const char* prov_directory = "/prov";
 static const char* index_html = "index.html";
 
 #define MAX_CHUNK_SIZE 1000          // Size of chunks to send
@@ -79,7 +79,7 @@ static esp_err_t http_get(httpd_req_t *req)
     }
 
     // Check if file exists
-    if( stat(filepath, &s) < 0 )
+    if( stat_file(filepath, &s) < 0 )
     {
         ESP_LOGW(TAG, "%s does not exist", filepath);
         httpd_resp_send_404(req);
@@ -87,7 +87,7 @@ static esp_err_t http_get(httpd_req_t *req)
     }
 
     // Open file
-    FILE* f = fopen(filepath, "r");
+    FILE* f = open_file(filepath, "r");
     if (f == NULL)
     {
         ESP_LOGW(TAG, "Unable to open file");

@@ -30,7 +30,7 @@ If you have some ESP32 development boards collecting dust, it will work on those
 
 DISCLAIMER: It is **heavily** recommended to use a device with ethernet. Even the best Wifi will significantly increase latency and decrease reliability compared to a good copper connection.
 
-If you want to try you hand an making an Esper from scratch, the hardware directory contains all the schematic, pcb, and enclosure files needed to build one yourself.
+If you want to try you hand an making an Esper from scratch, the repository contains all the schematic, pcb, and enclosure files needed to build one yourself.
 
 ## Reprogramming Esper
 

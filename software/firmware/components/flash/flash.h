@@ -13,9 +13,6 @@
 #define HOSTNAME_STRLEN_MAX 255 // Max hostname length
 
 
-esp_err_t get_file_initialization(bool* init);
-esp_err_t set_file_initialization(bool init);
-
 /**
   * @brief Retreive upstream dns server from flash
   *

@@ -18,22 +18,6 @@ static const char *TAG = "FLASH";
 
 static nvs_handle nvs;
 
-esp_err_t get_file_initialization(bool* init)
-{
-    ERROR_CHECK(nvs_get_u8(nvs, "file_initialization", (uint8_t*)init))
-    return ESP_OK;
-}
-
-esp_err_t set_file_initialization(bool init)
-{
-    esp_err_t err = nvs_set_u8(nvs, "file_initialization", (uint8_t)init))
-    if( err != ESP_OK )
-    {
-        ESP_LOGW(TAG, "Error getting file_initialization (%s)", esp_err_to_name(err));
-        return false;
-    }
-    return ESP_OK;
-}
 
 esp_err_t set_static_ip_status(bool static_ip)
 {
