@@ -4,7 +4,7 @@
 #include "esp_log.h"
 static const char *TAG = "ERROR";
 
-void log_error(esp_err_t err, char* error_str)
+void log_error(esp_err_t err, const char* error_str)
 {
-    ESP_LOGE(TAG, "%s: %s", esp_err_to_name(err), error_str);
+    ESP_LOGE(TAG, "%s (%s)", error_str, esp_err_to_name(err));
 }

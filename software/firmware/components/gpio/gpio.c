@@ -57,7 +57,7 @@ static void button_task(void* args)             // Task keeping track of time be
             if( length > 8000 )
             {
                 ESP_LOGW(TAG, "Rolling back");
-                rollback_ota();
+                // rollback_ota();
                 esp_restart();
             }
             else if( length > 3000 )

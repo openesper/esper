@@ -70,6 +70,6 @@
 #define ETH_ERR_BASE                 0x900
 #define ETH_ERR_INIT                 (ETH_ERR_BASE + 1)       // Failed to initialize eth
 
-void log_error(esp_err_t err, char* error_str);
+void log_error(esp_err_t err, const char* error_str);
 
 #endif

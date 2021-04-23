@@ -1,0 +1,136 @@
+body {
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.42857143;
+    /* color: #333; */
+    margin: 0;
+    background-color: white;
+    text-align: center;
+    height: 100%;
+}
+h1 {
+    font-size: 2.5em;
+}
+.navbar {
+    background-color: #f8f8f8;
+    border-bottom: 1px solid #e7e7e7;
+    min-height: 3rem;
+    border-top: 0.25rem solid red;
+    margin-bottom: 1.5rem;
+}
+.nav-container{
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 80rem;
+    min-height: 3rem;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    margin-right: auto;
+    margin-left: auto;
+}
+.nav{
+    float: left;
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+.nav li{
+    float: left;
+    padding: 0;
+}
+.nav li a{
+    color: #777;
+    line-height: 20px;
+    padding: 15px;
+    display: block;
+    text-decoration: none;
+}
+button{
+    padding: 0.2em;
+    background-color: red;
+    color: white;
+    border-radius: 0.3rem;
+    border: 0px solid white;
+    font-weight: bold;
+    font-size: 1.3rem;
+    outline: none;
+}
+button.altbtn {
+    background-color: white;
+    color: red;
+    border: 1px solid red;
+}
+button:hover {
+    cursor: pointer;
+}
+button:active {
+    color: white;
+    background-color: darkred;
+}
+button.altbtn:active {
+    color: black;
+    background-color: lightgray;
+}
+table {
+    margin: auto;
+    table-layout: fixed;
+    border-collapse: collapse;
+    text-align: left;
+    width: 95%;
+    max-width: 45em;
+}
+tr:hover {
+    background-color: #ddd;
+}
+thead tr:nth-of-type(1):hover {
+    background-color: white;
+}
+th {
+    padding: 0.2em;
+    border: 1px solid #e7e7e7;
+}
+td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+td button {
+    width: 100%;
+}
+.error {
+    color: red;
+    visibility: hidden;
+}
+.loader {
+    display: inline-block;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #3498db;
+    border-radius: 50%;
+    width: 15px;
+    height: 15px;
+    animation: spin 2s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    padding-top: 100px;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 40rem;
+}

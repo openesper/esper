@@ -19,11 +19,11 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
     switch (event_id) {
         case ETHERNET_EVENT_CONNECTED:
             ESP_LOGI(TAG, "ETHERNET_EVENT_CONNECTED");
-            esp_wifi_disconnect();
+            // esp_wifi_disconnect();
             break;
         case ETHERNET_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "ETHERNET_EVENT_DISCONNECTED");
-            esp_wifi_connect();
+            // esp_wifi_connect();
             break;
         case ETHERNET_EVENT_START:
             ESP_LOGI(TAG, "ETHERNET_EVENT_START");

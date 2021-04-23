@@ -1,7 +1,5 @@
 key,type,encoding,value
 storage,namespace,,
-initialized,data,u8,0
-provisioned,data,u8,0
 gpio,data,u8,1
 button,data,i32,34
 red_led,data,i32,32
@@ -14,6 +12,3 @@ phy_rst,data,u32,4
 phy_mdio,data,u32,18
 phy_mdc,data,u32,23
 wifi,data,u8,1
-upstream_server,data,string,8.8.8.8
-url,data,string,esper.com
-update_url,data,string,openesper.com

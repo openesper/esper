@@ -12,6 +12,10 @@
 #define IP4_STRLEN_MAX 16 // Max string length for IP string
 #define HOSTNAME_STRLEN_MAX 255 // Max hostname length
 
+
+esp_err_t get_file_initialization(bool* init);
+esp_err_t set_file_initialization(bool init);
+
 /**
   * @brief Retreive upstream dns server from flash
   *
@@ -203,16 +207,5 @@ esp_err_t reset_device();
 esp_err_t initialize_event_bits();
 
 esp_err_t init_nvs();
-
-esp_err_t init_spiffs();
-
-/**
-  * @brief Initialize flash. Sets up key/value storage and spiffs 
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-// esp_err_t initialize_flash();
 
 #endif

@@ -7,10 +7,10 @@
 #include "esp_system.h"
 #include "string.h"
 #include "nvs_flash.h"
-#include "esp_spiffs.h"
 #include "esp_netif.h"
 #include "lwip/inet.h"
 #include "esp_wifi.h"
+#include "cJSON.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -18,42 +18,26 @@ static const char *TAG = "FLASH";
 
 static nvs_handle nvs;
 
-esp_err_t get_upstream_dns(char* str)
+esp_err_t get_file_initialization(bool* init)
 {
-    size_t length = IP4ADDR_STRLEN_MAX;
-    ERROR_CHECK(nvs_get_str(nvs, "upstream_server", str, &length))
+    ERROR_CHECK(nvs_get_u8(nvs, "file_initialization", (uint8_t*)init))
     return ESP_OK;
 }
 
-esp_err_t set_upstream_dns(char* str)
+esp_err_t set_file_initialization(bool init)
 {
-    ERROR_CHECK(nvs_set_str(nvs, "upstream_server", str))
+    esp_err_t err = nvs_set_u8(nvs, "file_initialization", (uint8_t)init))
+    if( err != ESP_OK )
+    {
+        ESP_LOGW(TAG, "Error getting file_initialization (%s)", esp_err_to_name(err));
+        return false;
+    }
     return ESP_OK;
 }
 
-esp_err_t get_device_url(char* str)
+esp_err_t set_static_ip_status(bool static_ip)
 {
-    size_t length = MAX_URL_LENGTH;
-    ERROR_CHECK(nvs_get_str(nvs, "url", str, &length))
-    return ESP_OK;
-}
-
-esp_err_t set_device_url(char* str)
-{
-    ERROR_CHECK(nvs_set_str(nvs, "url", str))
-    return ESP_OK;
-}
-
-esp_err_t get_update_url(char* str)
-{
-    size_t length = MAX_URL_LENGTH;
-    ERROR_CHECK(nvs_get_str(nvs, "update_url", str, &length))
-    return ESP_OK;
-}
-
-esp_err_t set_update_url(char* str)
-{
-    ERROR_CHECK(nvs_set_str(nvs, "update_url", str))
+    ERROR_CHECK(nvs_set_u8(nvs, "static_ip", (uint8_t)static_ip))
     return ESP_OK;
 }
 
@@ -62,7 +46,9 @@ esp_err_t get_network_info(esp_netif_ip_info_t* info)
     size_t length = sizeof(*info);
     esp_err_t err = nvs_get_blob(nvs, "network_info", (void*)info, &length);
     if( err != ESP_OK ){
-        ESP_LOGE(TAG, "Error getting network info (%s)", esp_err_to_name(err));
+        ESP_LOGW(TAG, "Error getting network info (%s)", esp_err_to_name(err));
+        esp_netif_ip_info_t ip = {};
+        *info = ip;
     }
     return err;
 }
@@ -179,149 +165,10 @@ esp_err_t init_nvs()
 
     if ( (err = nvs_open("storage", NVS_READWRITE, &nvs)) != ESP_OK )
         return err;
-        
-    ESP_LOGD(TAG, "NVS Initialized");
+
+    nvs_stats_t stats;
+    nvs_get_stats("storage", &stats);
+    ESP_LOGI(TAG, "Entries: Used: %d, Free: %d, Total: %d", stats.used_entries, stats.free_entries, stats.total_entries);
+    ESP_LOGI(TAG, "Namespace count: %d", stats.namespace_count);
     return ESP_OK;
 }
-
-esp_err_t init_spiffs()
-{
-    ESP_LOGI(TAG, "Initializing SPIFFS...");
-    esp_vfs_spiffs_conf_t conf = {
-      .base_path = "/spiffs",
-      .partition_label = NULL,
-      .max_files = 10,
-      .format_if_mount_failed = true
-    };
-
-    esp_err_t ret = esp_vfs_spiffs_register(&conf);
-    if (ret != ESP_OK) {
-        if (ret == ESP_FAIL) {
-            ESP_LOGE(TAG, "Failed to mount or format filesystem");
-        } else if (ret == ESP_ERR_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-        } else {
-            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-        }
-        return ret;
-    }
-
-    size_t total = 0, used = 0;
-    ret = esp_spiffs_info(NULL, &total, &used);
-    if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "Spiffs Partition size: total: %d, used: %d", total, used);
-    return ESP_OK;
-}
-
-// esp_err_t initialize_flash()
-// {    
-//     ERROR_CHECK(init_nvs())
-//     ERROR_CHECK(init_spiffs())
-
-
-//     bool initialized = false;
-//     if( nvs_get_u8(nvs, "initialized", (uint8_t*)&initialized) == ESP_ERR_NVS_NOT_FOUND || initialized == false)
-//     {
-//         ERROR_CHECK(first_power_on())
-//     }
-
-//     ESP_LOGI(TAG, "Flash Initialized");
-//     return ESP_OK;
-// }
-// 
-// static esp_err_t init_settings()
-// {
-//     ESP_LOGI(TAG, "Saving Settings");
-// #if CONFIG_UPSTREAM_DNS_GOOGLE
-//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", GOOGLE_IP))
-// #elif CONFIG_UPSTREAM_DNS_CLOUDFARE
-//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", CLOUDFARE_IP))
-// #elif CONFIG_UPSTREAM_DNS_OPENDNS
-//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", OPENDNS_IP))
-// #elif CONFIG_UPSTREAM_DNS_ADGUARD
-//     ERROR_CHECK(nvs_set_str(nvs, "upstream_server", ADGUARD_IP))
-// #endif
-//     ERROR_CHECK(nvs_set_str(nvs, "url", CONFIG_DEFAULT_DEVICE_URL))
-//     ERROR_CHECK(nvs_set_str(nvs, "update_url", CONFIG_DEFAULT_UPDATE_URI))
-//     return ESP_OK;
-// }
-
-// static esp_err_t init_interfaces()
-// {
-//     ESP_LOGI(TAG, "Saving Interface Configuration");
-    
-// #ifdef CONFIG_ETHERNET_ENABLE
-//     ERROR_CHECK(nvs_set_u8(nvs, "ethernet", true))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", CONFIG_ETH_PHY_ADDR))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", CONFIG_ETH_PHY_RST_GPIO))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", CONFIG_ETH_MDC_GPIO))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", CONFIG_ETH_MDIO_GPIO))
-// #ifdef CONFIG_ETH_PHY_LAN8720
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 1))
-// #elif CONFIG_ETH_PHY_IP101
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 2))
-// #elif CONFIG_ETH_PHY_RTL8201
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 3))
-// #elif CONFIG_ETH_PHY_DP83848
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 4))
-// #endif
-// #else
-//     ERROR_CHECK(nvs_set_u8(nvs, "ethernet", false))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy", 0))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_addr", 0))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_rst", 0))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdc", 0))
-//     ERROR_CHECK(nvs_set_u32(nvs, "phy_mdio", 0))
-// #endif
-
-// #ifdef CONFIG_WIFI_ENABLE
-//     ERROR_CHECK(nvs_set_u8(nvs, "wifi", true))
-// #else
-//     ERROR_CHECK(nvs_set_u8(nvs, "wifi", false))
-// #endif
-
-//     // Initialize network info to 0
-//     esp_netif_ip_info_t info = {0};
-//     ERROR_CHECK(set_network_info(info))
-//     ERROR_CHECK(nvs_set_u8(nvs, "provisioned", false))
-
-//     return ESP_OK;
-// }
-
-// static esp_err_t init_gpio()
-// {
-//     ESP_LOGI(TAG, "Saving GPIO Configuration");
-// #ifdef CONFIG_GPIO_ENABLE
-//     ERROR_CHECK(nvs_set_i8(nvs, "gpio", true))
-//     ERROR_CHECK(nvs_set_i32(nvs, "button", CONFIG_BUTTON))
-//     ERROR_CHECK(nvs_set_i32(nvs, "red_led", CONFIG_RED_LED))
-//     ERROR_CHECK(nvs_set_i32(nvs, "green_led", CONFIG_GREEN_LED))
-//     ERROR_CHECK(nvs_set_i32(nvs, "blue_led", CONFIG_BLUE_LED))
-// #else
-//     ERROR_CHECK(nvs_set_i8(nvs, "gpio", false))
-//     ERROR_CHECK(nvs_set_i32(nvs, "button", -1))
-//     ERROR_CHECK(nvs_set_i32(nvs, "red_led", -1))
-//     ERROR_CHECK(nvs_set_i32(nvs, "green_led", -1))
-//     ERROR_CHECK(nvs_set_i32(nvs, "blue_led", -1))
-// #endif
-
-//     return ESP_OK;
-// }
-
-// static esp_err_t first_power_on()
-// {
-//     ESP_LOGI(TAG, "First power up");
-//     ERROR_CHECK(init_settings())
-//     ERROR_CHECK(init_interfaces())
-//     ERROR_CHECK(init_gpio())
-//     ERROR_CHECK(create_log_file())
-//     ERROR_CHECK(store_default_blacklists())
-
-//     ERROR_CHECK(nvs_set_u8(nvs, "initialized", (uint8_t)true))
-    
-//     return ESP_OK;
-// }

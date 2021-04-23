@@ -2,6 +2,7 @@
 #include "error.h"
 #include "events.h"
 #include "flash.h"
+#include "filesystem.h"
 #include "url.h"
 #include "logging.h"
 #include "datetime.h"
@@ -16,6 +17,7 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "esp_netif.h"
+#include "cJSON.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -30,8 +32,6 @@ static int dns_srv_sock; // Socket handle for sending queries to upstream DNS
 
 static struct sockaddr_in upstream_dns; // sockaddr struct containing current upstream server IP
 
-static SemaphoreHandle_t upstream_dns_mutex; // Mutex lock for reading/writing current upstream dns server
-
 static TaskHandle_t dns; // Handle for DNS task
 
 static TaskHandle_t listening; // Handle for listening task
@@ -42,18 +42,6 @@ static Client client_queue[CLIENT_QUEUE_SIZE]; // FILO Array of clients waiting 
 
 static char device_url[MAX_URL_LENGTH]; // Buffer to store current URL in RAM
 
-static SemaphoreHandle_t device_url_mutex; // Mutex lock for reading/writing current url
-
-
-esp_err_t load_device_url(){
-    // Retreive url string from flash
-    xSemaphoreTake(device_url_mutex, portMAX_DELAY);
-    ERROR_CHECK(get_device_url(device_url))
-    xSemaphoreGive(device_url_mutex);
-
-    ESP_LOGI(TAG, "Device URL %s", device_url);
-    return ESP_OK;
-}
 
 static esp_err_t initialize_dns_server_socket(int* sock)
 {
@@ -70,23 +58,6 @@ static esp_err_t initialize_dns_server_socket(int* sock)
     if(bind(*sock, (struct sockaddr *)&my_addr, sizeof(my_addr)) < 0)
     	return DNS_ERR_SOCKET_INIT;
 
-    return ESP_OK;
-}
-
-esp_err_t load_upstream_dns()
-{
-    // Retreive IP string from flash
-    char upstream_dns_str[IP4ADDR_STRLEN_MAX];
-    ERROR_CHECK(get_upstream_dns(upstream_dns_str))
-
-    // Convert IP string to uint32 and assign upstream_dns
-    xSemaphoreTake(upstream_dns_mutex, portMAX_DELAY);
-    upstream_dns.sin_family = PF_INET;
-    upstream_dns.sin_port = htons(DNS_PORT);
-    ip4addr_aton(upstream_dns_str, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
-    xSemaphoreGive(upstream_dns_mutex);
-
-    ESP_LOGI(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
     return ESP_OK;
 }
 
@@ -115,17 +86,13 @@ static IRAM_ATTR void listening_t(void* parameters)
 
 static IRAM_ATTR esp_err_t forward_query(Packet* packet)
 {
-    xSemaphoreTake(upstream_dns_mutex, portMAX_DELAY);
     int sendlen = sendto(dns_srv_sock, packet->data, packet->length, 0, (struct sockaddr *)&upstream_dns, addrlen);
-    xSemaphoreGive(upstream_dns_mutex);
 
     // Wait ~25ms to resend if out of memory
     while( errno == ENOMEM && sendlen < 1)
     {
         vTaskDelay( 25 / portTICK_PERIOD_MS );
-        xSemaphoreTake(upstream_dns_mutex, portMAX_DELAY);
         sendlen = sendto(dns_srv_sock, packet->data, packet->length, 0, (struct sockaddr *)&upstream_dns, addrlen);
-        xSemaphoreGive(upstream_dns_mutex);
     }
 
     if(sendlen < 1)
@@ -314,30 +281,28 @@ static IRAM_ATTR void dns_t(void* parameters)
             {
                 ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                 forward_query(packet);
-                log_query(url, false, packet->src.sin_addr.s_addr);
+                // log_query(url, false, packet->src.sin_addr.s_addr);
             }
             else 
             {
-                xSemaphoreTake(device_url_mutex, portMAX_DELAY);
                 if( memcmp(url.string, device_url, url.length) == 0 ) // Check is qname matches current device url
                 {
                     ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
-                    log_query(url, false, packet->src.sin_addr.s_addr);
+                    // log_query(url, false, packet->src.sin_addr.s_addr);
                 }
                 else if( check_bit(BLOCKING_BIT) && in_blacklist(url) ) // check if url is in blacklist
                 {
                     ESP_LOGW(TAG, "Blocking question for %.*s", url.length, url.string);
                     block_query(packet);
-                    log_query(url, true, packet->src.sin_addr.s_addr);
+                    // log_query(url, true, packet->src.sin_addr.s_addr);
                 }
                 else
                 {
                     ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                     forward_query(packet);
-                    log_query(url, false, packet->src.sin_addr.s_addr);
+                    // log_query(url, false, packet->src.sin_addr.s_addr);
                 }
-                xSemaphoreGive(device_url_mutex);
             }
             
         }
@@ -346,17 +311,38 @@ static IRAM_ATTR void dns_t(void* parameters)
     }
 }
 
+static esp_err_t load_settings()
+{
+    ESP_LOGI(TAG, "Loading Device URL");
+    cJSON* json = get_settings_json();
+    if( json == NULL)
+    {
+        log_error(ESP_ERR_NOT_FOUND, "Failed to open settings");
+        return ESP_FAIL;
+    }
+
+    cJSON* url = cJSON_GetObjectItem(json, "url");
+    strcpy(device_url, url->valuestring);
+    ESP_LOGI(TAG, "Device URL %s", device_url);
+
+    cJSON* upstream_dns_str = cJSON_GetObjectItem(json, "upstream_server");
+    upstream_dns.sin_family = PF_INET;
+    upstream_dns.sin_port = htons(DNS_PORT);
+    ip4addr_aton(upstream_dns_str->valuestring, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
+    ESP_LOGI(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
+
+    cJSON_Delete(json);
+    return ESP_OK;
+}
+
 esp_err_t start_dns()
 {
     ESP_LOGI(TAG, "Starting DNS Task");
-    upstream_dns_mutex = xSemaphoreCreateMutex();
-    device_url_mutex = xSemaphoreCreateMutex();
     packet_queue = xQueueCreate(PACKET_QUEUE_SIZE, sizeof(Packet*));
 
-    ERROR_CHECK(initialize_dns_server_socket(&dns_srv_sock))
-    ERROR_CHECK(load_upstream_dns())
-    ERROR_CHECK(load_device_url())
-    ERROR_CHECK(set_bit(BLOCKING_BIT))
+    ATTEMPT(initialize_dns_server_socket(&dns_srv_sock))
+    ATTEMPT(load_settings())
+    set_bit(BLOCKING_BIT);
 
     BaseType_t xErr = xTaskCreatePinnedToCore(listening_t, "listening_task", 8000, NULL, 9, &listening, 0);
     xErr &= xTaskCreatePinnedToCore(dns_t, "dns_task", 15000, NULL, 9, &dns, 0);

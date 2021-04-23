@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Esper</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+        <script src="/scripts.js"></script>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                    <ul class="nav">
+                        <ul class="nav">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/blacklist/">Blacklist</a></li>
+                            <li><a href="/settings/">Settings</a></li>
+                        </ul>
+                    </ul>
+            </div>
+        </nav>
+        <main>
+            <div>
+                <h1>Blacklist</h1>
+            </div>
+            <div>
+                <div class='error' id='error'>
+                    Error
+                </div>
+                Add To Blacklist:
+                <br>
+                <input id="urlinput" type="text" autocorrect="off" autocapitalize="none" name='url' maxlength="255"/>
+                <button id="submitbutton" onclick="addToBlacklist()">Submit</button>
+            </div>
+            <br>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Domain</th>
+                        <th style="width: 3rem;">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <script>
+                        loadBlacklist();
+                    </script>
+                </tbody>
+            </table>
+        </main>
+    </body>
+</html>
+

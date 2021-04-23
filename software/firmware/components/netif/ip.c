@@ -5,6 +5,7 @@
 #include "wifi.h"
 #include "string.h"
 #include "flash.h"
+#include "filesystem.h"
 #include "lwip/sockets.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
@@ -21,35 +22,23 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
 {
     switch (event_id) {
         case IP_EVENT_ETH_GOT_IP:
+        {
             ESP_LOGI(TAG, "IP_EVENT_ETH_GOT_IP");
-            set_bit(CONNECTED_BIT);
 
-            // Static IP may not be assigned yet if wifi is disabled, so assign it here
-            if( !check_bit(STATIC_IP_BIT) )
-            {
-                ESP_LOGI(TAG, "Saving IP");
-                set_network_info(((ip_event_got_ip_t*)event_data)->ip_info);
-            }
+            ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
+            set_network_info(ip_event.ip_info);
+            set_bit(ETH_CONNECTED_BIT);
 
             break;
+        }
         case IP_EVENT_STA_GOT_IP:
             ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
-            set_bit(CONNECTED_BIT);
-
-            // Save IP if in provisioning mode
-            if( check_bit(PROVISIONING_BIT) )
-            {
-                ESP_LOGI(TAG, "Saving IP");
-                set_network_info(((ip_event_got_ip_t*)event_data)->ip_info);
-            }
+            set_bit(WIFI_CONNECTED_BIT);
 
             break;
         case IP_EVENT_STA_LOST_IP:
             ESP_LOGI(TAG, "IP_EVENT_STA_LOST_IP");
-
-            // Todo:
-            // Check if ethernet is currently on before connecting wifi
-            esp_wifi_connect();
+            clear_bit(WIFI_CONNECTED_BIT);
 
             break;
         case IP_EVENT_AP_STAIPASSIGNED:
@@ -109,7 +98,7 @@ esp_err_t init_interfaces()
             set_bit(ETH_INITIALIZED_BIT);
         }
     }
-    else if ( check_bit(WIFI_ENABLED_BIT) )
+    else if( check_bit(WIFI_ENABLED_BIT) )
     {
         if( init_wifi() != ESP_OK )
         {
@@ -123,20 +112,67 @@ esp_err_t init_interfaces()
 
     if( !check_bit(ETH_INITIALIZED_BIT) && !check_bit(WIFI_INITIALIZED_BIT))
     {
-        log_error(IP_ERR_INIT, "Failed to initialize any interfaces");
+        log_error(IP_ERR_INIT, "Failed to initialize interface");
         return ESP_FAIL;
     }
 
-            // if( !eth_en )
-        // {
-        //     // Check provisioning status if ethernet is not enabled
-        //     bool provisioned = false;
-        //     ERROR_CHECK(get_provisioning_status(&provisioned))
-        //     if( provisioned )
-        //         ERROR_CHECK(set_bit(PROVISIONED_BIT))
-        //     else
-        //         ERROR_CHECK(clear_bit(PROVISIONED_BIT))
-        // }
+    return ESP_OK;
+}
+
+esp_err_t set_static_ip(esp_netif_t* interface)
+{
+    // Get network info from flash
+    esp_netif_ip_info_t ip_info;
+    get_network_info(&ip_info);
+
+    // Static IP may not be assigned yet
+    if( ip_info.ip.addr )
+    {
+        esp_netif_dhcpc_stop(interface);
+        esp_netif_set_ip_info(interface, &ip_info);
+        ESP_LOGI(TAG, "Assigned static IP to interface");
+    }
+    else
+    {
+        ESP_LOGW(TAG, "No static IP found");
+    }
+
+    cJSON* json = get_settings_json();
+    if( json == NULL)
+    {
+        log_error(ESP_ERR_NOT_FOUND, "Failed to open settings");
+        return ESP_FAIL;
+    }
+
+    esp_netif_dns_info_t dns = {0};
+    cJSON* upstream_dns = cJSON_GetObjectItem(json, "upstream_server");
+    ip4addr_aton(upstream_dns->valuestring, (ip4_addr_t*)&dns.ip.u_addr.ip4);
+    dns.ip.type = IPADDR_TYPE_V4;
+    
+    ATTEMPT(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
+
+    cJSON_Delete(json);
+    return ESP_OK;
+}
+
+esp_err_t start_interfaces()
+{
+    ESP_LOGI(TAG, "Starting interfaces");
+
+    if( check_bit(ETH_INITIALIZED_BIT) )
+    {
+        ESP_LOGI(TAG, "Starting Ethernet");
+        ATTEMPT(set_static_ip(eth_netif))
+        ATTEMPT(esp_eth_start(eth_handle))
+    }
+
+    if( check_bit(WIFI_INITIALIZED_BIT) )
+    {
+        // ERROR_CHECK(set_static_ip(wifi_sta_netif))
+        // ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
+        ESP_LOGI(TAG, "Starting Wifi");
+        ERROR_CHECK(esp_wifi_connect())
+    }
 
     return ESP_OK;
 }
@@ -157,51 +193,3 @@ esp_err_t turn_off_accesspoint()
     return ESP_OK;
 }
 
-esp_err_t set_static_ip(esp_netif_t* interface)
-{
-    // Get network info from flash
-    esp_netif_ip_info_t ip_info;
-    ERROR_CHECK(get_network_info(&ip_info))
-
-    // Static IP may not be assigned yet if wifi is disabled, so check that it exists first
-    if( ip_info.ip.addr )
-    {
-        esp_netif_dhcpc_stop(interface);
-        esp_netif_set_ip_info(interface, &ip_info);
-        ERROR_CHECK(set_bit(STATIC_IP_BIT))
-        ESP_LOGI(TAG, "Assigned static IP to interface");
-    }
-
-    // Set main DNS for interface, used to connected to SNTP server
-    esp_netif_dns_info_t dns = {0};
-    char upstream_server[IP4ADDR_STRLEN_MAX];
-    ERROR_CHECK(get_upstream_dns(upstream_server))
-    ip4addr_aton(upstream_server, (ip4_addr_t*)&dns.ip.u_addr.ip4);
-    dns.ip.type = IPADDR_TYPE_V4;
-    
-    ERROR_CHECK(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
-
-    return ESP_OK;
-}
-
-esp_err_t start_interfaces()
-{
-    ESP_LOGI(TAG, "Starting interfaces");
-
-    if( check_bit(ETH_INITIALIZED_BIT) )
-    {
-        ESP_LOGI(TAG, "Starting Ethernet");
-        ATTEMPT(esp_eth_start(eth_handle))
-        // ERROR_CHECK(set_static_ip(eth_netif))
-    }
-
-    if( check_bit(WIFI_INITIALIZED_BIT) )
-    {
-        // ERROR_CHECK(set_static_ip(wifi_sta_netif))
-        // ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA))
-        ESP_LOGI(TAG, "Starting Wifi");
-        ERROR_CHECK(esp_wifi_connect())
-    }
-
-    return ESP_OK;
-}
