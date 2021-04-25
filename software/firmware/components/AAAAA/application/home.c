@@ -113,9 +113,9 @@ static httpd_uri_t homepage = {
   */
 esp_err_t setup_homepage_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_register_uri_handler(server, &root))
-    ERROR_CHECK(httpd_register_uri_handler(server, &homepage))
-    ERROR_CHECK(httpd_register_uri_handler(server, &log_json))
+    ATTEMPT(httpd_register_uri_handler(server, &root))
+    ATTEMPT(httpd_register_uri_handler(server, &homepage))
+    ATTEMPT(httpd_register_uri_handler(server, &log_json))
 
     return ESP_OK;
 }
@@ -125,9 +125,9 @@ esp_err_t setup_homepage_handlers(httpd_handle_t server)
   */
 esp_err_t teardown_homepage_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_unregister_uri_handler(server, root.uri, root.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, homepage.uri, homepage.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, log_json.uri, log_json.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, root.uri, root.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, homepage.uri, homepage.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, log_json.uri, log_json.method))
 
     return ESP_OK;
 }

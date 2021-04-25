@@ -5,8 +5,11 @@ idf_component_register( SRCS "flash.c" "filesystem.c"
                                     files/connected.html
                                     files/defaultblacklist.txt
                                     files/homepage.html
-                                    files/scripts.js
+                                    files/app_scripts.js
                                     files/settings.html
                                     files/settings.json
                                     files/stylesheet.css
-                                    files/wifi_select.html )
+                                    files/prov_scripts.js
+                                    files/wifi_select.html 
+                                    files/connecttest.txt
+                                    files/hotspot-detect.html )

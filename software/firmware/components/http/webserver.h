@@ -3,6 +3,12 @@
 
 #include "esp_system.h"
 
+#define SEND_ERR(req, err, str) {  \
+    ESP_LOGW(TAG, str); \
+    httpd_resp_send_err(req, err, str); \
+    return ESP_OK; \
+}
+
 /**
   * @brief Start empty webserver
   *

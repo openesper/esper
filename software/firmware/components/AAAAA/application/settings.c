@@ -347,13 +347,13 @@ static httpd_uri_t ota_status = {
   */
 esp_err_t setup_settings_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_register_uri_handler(server, &restart_post))
-    ERROR_CHECK(httpd_register_uri_handler(server, &settings_get))
-    ERROR_CHECK(httpd_register_uri_handler(server, &settings_json_get))
-    ERROR_CHECK(httpd_register_uri_handler(server, &settings_json_post))
-    ERROR_CHECK(httpd_register_uri_handler(server, &set_blocking_status))
-    ERROR_CHECK(httpd_register_uri_handler(server, &update_firmware))
-    ERROR_CHECK(httpd_register_uri_handler(server, &ota_status))
+    ATTEMPT(httpd_register_uri_handler(server, &restart_post))
+    ATTEMPT(httpd_register_uri_handler(server, &settings_get))
+    ATTEMPT(httpd_register_uri_handler(server, &settings_json_get))
+    ATTEMPT(httpd_register_uri_handler(server, &settings_json_post))
+    ATTEMPT(httpd_register_uri_handler(server, &set_blocking_status))
+    ATTEMPT(httpd_register_uri_handler(server, &update_firmware))
+    ATTEMPT(httpd_register_uri_handler(server, &ota_status))
 
     return ESP_OK;
 }
@@ -363,13 +363,13 @@ esp_err_t setup_settings_handlers(httpd_handle_t server)
   */
 esp_err_t teardown_settings_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_unregister_uri_handler(server, restart_post.uri, restart_post.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, settings_get.uri, settings_get.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, settings_json_get.uri, settings_json_get.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, settings_json_post.uri, settings_json_post.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, set_blocking_status.uri, set_blocking_status.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, update_firmware.uri, update_firmware.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, ota_status.uri, ota_status.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, restart_post.uri, restart_post.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, settings_get.uri, settings_get.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, settings_json_get.uri, settings_json_get.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, settings_json_post.uri, settings_json_post.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, set_blocking_status.uri, set_blocking_status.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, update_firmware.uri, update_firmware.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, ota_status.uri, ota_status.method))
 
     return ESP_OK;
 }

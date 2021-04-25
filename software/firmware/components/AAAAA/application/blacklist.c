@@ -228,20 +228,20 @@ static httpd_uri_t blacklist_delete = {
 
 esp_err_t setup_blacklist_handlers(httpd_handle_t server)
 { 
-    ERROR_CHECK(httpd_register_uri_handler(server, &blacklist))
-    ERROR_CHECK(httpd_register_uri_handler(server, &blacklist_add))
-    ERROR_CHECK(httpd_register_uri_handler(server, &blacklist_delete))
-    ERROR_CHECK(httpd_register_uri_handler(server, &blacklist_json))
+    ATTEMPT(httpd_register_uri_handler(server, &blacklist))
+    ATTEMPT(httpd_register_uri_handler(server, &blacklist_add))
+    ATTEMPT(httpd_register_uri_handler(server, &blacklist_delete))
+    ATTEMPT(httpd_register_uri_handler(server, &blacklist_json))
 
     return ESP_OK;
 }
 
 esp_err_t teardown_blacklist_handlers(httpd_handle_t server)
 { 
-    ERROR_CHECK(httpd_unregister_uri_handler(server, blacklist.uri, blacklist.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, blacklist_add.uri, blacklist_add.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, blacklist_delete.uri, blacklist_delete.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, blacklist_json.uri, blacklist_json.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, blacklist.uri, blacklist.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, blacklist_add.uri, blacklist_add.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, blacklist_delete.uri, blacklist_delete.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, blacklist_json.uri, blacklist_json.method))
 
     return ESP_OK;
 }

@@ -13,7 +13,6 @@ const int SCAN_FINISHED_BIT = BIT0;
 const int CONNECTED_BIT = BIT1;
 const int DISCONNECTED_BIT = BIT2;
 const int PROVISIONING_BIT = BIT3;
-const int PROVISIONED_BIT = BIT4;
 const int STATIC_IP_BIT = BIT5;
 const int BLOCKING_BIT = BIT6;
 const int INITIALIZING_BIT = BIT7;
@@ -73,7 +72,10 @@ bool check_bit(int bit)
 
 esp_err_t wait_for(int bit, TickType_t xTicksToWait)
 {
-    xEventGroupWaitBits(event_group, bit, pdFALSE, pdFALSE, xTicksToWait);
+    uint32_t bits_before = get_bits();
+    uint32_t bits_after = xEventGroupWaitBits(event_group, bit, pdFALSE, pdFALSE, xTicksToWait);
+    if( bits_before == bits_after ) // bits will be equal if timeout expired
+        return ESP_FAIL;
     return ESP_OK;
 }
 
@@ -81,11 +83,11 @@ esp_err_t toggle_bit(int bit)
 {
     if( check_bit(bit) )
     {
-        ERROR_CHECK(clear_bit(bit))
+        ATTEMPT(clear_bit(bit))
     }
     else
     {
-        ERROR_CHECK(set_bit(bit))
+        ATTEMPT(set_bit(bit))
     }
 
     return ESP_OK;

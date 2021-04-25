@@ -7,6 +7,7 @@
 // #include "esp_flash_partitions.h"
 #include "esp_partition.h"
 #include "esp_ota_ops.h"
+#include "errno.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -40,30 +41,6 @@ int stat_file(const char* filename, struct stat* s)
     return stat(path, s);
 }
 
-static esp_err_t print_file(const char* filename)
-{
-    char buffer[100+1];
-    FILE* f = open_file(filename, "r");
-    if( f == NULL )
-    {
-        ESP_LOGE(TAG, "Could not open %s", filename);
-        return ESP_FAIL;
-    }
-
-    int bytes_read;
-    if( (bytes_read = fread(buffer, 1, 100, f)) < 1 )
-    {
-        ESP_LOGE(TAG, "Could not open %s", filename);
-        return ESP_FAIL;
-    }
-    
-    buffer[bytes_read] = '\0';
-    ESP_LOGI(TAG, "%s\n%s", filename, buffer);
-    fclose(f);
-
-    return ESP_OK;
-}
-
 cJSON* get_settings_json()
 {
     char buffer[1000+1];
@@ -86,7 +63,7 @@ cJSON* get_settings_json()
     FILE* file = open_file(DEST, "w");                                          \
     if( file == NULL )                                                          \
     {                                                                           \
-        ESP_LOGE(TAG, "Could not create %s", DEST);                             \
+        ESP_LOGE(TAG, "Could not open %s (%d)", DEST, errno);                   \
         return ESP_FAIL;                                                        \
     }                                                                           \
     extern const unsigned char  start_##SRC[] asm("_binary_" #SRC "_start");    \
@@ -94,7 +71,7 @@ cJSON* get_settings_json()
     const size_t  size = (end_##SRC -  start_##SRC);                            \
     if( fwrite(start_##SRC, 1, size, file)  < size)                             \
     {                                                                           \
-        ESP_LOGE(TAG, "Could not copy %s", #SRC );                              \
+        ESP_LOGE(TAG, "Could not copy %s (%d)", #SRC, errno);                   \
         return ESP_FAIL;                                                        \
     }                                                                           \
     ESP_LOGD(TAG, "Copied %s", #SRC );                                          \
@@ -109,12 +86,15 @@ static esp_err_t initialize_files()
     COPY_EMBED("/app/settings/index.html",      settings_html);
     COPY_EMBED("/app/index.html",               homepage_html);
     COPY_EMBED("/app/stylesheet.css",           stylesheet_css);
-    COPY_EMBED("/app/scripts.js",               scripts_js);
+    COPY_EMBED("/app/scripts.js",               app_scripts_js);
     COPY_EMBED("/app/blacklist.txt",            defaultblacklist_txt);
     COPY_EMBED("/app/settings.json",            settings_json);
     COPY_EMBED("/prov/connected/index.html",    connected_html);
     COPY_EMBED("/prov/index.html",              wifi_select_html);
+    COPY_EMBED("/prov/scripts.js",              prov_scripts_js);
     COPY_EMBED("/prov/stylesheet.css",          stylesheet_css);
+    COPY_EMBED("/prov/hotspot-detect.html",     hotspot_detect_html);
+    COPY_EMBED("/prov/connecttest.txt",         connecttest_txt);
 
     FILE* v = open_file("/version.txt", "w");
     if( v == NULL )
@@ -140,6 +120,7 @@ esp_err_t init_filesystem()
       .max_files = 10,
       .format_if_mount_failed = true
     };
+    
 
     esp_err_t ret = esp_vfs_spiffs_register(&conf);
     if (ret != ESP_OK) {
@@ -152,6 +133,7 @@ esp_err_t init_filesystem()
         }
         return ret;
     }
+    
 
     strcpy(base_path, "/spiffs/");
     const esp_partition_t *running = esp_ota_get_running_partition();
@@ -182,3 +164,27 @@ esp_err_t init_filesystem()
     ESP_LOGI(TAG, "Spiffs Partition size: total: %d, used: %d", total, used);
     return ESP_OK;
 }
+
+// static esp_err_t print_file(const char* filename)
+// {
+//     char buffer[100+1];
+//     FILE* f = open_file(filename, "r");
+//     if( f == NULL )
+//     {
+//         ESP_LOGE(TAG, "Could not open %s", filename);
+//         return ESP_FAIL;
+//     }
+
+//     int bytes_read;
+//     if( (bytes_read = fread(buffer, 1, 100, f)) < 1 )
+//     {
+//         ESP_LOGE(TAG, "Could not open %s", filename);
+//         return ESP_FAIL;
+//     }
+    
+//     buffer[bytes_read] = '\0';
+//     ESP_LOGI(TAG, "%s\n%s", filename, buffer);
+//     fclose(f);
+
+//     return ESP_OK;
+// }

@@ -12,7 +12,6 @@ extern const int SCAN_FINISHED_BIT;         // Wifi station has finished scannin
 extern const int CONNECTED_BIT;             // Device is connected 
 extern const int DISCONNECTED_BIT;          // Device is disconnected
 extern const int PROVISIONING_BIT;          // Device is currently in provisioning mode
-extern const int PROVISIONED_BIT;           // Device has already been provisioned
 extern const int STATIC_IP_BIT;             // Device has received a static IP
 extern const int BLOCKING_BIT;              // Device is currently blocking DNS queries
 extern const int INITIALIZING_BIT;          // Device is currently initializing

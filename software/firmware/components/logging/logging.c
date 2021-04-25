@@ -24,7 +24,7 @@ esp_err_t build_log_json(cJSON* json, uint32_t size, uint32_t page)
     // Get current position of log
     uint16_t log_head = 0;
     bool full_flag = false;
-    ERROR_CHECK(get_log_data(&log_head, &full_flag))
+    ATTEMPT(get_log_data(&log_head, &full_flag))
 
     // Determine number of log entries
     uint16_t log_entries;
@@ -203,7 +203,7 @@ esp_err_t create_log_file()
     ESP_LOGD(TAG, "Log file size %ld bytes", ftell(log));
     fclose(log);
 
-    ERROR_CHECK(update_log_data(MAX_LOGS, false))
+    ATTEMPT(update_log_data(MAX_LOGS, false))
 
     return ESP_OK;
 }

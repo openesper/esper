@@ -1,4 +1,5 @@
 #include "webserver.h"
+#include "post_handlers.h"
 #include "error.h"
 #include "events.h"
 #include "filesystem.h"
@@ -50,9 +51,13 @@ static esp_err_t set_content_type(httpd_req_t *req, const char* filepath)
     return ESP_OK;
 }
 
-static esp_err_t http_get(httpd_req_t *req)
+static esp_err_t get_handler(httpd_req_t *req)
 {
-    ESP_LOGI(TAG, "Request for %s", req->uri);
+    // Remove query parameters from uri
+    char uri[HTTPD_MAX_URI_LEN];
+    memcpy(uri, req->uri, strcspn(req->uri, "?"));
+    uri[strcspn(req->uri, "?")] = '\0';
+    ESP_LOGI(TAG, "Request for %s", uri);
 
     // Choose directory
     const char* src_directory = app_directory;
@@ -62,7 +67,7 @@ static esp_err_t http_get(httpd_req_t *req)
     // Build filepath
     char filepath[strlen(src_directory)+HTTPD_MAX_URI_LEN+strlen(index_html)+1+1];
     strcpy(filepath, src_directory);
-    strcat(filepath, req->uri);
+    strcat(filepath, uri);
 
     // See file extension exists, otherwise assume 
     // it's a directory and look for index.html
@@ -120,25 +125,44 @@ esp_err_t start_webserver()
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.uri_match_fn = httpd_uri_match_wildcard;
-    // config.max_uri_handlers = 30;
-    // config.stack_size = 8192;
 
     // Start the httpd server
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    ERROR_CHECK(httpd_start(&server, &config))
+    ATTEMPT(httpd_start(&server, &config))
 
     static httpd_uri_t get = {
         .uri       = "*",
         .method    = HTTP_GET,
-        .handler   = http_get,
+        .handler   = get_handler,
     };
     ATTEMPT(httpd_register_uri_handler(server, &get))
+
+    static httpd_uri_t submitauth = {
+        .uri       = "/submitauth",
+        .method    = HTTP_POST,
+        .handler   = submitauth_handler,
+    };
+    ATTEMPT(httpd_register_uri_handler(server, &submitauth))
+
+    static httpd_uri_t scan = {
+        .uri       = "/scan",
+        .method    = HTTP_POST,
+        .handler   = scan_handler,
+    };
+    ATTEMPT(httpd_register_uri_handler(server, &scan))
+
+        static httpd_uri_t finish = {
+        .uri       = "/finish",
+        .method    = HTTP_POST,
+        .handler   = finish_handler,
+    };
+    ATTEMPT(httpd_register_uri_handler(server, &finish))
 
     return ESP_OK;
 }
 
 esp_err_t stop_webserver()
 {
-    ERROR_CHECK(httpd_stop(server));
+    ATTEMPT(httpd_stop(server));
     return ESP_OK;
 }

@@ -19,12 +19,6 @@ static const char *TAG = "FLASH";
 static nvs_handle nvs;
 
 
-esp_err_t set_static_ip_status(bool static_ip)
-{
-    ERROR_CHECK(nvs_set_u8(nvs, "static_ip", (uint8_t)static_ip))
-    return ESP_OK;
-}
-
 esp_err_t get_network_info(esp_netif_ip_info_t* info)
 {
     size_t length = sizeof(*info);
@@ -69,64 +63,62 @@ esp_err_t update_log_data(uint16_t head, bool full)
 
 esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, uint32_t* mdc, uint32_t* mdio)
 {
-    ERROR_CHECK(nvs_get_u32(nvs, "phy", phy))
-    ERROR_CHECK(nvs_get_u32(nvs, "phy_addr", addr))
-    ERROR_CHECK(nvs_get_u32(nvs, "phy_rst", rst))
-    ERROR_CHECK(nvs_get_u32(nvs, "phy_mdc", mdc))
-    ERROR_CHECK(nvs_get_u32(nvs, "phy_mdio", mdio))
+    ATTEMPT(nvs_get_u32(nvs, "phy", phy))
+    ATTEMPT(nvs_get_u32(nvs, "phy_addr", addr))
+    ATTEMPT(nvs_get_u32(nvs, "phy_rst", rst))
+    ATTEMPT(nvs_get_u32(nvs, "phy_mdc", mdc))
+    ATTEMPT(nvs_get_u32(nvs, "phy_mdio", mdio))
     return ESP_OK;
 }
 
 esp_err_t get_gpio_config(int* button, int* red, int* green, int* blue)
 {
-    ERROR_CHECK(nvs_get_i32(nvs, "button", button))
-    ERROR_CHECK(nvs_get_i32(nvs, "red_led", red))
-    ERROR_CHECK(nvs_get_i32(nvs, "green_led", green))
-    ERROR_CHECK(nvs_get_i32(nvs, "blue_led", blue))
+    ATTEMPT(nvs_get_i32(nvs, "button", button))
+    ATTEMPT(nvs_get_i32(nvs, "red_led", red))
+    ATTEMPT(nvs_get_i32(nvs, "green_led", green))
+    ATTEMPT(nvs_get_i32(nvs, "blue_led", blue))
 
-    return ESP_OK;
-}
-
-esp_err_t get_provisioning_status(bool* provisioned)
-{
-    ERROR_CHECK(nvs_get_u8(nvs, "provisioned", (uint8_t*)provisioned))
     return ESP_OK;
 }
 
 esp_err_t set_provisioning_status(bool provisioned)
 {
-    ERROR_CHECK(nvs_set_u8(nvs, "provisioned", (uint8_t)provisioned))
+    ATTEMPT(nvs_set_u8(nvs, "provisioned", (uint8_t)provisioned))
     return ESP_OK;
 }
 
-esp_err_t reset_device()
+static esp_err_t initialize_event_bits()
 {
-    ESP_LOGI(TAG, "Resetting Device");
-    ERROR_CHECK(nvs_set_u8(nvs, "provisioned", (uint8_t)false))
-    return ESP_OK;
-}
-
-esp_err_t initialize_event_bits()
-{
-    bool eth;
-    ATTEMPT(nvs_get_u8(nvs, "ethernet", (uint8_t*)&eth))
+    bool eth = false;
+    nvs_get_u8(nvs, "ethernet", (uint8_t*)&eth);
     if( eth )
     {
+        ESP_LOGI(TAG, "Ethernet enabled");
         set_bit(ETH_ENABLED_BIT);
     }
 
-    bool wifi;
-    ATTEMPT(nvs_get_u8(nvs, "wifi", (uint8_t*)&wifi))
+    bool wifi = true;
+    nvs_get_u8(nvs, "wifi", (uint8_t*)&wifi);
     if( wifi )
     {
+        ESP_LOGI(TAG, "Wifi enabled");
         set_bit(WIFI_ENABLED_BIT);
     }
 
-    bool gpio;
-    ATTEMPT(nvs_get_u8(nvs, "gpio", (uint8_t*)&gpio))
+    bool gpio = false;
+    nvs_get_u8(nvs, "gpio", (uint8_t*)&gpio);
     if( gpio )
     {
+        ESP_LOGI(TAG, "GPIO enabled");
         set_bit(GPIO_ENABLED_BIT);
+    }
+
+    bool provisioned = false;
+    nvs_get_u8(nvs, "provisioned", (uint8_t*)&provisioned);
+    if( !provisioned )
+    {
+        ESP_LOGI(TAG, "Not provisioned");
+        set_bit(PROVISIONING_BIT);
     }
 
     return ESP_OK;
@@ -150,9 +142,6 @@ esp_err_t init_nvs()
     if ( (err = nvs_open("storage", NVS_READWRITE, &nvs)) != ESP_OK )
         return err;
 
-    nvs_stats_t stats;
-    nvs_get_stats("storage", &stats);
-    ESP_LOGI(TAG, "Entries: Used: %d, Free: %d, Total: %d", stats.used_entries, stats.free_entries, stats.total_entries);
-    ESP_LOGI(TAG, "Namespace count: %d", stats.namespace_count);
+    ATTEMPT(initialize_event_bits())
     return ESP_OK;
 }

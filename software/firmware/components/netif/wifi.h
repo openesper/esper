@@ -48,21 +48,12 @@ esp_err_t configure_wifi();
 esp_err_t wifi_scan();
 
 /**
-  * @brief Get results of previous scan, blocks if device is currently scanning
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL Failure
-  */
-wifi_ap_record_t* scan_results();
-
-/**
   * @brief Attempt to connect to configured AP
   *
   * @return
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t attempt_to_connect(bool* result);
+esp_err_t attempt_to_connect(char* ssid, char* pass, bool* result);
 
 #endif

@@ -10,7 +10,7 @@ All DNS related activities are in here. This is where the socket, listening on p
 
 ### Error
 
-This is where the ERROR_CHECK macro, as well as most errors are defined. 
+This is where the ATTEMPT macro, as well as most errors are defined. 
 
 ### Events
 

@@ -12,3 +12,4 @@ phy_rst,data,u32,4
 phy_mdio,data,u32,18
 phy_mdc,data,u32,23
 wifi,data,u8,1
+provisioned,data,u8,0

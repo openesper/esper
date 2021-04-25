@@ -146,7 +146,7 @@ static esp_err_t wifi_auth_handler(httpd_req_t *req)
     wifi_config_t wifi_config = {0};
     strcpy((char*)wifi_config.sta.ssid, ssid->valuestring);
     strcpy((char*)wifi_config.sta.password, pass->valuestring);
-    ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
+    ATTEMPT(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     cJSON_Delete(json);
 
     ESP_LOGI(TAG, "SSID: %s (%d)", (char*)&wifi_config.sta.ssid, strlen((char*)&wifi_config.sta.ssid));
@@ -154,7 +154,7 @@ static esp_err_t wifi_auth_handler(httpd_req_t *req)
 
     // Attempt to connect to network
     bool connected = false;
-    ERROR_CHECK(attempt_to_connect(&connected))
+    ATTEMPT(attempt_to_connect(&connected))
     if(connected)
     {
         ESP_LOGI(TAG, "Connection Successful");
@@ -180,18 +180,18 @@ static httpd_uri_t submit = {
 
 esp_err_t configure_wifi_select_handler(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_register_uri_handler(server, &wifi_select))
-    ERROR_CHECK(httpd_register_uri_handler(server, &wifi_json))
-    ERROR_CHECK(httpd_register_uri_handler(server, &submit))
+    ATTEMPT(httpd_register_uri_handler(server, &wifi_select))
+    ATTEMPT(httpd_register_uri_handler(server, &wifi_json))
+    ATTEMPT(httpd_register_uri_handler(server, &submit))
 
     return ESP_OK;
 }
 
 esp_err_t teardown_wifi_select_handler(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_unregister_uri_handler(server, wifi_select.uri, wifi_select.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, wifi_json.uri, wifi_json.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, submit.uri, submit.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, wifi_select.uri, wifi_select.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, wifi_json.uri, wifi_json.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, submit.uri, submit.method))
 
     return ESP_OK;
 }

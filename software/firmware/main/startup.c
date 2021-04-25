@@ -72,7 +72,6 @@ void app_main()
     set_bit(INITIALIZING_BIT);
 
     CHECK(init_nvs())
-    CHECK(initialize_event_bits())
     CHECK(init_gpio())
     CHECK(init_filesystem())
 

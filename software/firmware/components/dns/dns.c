@@ -19,7 +19,7 @@
 #include "esp_netif.h"
 #include "cJSON.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#define LOG_LOCAL_LEVEL ESP_LOG_WARN
 #include "esp_log.h"
 static const char *TAG = "DNS";
 
@@ -234,7 +234,6 @@ static IRAM_ATTR esp_err_t parse_packet(Packet* packet)
 
 static IRAM_ATTR void dns_t(void* parameters)
 {
-    ESP_LOGI(TAG, "Starting DNS task");
     Packet* packet = NULL;
 
     while(1) 
@@ -269,7 +268,7 @@ static IRAM_ATTR void dns_t(void* parameters)
             {
                 if( qtype == A || qtype == AAAA )
                 {
-                    ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
+                    ESP_LOGI(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
                 }
                 else
@@ -313,7 +312,6 @@ static IRAM_ATTR void dns_t(void* parameters)
 
 static esp_err_t load_settings()
 {
-    ESP_LOGI(TAG, "Loading Device URL");
     cJSON* json = get_settings_json();
     if( json == NULL)
     {
@@ -323,13 +321,13 @@ static esp_err_t load_settings()
 
     cJSON* url = cJSON_GetObjectItem(json, "url");
     strcpy(device_url, url->valuestring);
-    ESP_LOGI(TAG, "Device URL %s", device_url);
+    ESP_LOGD(TAG, "Device URL %s", device_url);
 
     cJSON* upstream_dns_str = cJSON_GetObjectItem(json, "upstream_server");
     upstream_dns.sin_family = PF_INET;
     upstream_dns.sin_port = htons(DNS_PORT);
     ip4addr_aton(upstream_dns_str->valuestring, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
-    ESP_LOGI(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
+    ESP_LOGD(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
 
     cJSON_Delete(json);
     return ESP_OK;
@@ -337,7 +335,7 @@ static esp_err_t load_settings()
 
 esp_err_t start_dns()
 {
-    ESP_LOGI(TAG, "Starting DNS Task");
+    ESP_LOGI(TAG, "Initializing DNS...");
     packet_queue = xQueueCreate(PACKET_QUEUE_SIZE, sizeof(Packet*));
 
     ATTEMPT(initialize_dns_server_socket(&dns_srv_sock))

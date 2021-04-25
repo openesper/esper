@@ -2,15 +2,61 @@
 #include "events.h"
 #include "ip.h"
 #include "error.h"
+#include "filesystem.h"
+#include "flash.h"
 #include "string.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
+#include "cJSON.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "WIFI";
 
-static wifi_ap_record_t ap_list[MAX_SCAN_RECORDS];
+static esp_err_t store_ap_records()
+{
+    uint16_t number = MAX_SCAN_RECORDS;
+    static wifi_ap_record_t ap_list[MAX_SCAN_RECORDS];
+    esp_wifi_scan_get_ap_records(&number, ap_list);
+
+    FILE* wifi_json = open_file("/prov/wifi.json", "w");
+    if( !wifi_json )
+    {
+        log_error(ESP_FAIL, "Could not open /prov/wifi.json");
+        return ESP_FAIL;
+    }
+
+    cJSON* json = cJSON_CreateArray();
+    if( !json )
+    {
+        log_error(ESP_FAIL, "Could not create wifi.json");
+        fclose(wifi_json);
+        return ESP_FAIL;
+    }
+
+    for( int i = 0; i < number; i++)
+    {
+        cJSON* ap = cJSON_CreateObject();
+        if( ap )
+        {
+            cJSON_AddStringToObject(ap, "ssid", (char*)ap_list[i].ssid);
+            cJSON_AddNumberToObject(ap, "rssi", (double)ap_list[i].rssi);
+            cJSON_AddNumberToObject(ap, "authmode", (double)ap_list[i].authmode);
+            cJSON_AddItemToArray(json, ap);
+        }
+    }
+
+    char* json_str = cJSON_Print(json);
+    if( fwrite(json_str, 1, strlen(json_str), wifi_json) < strlen(json_str) )
+    {
+        log_error(ESP_FAIL, "Error writing to /prov/wifi.json");
+    }
+
+    cJSON_Delete(json);
+    fclose(wifi_json);
+    ESP_LOGI(TAG, "Saved scan results to /prov/wifi.json");
+    return ESP_OK;
+}
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t event_id, void* event_data)
 {
@@ -20,12 +66,10 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
             ESP_LOGI(TAG, "WIFI_EVENT_WIFI_READY");
             break;
         }
-        case WIFI_EVENT_SCAN_DONE:{
+        case WIFI_EVENT_SCAN_DONE:
+        {
             ESP_LOGI(TAG, "WIFI_EVENT_SCAN_DONE");
-            // wifi_event_sta_scan_done_t* event = (wifi_event_sta_scan_done_t*)event_data;
-            uint16_t ap_count = MAX_SCAN_RECORDS;
-            esp_wifi_scan_get_ap_records(&ap_count, ap_list);
-            set_bit(SCAN_FINISHED_BIT);
+            store_ap_records();
             break;
         }
         case WIFI_EVENT_STA_START:
@@ -48,8 +92,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         {
             wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
             ESP_LOGW(TAG, "WIFI_EVENT_STA_DISCONNECTED %d", event->reason);
-            set_bit(DISCONNECTED_BIT);
-            // wifi_err_reason_t err;
+            clear_bit(WIFI_CONNECTED_BIT);
             break;
         }
         case WIFI_EVENT_STA_AUTHMODE_CHANGE:
@@ -61,7 +104,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         case WIFI_EVENT_AP_START:
         {
             ESP_LOGI(TAG, "WIFI_EVENT_AP_START");
-            wifi_scan();
+            esp_wifi_scan_start(NULL, false);
             break;
         }
         case WIFI_EVENT_AP_STOP:
@@ -106,17 +149,8 @@ esp_err_t init_wifi_sta_netif(esp_netif_t** sta_netif)
     if( !*sta_netif )
         return ESP_FAIL;
     
-    ERROR_CHECK(esp_netif_attach_wifi_station(*sta_netif))
-    ERROR_CHECK(esp_wifi_set_default_wifi_sta_handlers())
-
-    wifi_config_t sta_config = {0};
-    esp_wifi_get_config(ESP_IF_WIFI_STA, &sta_config);
-
-    if( sta_config.sta.ssid[0] == 0 )
-    {
-        ESP_LOGI(TAG, "No Wifi config, going into provisioning mode");
-        set_bit(PROVISIONING_BIT);
-    }
+    ATTEMPT(esp_netif_attach_wifi_station(*sta_netif))
+    ATTEMPT(esp_wifi_set_default_wifi_sta_handlers())
 
     return ESP_OK;
 }
@@ -133,8 +167,8 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
     if( !*ap_netif )
         return ESP_FAIL;
     
-    ERROR_CHECK(esp_netif_attach_wifi_ap(*ap_netif))
-    ERROR_CHECK(esp_wifi_set_default_wifi_ap_handlers())
+    ATTEMPT(esp_netif_attach_wifi_ap(*ap_netif))
+    ATTEMPT(esp_wifi_set_default_wifi_ap_handlers())
 
     wifi_config_t ap_config = {
         .ap = {
@@ -146,17 +180,17 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
             .authmode = WIFI_AUTH_OPEN
         },
     };
-    ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config))
+    ATTEMPT(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config))
 
     return ESP_OK;
 }
 
 esp_err_t configure_wifi()
 {
-    ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
+    ATTEMPT(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
 
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ERROR_CHECK(esp_wifi_init(&init_cfg))
+    ATTEMPT(esp_wifi_init(&init_cfg))
 
     return ESP_OK;
 }
@@ -164,53 +198,45 @@ esp_err_t configure_wifi()
 esp_err_t wifi_scan()
 {
     ESP_LOGI(TAG, "Starting scan...");
-    static wifi_scan_config_t scanConf = {
-        .ssid = NULL,
-        .bssid = NULL,
-        .channel = 0,
-        .show_hidden = false,
-        .scan_type = WIFI_SCAN_TYPE_ACTIVE,
-		.scan_time.active.min = 120,
-		.scan_time.active.max = 150,
-    };
-
-    ATTEMPT(esp_wifi_scan_start(&scanConf, false))
-    clear_bit(SCAN_FINISHED_BIT);
-
+    ATTEMPT(esp_wifi_scan_start(NULL, true))
     return ESP_OK;
 }
 
-wifi_ap_record_t* scan_results(){
-    wait_for(SCAN_FINISHED_BIT, portMAX_DELAY);
-    // results of scan are stored in event loop
-    return ap_list; 
-}
-
-esp_err_t attempt_to_connect(bool* result)
+esp_err_t attempt_to_connect(char* ssid, char* pass, bool* result)
 {
     ESP_LOGI(TAG, "Attempting to connect to AP");
 
-    if( !result )
+    if( !result || !ssid || !pass )
         return ESP_ERR_INVALID_ARG;
 
     // Disconnect if already connected to AP
-    if( check_bit(CONNECTED_BIT) )
+    if( check_bit(WIFI_CONNECTED_BIT) )
     {
-        ERROR_CHECK(esp_wifi_disconnect());
-        ERROR_CHECK(wait_for(DISCONNECTED_BIT, portMAX_DELAY))
+        ATTEMPT(esp_wifi_disconnect());
     }
 
-    // Clear status and attempt to connect
-    ERROR_CHECK(clear_bit(CONNECTED_BIT | DISCONNECTED_BIT))
-    ERROR_CHECK(esp_wifi_connect())
+    // clear connection.json
+    FILE* f = open_file("/prov/connection.json", "w");
+    fclose(f);
 
-    wait_for(CONNECTED_BIT | DISCONNECTED_BIT, 10000 / portTICK_PERIOD_MS);
-    if( check_bit(CONNECTED_BIT) )
-        *result = true;
-    else if ( check_bit(DISCONNECTED_BIT) )
-        *result = false;
-    else
-        return ESP_FAIL;
+    // clear saved ip info
+    esp_netif_ip_info_t ip_info = {0};
+    set_network_info(ip_info);
+
+    // Copy ssid & pass to wifi_config
+    wifi_config_t wifi_config = {0};
+    strcpy((char*)wifi_config.sta.ssid, ssid);
+    strcpy((char*)wifi_config.sta.password, pass);
+    esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+
+    // try connecting
+    ESP_LOGI(TAG, "SSID: %s (%d)", (char*)&wifi_config.sta.ssid, strlen((char*)&wifi_config.sta.ssid));
+    ESP_LOGI(TAG, "PASS: %s (%d)", (char*)&wifi_config.sta.password, strlen((char*)&wifi_config.sta.password));
+    ATTEMPT(esp_wifi_connect())
+
+    // wait for result
+    wait_for(WIFI_CONNECTED_BIT, 10000 / portTICK_PERIOD_MS);
+    *result = check_bit(WIFI_CONNECTED_BIT);
 
     return ESP_OK;
 }

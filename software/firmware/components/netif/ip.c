@@ -32,14 +32,46 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             break;
         }
         case IP_EVENT_STA_GOT_IP:
+        {
             ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
-            set_bit(WIFI_CONNECTED_BIT);
+             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
+            
+            if( check_bit(PROVISIONING_BIT) )
+            {               
+                FILE* connection = open_file("/prov/connection.json", "w");
+                if( connection )
+                {
+                    cJSON* json = cJSON_CreateObject();
+                    if( json )
+                    {
+                        wifi_config_t wifi_config = {0};
+                        esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
+                        cJSON_AddStringToObject(json, "ssid", (char*)wifi_config.ap.ssid);
+                        cJSON_AddStringToObject(json, "ip", inet_ntoa(ip_event.ip_info.ip));
+
+                        char* json_str = cJSON_Print(json);
+                        if( fwrite(json_str, 1, strlen(json_str), connection) == strlen(json_str) )
+                        {
+                            set_network_info(ip_event.ip_info);
+                            set_bit(WIFI_CONNECTED_BIT);
+                        }
+                        else
+                        {
+                            ESP_LOGE(TAG, "Error saving ssid & password");
+                        }
+                    }
+                    cJSON_Delete(json);
+                }
+                fclose(connection);
+            }
+            else{
+                set_bit(WIFI_CONNECTED_BIT);
+            }
 
             break;
+        }
         case IP_EVENT_STA_LOST_IP:
             ESP_LOGI(TAG, "IP_EVENT_STA_LOST_IP");
-            clear_bit(WIFI_CONNECTED_BIT);
-
             break;
         case IP_EVENT_AP_STAIPASSIGNED:
             ESP_LOGI(TAG, "IP_EVENT_AP_STAIPASSIGNED");
@@ -65,7 +97,6 @@ static esp_err_t init_eth()
     ATTEMPT(init_eth_netif(&eth_netif))
     ATTEMPT(init_eth_handle(&eth_handle))
     ATTEMPT(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)))
-    ATTEMPT(set_bit(PROVISIONED_BIT))
     ESP_LOGI(TAG, "Ethernet initialized");
 
     return ESP_OK;
@@ -185,8 +216,8 @@ esp_err_t start_interfaces()
 esp_err_t turn_on_accesspoint()
 {
     ESP_LOGI(TAG, "Turning Accesspoint on");
-    ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_APSTA))
-    ERROR_CHECK(init_wifi_ap_netif(&wifi_ap_netif))
+    ATTEMPT(esp_wifi_set_mode(WIFI_MODE_APSTA))
+    ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
 
     return ESP_OK;
 }

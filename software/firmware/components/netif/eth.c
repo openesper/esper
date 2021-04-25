@@ -96,7 +96,7 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
     NULL_CHECK(mac)
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
-    ERROR_CHECK(esp_eth_driver_install(&config, eth_handle))
+    ATTEMPT(esp_eth_driver_install(&config, eth_handle))
 
     return ESP_OK;
 }
@@ -104,7 +104,7 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
 // esp_err_t init_eth()
 // {
 //     ESP_LOGI(TAG, "Initializing Ethernet...");
-//     ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
+//     ATTEMPT(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
 
 //     return ESP_OK;
 // }

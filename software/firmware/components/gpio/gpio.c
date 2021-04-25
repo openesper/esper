@@ -62,8 +62,8 @@ static void button_task(void* args)             // Task keeping track of time be
             }
             else if( length > 3000 )
             {
-                ESP_LOGW(TAG, "Resetting device");
-                reset_device();
+                ESP_LOGW(TAG, "Putting esper back into provisioning mode");
+                set_provisioning_status(false);
                 esp_restart();
             }
             else
@@ -96,8 +96,6 @@ TaskHandle_t getLEDTaskHandle()
 
 static void led_task(void* args)
 {
-    ESP_LOGI(TAG, "Listening for events");
-
     uint32_t state = 0;
     while(1)
     {
@@ -199,6 +197,7 @@ esp_err_t init_gpio()
     get_gpio_config(&button, &red_led, &green_led, &blue_led);
     if( check_bit(GPIO_ENABLED_BIT) )
     {
+        ESP_LOGI(TAG, "Initializing GPIO...");
         ATTEMPT(init_leds())
         ATTEMPT(init_button())
 
@@ -213,12 +212,6 @@ esp_err_t init_gpio()
             log_error(GPIO_ERR_INIT, "Failed to start button_task");
             return GPIO_ERR_INIT;
         }
-
-        ESP_LOGI(TAG, "GPIO Initialized");
-    }
-    else
-    {
-        ESP_LOGI(TAG, "GPIO Disabled");
     }
     
     return ESP_OK;

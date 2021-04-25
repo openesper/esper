@@ -192,17 +192,6 @@ esp_err_t get_log_data(uint16_t* head, bool* full);
   */
 esp_err_t update_log_data(uint16_t head, bool full);
 
-/**
-  * @brief Reset initialize bit, device will try provisioning at next startup
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t reset_device();
-
-esp_err_t initialize_event_bits();
-
 esp_err_t init_nvs();
 
 #endif

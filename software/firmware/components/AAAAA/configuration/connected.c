@@ -90,7 +90,7 @@ static esp_err_t finish_setup_handler(httpd_req_t *req)
     ESP_LOGI(TAG, "Finishing setup");
 
     ESP_LOGI(TAG, "Configuration finished");
-    ERROR_CHECK(set_provisioning_status(true))
+    ATTEMPT(set_provisioning_status(true))
     xTimerHandle restartTimer = xTimerCreate("Restart timer", pdMS_TO_TICKS(1000), pdFALSE, (void*)0, restart);
     xTimerStart(restartTimer, 0);
     
@@ -108,18 +108,18 @@ static httpd_uri_t finished = {
 
 esp_err_t configure_connected_handler(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_register_uri_handler(server, &connected));
-    ERROR_CHECK(httpd_register_uri_handler(server, &connection_json));
-    ERROR_CHECK(httpd_register_uri_handler(server, &finished));
+    ATTEMPT(httpd_register_uri_handler(server, &connected));
+    ATTEMPT(httpd_register_uri_handler(server, &connection_json));
+    ATTEMPT(httpd_register_uri_handler(server, &finished));
 
     return ESP_OK;
 }
 
 esp_err_t teardown_connected_handler(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_unregister_uri_handler(server, connected.uri, connected.method));
-    ERROR_CHECK(httpd_unregister_uri_handler(server, connection_json.uri, connection_json.method));
-    ERROR_CHECK(httpd_unregister_uri_handler(server, finished.uri, finished.method));
+    ATTEMPT(httpd_unregister_uri_handler(server, connected.uri, connected.method));
+    ATTEMPT(httpd_unregister_uri_handler(server, connection_json.uri, connection_json.method));
+    ATTEMPT(httpd_unregister_uri_handler(server, finished.uri, finished.method));
 
     return ESP_OK;
 }

@@ -40,16 +40,16 @@ static httpd_uri_t windows10_captive_portal = {
 
 esp_err_t configure_captive_portal_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_register_uri_handler(server, &apple_captive_portal))
-    ERROR_CHECK(httpd_register_uri_handler(server, &windows10_captive_portal))
+    ATTEMPT(httpd_register_uri_handler(server, &apple_captive_portal))
+    ATTEMPT(httpd_register_uri_handler(server, &windows10_captive_portal))
 
     return ESP_OK;
 }
 
 esp_err_t teardown_captive_portal_handlers(httpd_handle_t server)
 {
-    ERROR_CHECK(httpd_unregister_uri_handler(server, apple_captive_portal.uri, apple_captive_portal.method))
-    ERROR_CHECK(httpd_unregister_uri_handler(server, windows10_captive_portal.uri, windows10_captive_portal.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, apple_captive_portal.uri, apple_captive_portal.method))
+    ATTEMPT(httpd_unregister_uri_handler(server, windows10_captive_portal.uri, windows10_captive_portal.method))
 
     return ESP_OK;
 }

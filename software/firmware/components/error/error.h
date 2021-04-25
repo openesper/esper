@@ -13,18 +13,10 @@
 #define NULL_CHECK(x) if( x == NULL ){ return ESP_FAIL; }
 
 /**
-  * @brief print error and return ESP_FAIL if function does not return ESP_OK
+  * @brief print error, log to error.txt, and return ESP_FAIL if function does not succeed
   * 
   * @param x function with esp_err_t return type
   */
-#define ERROR_CHECK(x) do {                                                                 \
-    esp_err_t tmp_err = (x);                                                        \
-    if (tmp_err != ESP_OK) {                                                        \
-        ESP_LOGE(TAG, STRING(x) " (%s)(%X)", esp_err_to_name(tmp_err), tmp_err);    \
-        return tmp_err;                                                            \
-    }                                                                               \
-} while(0);
-
 #define ATTEMPT(func) do { \
     esp_err_t tmp_err; \
     if( (tmp_err = func) != ESP_OK ) { \
