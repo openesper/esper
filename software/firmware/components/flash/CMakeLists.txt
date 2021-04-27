@@ -11,5 +11,4 @@ idf_component_register( SRCS "flash.c" "filesystem.c"
                                     files/stylesheet.css
                                     files/prov_scripts.js
                                     files/wifi_select.html 
-                                    files/connecttest.txt
-                                    files/hotspot-detect.html )
+                                    files/404.html )

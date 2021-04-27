@@ -194,22 +194,24 @@ static esp_err_t init_leds()
 
 esp_err_t init_gpio()
 {
-    get_gpio_config(&button, &red_led, &green_led, &blue_led);
     if( check_bit(GPIO_ENABLED_BIT) )
     {
         ESP_LOGI(TAG, "Initializing GPIO...");
+        get_gpio_config(&button, &red_led, &green_led, &blue_led);
         ATTEMPT(init_leds())
         ATTEMPT(init_button())
 
         if( xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY) == pdFAIL )
         {
-            log_error(GPIO_ERR_INIT, "Failed to start led_task");
+            log_error(GPIO_ERR_INIT, "xTaskCreatePinnedToCore(led_task, \"led_task\", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY)",
+                      __func__, __FILE__);
             return GPIO_ERR_INIT;
         }
 
         if( xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY) == pdFAIL )
         {
-            log_error(GPIO_ERR_INIT, "Failed to start button_task");
+            log_error(GPIO_ERR_INIT, "xTaskCreatePinnedToCore(led_task, \"button_task\", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY)",
+                      __func__, __FILE__);
             return GPIO_ERR_INIT;
         }
     }

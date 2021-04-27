@@ -22,14 +22,14 @@ static esp_err_t store_ap_records()
     FILE* wifi_json = open_file("/prov/wifi.json", "w");
     if( !wifi_json )
     {
-        log_error(ESP_FAIL, "Could not open /prov/wifi.json");
+        log_error(ESP_FAIL, "open_file(\"/prov/wifi.json\", \"w\")", __func__, __FILE__);
         return ESP_FAIL;
     }
 
     cJSON* json = cJSON_CreateArray();
     if( !json )
     {
-        log_error(ESP_FAIL, "Could not create wifi.json");
+        log_error(ESP_FAIL, "cJSON_CreateArray()", __func__, __FILE__);
         fclose(wifi_json);
         return ESP_FAIL;
     }
@@ -49,7 +49,7 @@ static esp_err_t store_ap_records()
     char* json_str = cJSON_Print(json);
     if( fwrite(json_str, 1, strlen(json_str), wifi_json) < strlen(json_str) )
     {
-        log_error(ESP_FAIL, "Error writing to /prov/wifi.json");
+        log_error(ESP_FAIL, "fwrite(json_str, 1, strlen(json_str), wifi_json)", __func__, __FILE__);
     }
 
     cJSON_Delete(json);
@@ -86,6 +86,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         {
             ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
             // (wifi_event_sta_connected_t*)event_data;
+            // set_bit(WIFI_CONNECTED_BIT);
             break;
         }
         case WIFI_EVENT_STA_DISCONNECTED:
@@ -176,7 +177,7 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
             .ssid_len = 5,
             .channel = 1,
             .password = "",
-            .max_connection = 1,
+            .max_connection = 5,
             .authmode = WIFI_AUTH_OPEN
         },
     };
@@ -210,10 +211,7 @@ esp_err_t attempt_to_connect(char* ssid, char* pass, bool* result)
         return ESP_ERR_INVALID_ARG;
 
     // Disconnect if already connected to AP
-    if( check_bit(WIFI_CONNECTED_BIT) )
-    {
-        ATTEMPT(esp_wifi_disconnect());
-    }
+    esp_wifi_disconnect();
 
     // clear connection.json
     FILE* f = open_file("/prov/connection.json", "w");

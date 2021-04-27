@@ -7,12 +7,7 @@
 /**
   * @brief Status bits
   */
-
-extern const int SCAN_FINISHED_BIT;         // Wifi station has finished scanning available IPs
-extern const int CONNECTED_BIT;             // Device is connected 
-extern const int DISCONNECTED_BIT;          // Device is disconnected
 extern const int PROVISIONING_BIT;          // Device is currently in provisioning mode
-extern const int STATIC_IP_BIT;             // Device has received a static IP
 extern const int BLOCKING_BIT;              // Device is currently blocking DNS queries
 extern const int INITIALIZING_BIT;          // Device is currently initializing
 extern const int ERROR_BIT;                 // Device has detected an error
@@ -23,9 +18,11 @@ extern const int BLOCKED_QUERY_BIT;         // A Query was blocked
 extern const int ETH_ENABLED_BIT;
 extern const int ETH_INITIALIZED_BIT;
 extern const int ETH_CONNECTED_BIT;
+extern const int ETH_GOT_IP_BIT;
 extern const int WIFI_ENABLED_BIT;
 extern const int WIFI_INITIALIZED_BIT;
 extern const int WIFI_CONNECTED_BIT;
+extern const int WIFI_GOT_IP_BIT;
 extern const int GPIO_ENABLED_BIT;
 
 /**

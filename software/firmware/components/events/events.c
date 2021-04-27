@@ -9,11 +9,7 @@
 static const char *TAG = "EVENT";
 
 EventGroupHandle_t event_group;
-const int SCAN_FINISHED_BIT = BIT0;
-const int CONNECTED_BIT = BIT1;
-const int DISCONNECTED_BIT = BIT2;
 const int PROVISIONING_BIT = BIT3;
-const int STATIC_IP_BIT = BIT5;
 const int BLOCKING_BIT = BIT6;
 const int INITIALIZING_BIT = BIT7;
 const int ERROR_BIT = BIT8;
@@ -21,6 +17,8 @@ const int OTA_BIT = BIT9;
 const int UPDATE_AVAILABLE_BIT = BIT10;
 const int BLOCKED_QUERY_BIT = BIT13;
 
+const int ETH_GOT_IP_BIT = BIT15;
+const int WIFI_GOT_IP_BIT = BIT16;
 const int GPIO_ENABLED_BIT = BIT17;
 const int ETH_ENABLED_BIT = BIT18;
 const int ETH_INITIALIZED_BIT = BIT19;
@@ -35,14 +33,12 @@ esp_err_t init_event_group()
     event_group = xEventGroupCreate();
     if( event_group == NULL )
     {
-        log_error(EVENT_ERR_INIT, "xEventGroupCreate()");
+        log_error(EVENT_ERR_INIT, "xEventGroupCreate()", __func__, __FILE__);
         return ESP_FAIL;
     }
-    else
-    {
-        ESP_LOGI(TAG, "Event Group Started");
-        return ESP_OK;
-    }
+
+    ESP_LOGI(TAG, "Event Group Started");
+    return ESP_OK;
 }
 
 esp_err_t set_bit(int bit)

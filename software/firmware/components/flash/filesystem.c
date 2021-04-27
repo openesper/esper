@@ -89,12 +89,11 @@ static esp_err_t initialize_files()
     COPY_EMBED("/app/scripts.js",               app_scripts_js);
     COPY_EMBED("/app/blacklist.txt",            defaultblacklist_txt);
     COPY_EMBED("/app/settings.json",            settings_json);
+    COPY_EMBED("/app/404.html",                 404_html);
     COPY_EMBED("/prov/connected/index.html",    connected_html);
     COPY_EMBED("/prov/index.html",              wifi_select_html);
     COPY_EMBED("/prov/scripts.js",              prov_scripts_js);
     COPY_EMBED("/prov/stylesheet.css",          stylesheet_css);
-    COPY_EMBED("/prov/hotspot-detect.html",     hotspot_detect_html);
-    COPY_EMBED("/prov/connecttest.txt",         connecttest_txt);
 
     FILE* v = open_file("/version.txt", "w");
     if( v == NULL )

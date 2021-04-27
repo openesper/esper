@@ -105,8 +105,16 @@ static esp_err_t init_eth()
 static esp_err_t init_wifi()
 {
     ATTEMPT(configure_wifi())
+    esp_wifi_set_mode(WIFI_MODE_STA);
     ATTEMPT(init_wifi_sta_netif(&wifi_sta_netif))
-    ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
+    
+
+    if( check_bit(PROVISIONING_BIT) )
+    {
+        esp_wifi_set_mode(WIFI_MODE_APSTA);
+        ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
+    }
+        
     ESP_LOGI(TAG, "Wifi initialized");
 
     return ESP_OK;
@@ -117,31 +125,18 @@ esp_err_t init_interfaces()
     // Turn on available interfaces
     if( check_bit(ETH_ENABLED_BIT) )
     {
-        if( init_eth() != ESP_OK )
-        {
-            log_error(ESP_FAIL, "Failed to init ethernet");
-        }
-        else
-        {
-            set_bit(ETH_INITIALIZED_BIT);
-        }
+        ATTEMPT(init_eth())
+        set_bit(ETH_INITIALIZED_BIT);
     }
     else if( check_bit(WIFI_ENABLED_BIT) )
     {
-        if( init_wifi() != ESP_OK )
-        {
-            log_error(ESP_FAIL, "Failed to init WIFI");
-        }
-        else
-        {
-            set_bit(WIFI_INITIALIZED_BIT);
-        }
+        ATTEMPT(init_wifi())
+        set_bit(WIFI_INITIALIZED_BIT);
     }
 
     if( !check_bit(ETH_INITIALIZED_BIT) && !check_bit(WIFI_INITIALIZED_BIT))
     {
-        log_error(IP_ERR_INIT, "Failed to initialize interface");
-        return ESP_FAIL;
+        return IP_ERR_INIT;
     }
 
     return ESP_OK;
@@ -168,7 +163,7 @@ esp_err_t set_static_ip(esp_netif_t* interface)
     cJSON* json = get_settings_json();
     if( json == NULL)
     {
-        log_error(ESP_ERR_NOT_FOUND, "Failed to open settings");
+        log_error(ESP_ERR_NOT_FOUND, "get_settings_json()", __func__, __FILE__);
         return ESP_FAIL;
     }
 
@@ -194,38 +189,13 @@ esp_err_t start_interfaces()
 
     if( check_bit(WIFI_INITIALIZED_BIT) )
     {
-        if( check_bit(PROVISIONING_BIT) )
+        esp_wifi_start();
+        if( !check_bit(PROVISIONING_BIT) )
         {
-            ESP_LOGI(TAG, "Starting Wifi AP");
-            esp_wifi_set_mode(WIFI_MODE_APSTA);
-            esp_wifi_start();
-        }
-        else
-        {
-            ESP_LOGI(TAG, "Starting Wifi Station");
-            esp_wifi_set_mode(WIFI_MODE_STA);
-            esp_wifi_start();
             esp_wifi_connect();
-        }   
-        
+        }
     }
 
-    return ESP_OK;
-}
-
-esp_err_t turn_on_accesspoint()
-{
-    ESP_LOGI(TAG, "Turning Accesspoint on");
-    ATTEMPT(esp_wifi_set_mode(WIFI_MODE_APSTA))
-    ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
-
-    return ESP_OK;
-}
-
-esp_err_t turn_off_accesspoint()
-{
-    ESP_LOGI(TAG, "Turning Accesspoint off");
-    esp_netif_destroy(wifi_ap_netif);
     return ESP_OK;
 }
 

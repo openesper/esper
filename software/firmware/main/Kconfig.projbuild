@@ -1,0 +1,101 @@
+menu "Esper Configuration"
+
+    menuconfig ETHERNET_ENABLE
+        bool "Enable Ethernet"
+        default y
+        help
+            Turn ethernet on
+
+    if ETHERNET_ENABLE
+        choice ETH_PHY_MODEL
+            prompt "Ethernet PHY Device"
+            default ETH_PHY_LAN8720
+            help
+                Select the Ethernet PHY device to use in the example.
+
+            config ETH_PHY_LAN8720
+                bool "LAN8720"
+                help
+                    LAN8720A is a small footprint RMII 10/100 Ethernet Transceiver with HP Auto-MDIX Support.
+                    Goto https://www.microchip.com/LAN8720A for more information about it.
+
+            config ETH_PHY_IP101
+                bool "IP101"
+                help
+                    IP101 is a single port 10/100 MII/RMII/TP/Fiber Fast Ethernet Transceiver.
+                    Goto http://www.icplus.com.tw/pp-IP101G.html for more information about it.
+
+            config ETH_PHY_RTL8201
+                bool "RTL8201/SR8201"
+                help
+                    RTL8201F/SR8201F is a single port 10/100Mb Ethernet Transceiver with auto MDIX.
+                    Goto http://www.corechip-sz.com/productsview.asp?id=22 for more information about it.
+
+            config ETH_PHY_DP83848
+                bool "DP83848"
+                help
+                    DP83848 is a single port 10/100Mb/s Ethernet Physical Layer Transceiver.
+                    Goto http://www.ti.com/product/DP83848J for more information about it.
+        endchoice # ETH_PHY_MODEL
+
+        config ETH_MDC_GPIO
+            int "SMI MDC GPIO number"
+            default 23
+            help
+                Set the GPIO number used by SMI MDC.
+
+        config ETH_MDIO_GPIO
+            int "SMI MDIO GPIO number"
+            default 18
+            help
+                Set the GPIO number used by SMI MDIO.
+
+        config ETH_PHY_RST_GPIO
+            int "PHY Reset GPIO number"
+            default 4
+            help
+                Set the GPIO number used to reset PHY chip.
+                Set to -1 to disable PHY chip hardware reset.
+
+        config ETH_PHY_ADDR
+            int "PHY Address"
+            range 0 31
+            default 0
+            help
+                Set PHY address according your board schematic.
+    endif # ETHERNET_ENABLE
+
+    menuconfig WIFI_ENABLE
+        bool "Enable Wifi"
+        default y
+        help
+            Turn wifi on
+ 
+    menuconfig GPIO_ENABLE
+        bool "Enable GPIO"
+        default y
+        help
+           Turn on GPIO
+
+    if GPIO_ENABLE
+        config BLUE_LED
+            int "Blue LED GPIO number"
+            range 0 35
+            default 16
+
+        config RED_LED
+            int "Red LED GPIO number"
+            range 0 35
+            default 32
+
+        config GREEN_LED
+            int "Green LED GPIO number"
+            range 0 35
+            default 33
+
+        config BUTTON
+            int "Button GPIO number"
+            range 0 35
+            default 34
+    endif # GPIO_ENABLE
+endmenu

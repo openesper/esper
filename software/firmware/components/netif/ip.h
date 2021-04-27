@@ -13,24 +13,6 @@
 esp_err_t init_interfaces();
 
 /**
-  * @brief Set Esper to accesspoint mode
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL Failure
-  */
-esp_err_t turn_on_accesspoint();
-
-/**
-  * @brief Turn off accesspoint
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL Failure
-  */
-esp_err_t turn_off_accesspoint();
-
-/**
   * @brief Start initialized interfaces in station mode
   *
   * @return

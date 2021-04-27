@@ -48,7 +48,11 @@ esp_err_t init_eth_netif(esp_netif_t** eth_netif)
     };
 
     *eth_netif = esp_netif_new(&netif_cfg);
-    NULL_CHECK(eth_netif)
+    if( eth_netif == NULL)
+    {
+        log_error(ESP_FAIL, "esp_netif_new(&netif_cfg)", __func__, __FILE__);
+        return ESP_FAIL;
+    }
 
     // Set default handlers to process TCP/IP stuffs
      ATTEMPT(esp_eth_set_default_handlers(*eth_netif))
@@ -85,7 +89,11 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
             phy = NULL;
             break;
     }
-    NULL_CHECK(phy)
+    if( phy == NULL )
+    {
+        log_error(ESP_FAIL, "esp_eth_phy_new()", __func__, __FILE__);
+        return ESP_FAIL;
+    }
 
     // Setup MAC configuration
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
@@ -93,7 +101,11 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
     mac_config.smi_mdio_gpio_num = mdio;
 
     esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
-    NULL_CHECK(mac)
+    if( mac == NULL )
+    {
+        log_error(ESP_FAIL, "esp_eth_mac_new_esp32(&mac_config)", __func__, __FILE__);
+        return ESP_FAIL;
+    }
 
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
     ATTEMPT(esp_eth_driver_install(&config, eth_handle))

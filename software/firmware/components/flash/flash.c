@@ -40,27 +40,6 @@ esp_err_t set_network_info(esp_netif_ip_info_t info)
     return err;
 }
 
-esp_err_t get_log_data(uint16_t* head, bool* full){
-    esp_err_t err = nvs_get_u16(nvs, "log_head", head);
-    err |= nvs_get_u8(nvs, "full_flag", (uint8_t*)full);
-
-    if( err != ESP_OK ){
-        return ESP_FAIL;
-    }
-    return ESP_OK;
-}
-
-esp_err_t update_log_data(uint16_t head, bool full)
-{
-    esp_err_t err = nvs_set_u16(nvs, "log_head", head);
-    err |= nvs_set_u8(nvs, "full_flag", (uint8_t)full);
-
-    if( err != ESP_OK ){
-        return ESP_FAIL;
-    }
-    return ESP_OK;
-}
-
 esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, uint32_t* mdc, uint32_t* mdio)
 {
     ATTEMPT(nvs_get_u32(nvs, "phy", phy))
@@ -113,13 +92,64 @@ static esp_err_t initialize_event_bits()
         set_bit(GPIO_ENABLED_BIT);
     }
 
-    bool provisioned = false;
-    nvs_get_u8(nvs, "provisioned", (uint8_t*)&provisioned);
-    if( !provisioned )
+    if( !eth && wifi )
     {
-        ESP_LOGI(TAG, "Not provisioned");
-        set_bit(PROVISIONING_BIT);
+        bool provisioned = false;
+        nvs_get_u8(nvs, "provisioned", (uint8_t*)&provisioned);
+        if( !provisioned )
+        {
+            ESP_LOGI(TAG, "Not provisioned");
+            set_bit(PROVISIONING_BIT);
+        }
     }
+
+    return ESP_OK;
+}
+
+
+#define VERIFY_KEY(type, name, key, default) { \
+    type buf = 0;                                                   \
+    esp_err_t status = nvs_get_##name(nvs, key, &buf);              \
+    if( status == ESP_ERR_NVS_NOT_FOUND )                           \
+    {                                                               \
+        ESP_LOGW(TAG, "%s not found, setting to %d", key, default); \
+        ATTEMPT(nvs_set_##name(nvs, key, default))                  \
+    }                                                               \
+    else if( status != ESP_OK )                                     \
+    {                                                               \
+        return ESP_FAIL;                                            \
+    }                                                               \
+}
+
+static esp_err_t verify_nvs()
+{
+#ifdef CONFIG_GPIO_ENABLE
+    VERIFY_KEY(uint8_t,  u8,  "gpio", CONFIG_GPIO_ENABLE)
+    VERIFY_KEY(int32_t,  i32, "button", CONFIG_BUTTON)
+    VERIFY_KEY(int32_t,  i32, "red_led", CONFIG_RED_LED)
+    VERIFY_KEY(int32_t,  i32, "green_led", CONFIG_GREEN_LED)
+    VERIFY_KEY(int32_t,  i32, "blue_led", CONFIG_BLUE_LED)
+#endif
+#ifdef CONFIG_ETHERNET_ENABLE
+    VERIFY_KEY(uint8_t,  u8,  "ethernet", CONFIG_ETHERNET_ENABLE)
+    VERIFY_KEY(uint32_t, u32, "phy_addr", CONFIG_ETH_PHY_ADDR)
+    VERIFY_KEY(uint32_t, u32, "phy_rst", CONFIG_ETH_PHY_RST_GPIO)
+    VERIFY_KEY(uint32_t, u32, "phy_mdio", CONFIG_ETH_MDIO_GPIO)
+    VERIFY_KEY(uint32_t, u32, "phy_mdc", CONFIG_ETH_MDC_GPIO)
+    #ifdef CONFIG_ETH_PHY_LAN8720
+        VERIFY_KEY(uint32_t, u32, "phy", CONFIG_ETH_PHY_LAN8720)
+    #elif CONFIG_ETH_PHY_IP101
+        VERIFY_KEY(uint32_t, u32, "phy", CONFIG_ETH_PHY_IP101)
+    #elif CONFIG_ETH_PHY_RTL8201
+        VERIFY_KEY(uint32_t, u32, "phy", CONFIG_ETH_PHY_RTL8201)
+    #elif CONFIG_ETH_PHY_DP83848
+        VERIFY_KEY(uint32_t, u32, "phy", CONFIG_ETH_PHY_DP83848)
+    #endif
+#endif
+#ifdef CONFIG_WIFI_ENABLE
+    VERIFY_KEY(uint8_t,  u8,   "wifi", CONFIG_WIFI_ENABLE)
+#endif
+    VERIFY_KEY(uint8_t,  u8,  "provisioned", 0)
 
     return ESP_OK;
 }
@@ -142,6 +172,7 @@ esp_err_t init_nvs()
     if ( (err = nvs_open("storage", NVS_READWRITE, &nvs)) != ESP_OK )
         return err;
 
+    ATTEMPT(verify_nvs())
     ATTEMPT(initialize_event_bits())
     return ESP_OK;
 }

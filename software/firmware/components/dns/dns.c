@@ -315,7 +315,7 @@ static esp_err_t load_settings()
     cJSON* json = get_settings_json();
     if( json == NULL)
     {
-        log_error(ESP_ERR_NOT_FOUND, "Failed to open settings");
+        log_error(ESP_ERR_NOT_FOUND, "get_settings_json()", __func__, __FILE__);
         return ESP_FAIL;
     }
 
