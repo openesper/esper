@@ -9,23 +9,23 @@
 static const char *TAG = "EVENT";
 
 EventGroupHandle_t event_group;
-const int PROVISIONING_BIT = BIT3;
-const int BLOCKING_BIT = BIT6;
-const int INITIALIZING_BIT = BIT7;
-const int ERROR_BIT = BIT8;
-const int OTA_BIT = BIT9;
-const int UPDATE_AVAILABLE_BIT = BIT10;
-const int BLOCKED_QUERY_BIT = BIT13;
+const int GPIO_ENABLED_BIT = BIT1;
+const int ETH_ENABLED_BIT = BIT2;
+const int ETH_INITIALIZED_BIT = BIT3;
+const int ETH_CONNECTED_BIT = BIT4;
+const int ETH_GOT_IP_BIT = BIT5;
+const int WIFI_ENABLED_BIT = BIT6;
+const int WIFI_INITIALIZED_BIT = BIT7;
+const int WIFI_CONNECTED_BIT = BIT8;
+const int WIFI_GOT_IP_BIT = BIT9;
 
-const int ETH_GOT_IP_BIT = BIT15;
-const int WIFI_GOT_IP_BIT = BIT16;
-const int GPIO_ENABLED_BIT = BIT17;
-const int ETH_ENABLED_BIT = BIT18;
-const int ETH_INITIALIZED_BIT = BIT19;
-const int ETH_CONNECTED_BIT = BIT20;
-const int WIFI_ENABLED_BIT = BIT21;
-const int WIFI_INITIALIZED_BIT = BIT22;
-const int WIFI_CONNECTED_BIT = BIT23;
+const int PROVISIONING_BIT = BIT10;
+const int BLOCKING_BIT = BIT11;
+const int INITIALIZING_BIT = BIT12;
+const int ERROR_BIT = BIT13;
+const int OTA_BIT = BIT14;
+const int UPDATE_AVAILABLE_BIT = BIT15;
+const int BLOCKED_QUERY_BIT = BIT16;
 
 
 esp_err_t init_event_group()

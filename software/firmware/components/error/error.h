@@ -2,6 +2,7 @@
 #define ERROR_H
 
 #include "esp_system.h"
+#include "errno.h"
 
 #define STRING(x) #x
 

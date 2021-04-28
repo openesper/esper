@@ -38,31 +38,7 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             
             if( check_bit(PROVISIONING_BIT) )
             {               
-                FILE* connection = open_file("/prov/connection.json", "w");
-                if( connection )
-                {
-                    cJSON* json = cJSON_CreateObject();
-                    if( json )
-                    {
-                        wifi_config_t wifi_config = {0};
-                        esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
-                        cJSON_AddStringToObject(json, "ssid", (char*)wifi_config.ap.ssid);
-                        cJSON_AddStringToObject(json, "ip", inet_ntoa(ip_event.ip_info.ip));
-
-                        char* json_str = cJSON_Print(json);
-                        if( fwrite(json_str, 1, strlen(json_str), connection) == strlen(json_str) )
-                        {
-                            set_network_info(ip_event.ip_info);
-                            set_bit(WIFI_CONNECTED_BIT);
-                        }
-                        else
-                        {
-                            ESP_LOGE(TAG, "Error saving ssid & password");
-                        }
-                    }
-                    cJSON_Delete(json);
-                }
-                fclose(connection);
+                store_connection_json(ip_event.ip_info);
             }
             else{
                 set_bit(WIFI_CONNECTED_BIT);
@@ -160,21 +136,16 @@ esp_err_t set_static_ip(esp_netif_t* interface)
         ESP_LOGW(TAG, "No static IP found");
     }
 
-    cJSON* json = get_settings_json();
-    if( json == NULL)
-    {
-        log_error(ESP_ERR_NOT_FOUND, "get_settings_json()", __func__, __FILE__);
-        return ESP_FAIL;
-    }
+    char ip[IP4ADDR_STRLEN_MAX];
+    ATTEMPT(get_setting("upstream_server", ip))
 
     esp_netif_dns_info_t dns = {0};
-    cJSON* upstream_dns = cJSON_GetObjectItem(json, "upstream_server");
-    ip4addr_aton(upstream_dns->valuestring, (ip4_addr_t*)&dns.ip.u_addr.ip4);
+    ip4addr_aton(ip, (ip4_addr_t*)&dns.ip.u_addr.ip4);
     dns.ip.type = IPADDR_TYPE_V4;
     
     ATTEMPT(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
 
-    cJSON_Delete(json);
+    // cJSON_Delete(json);
     return ESP_OK;
 }
 
@@ -192,6 +163,7 @@ esp_err_t start_interfaces()
         esp_wifi_start();
         if( !check_bit(PROVISIONING_BIT) )
         {
+            ATTEMPT(set_static_ip(wifi_sta_netif))
             esp_wifi_connect();
         }
     }

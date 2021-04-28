@@ -7,5 +7,6 @@
 esp_err_t submitauth_handler(httpd_req_t *req);
 esp_err_t scan_handler(httpd_req_t *req);
 esp_err_t finish_handler(httpd_req_t *req);
+esp_err_t register_post_handlers(httpd_handle_t server);
 
 #endif

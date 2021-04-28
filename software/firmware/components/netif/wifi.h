@@ -7,6 +7,8 @@
 
 #define MAX_SCAN_RECORDS 5
 
+esp_err_t store_connection_json(esp_netif_ip_info_t ip_info);
+
 /**
   * @brief Initialize wifi station netif
   * 

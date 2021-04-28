@@ -13,20 +13,6 @@ typedef struct {
 } URL;
 
 /**
-  * @brief Get pointer blacklist, takes blacklist mutex lock
-  *
-  * @param size pointer to int that will be filled with number of entries in blacklist
-  * 
-  * @return pointer to blacklist buffer
-  */
-char* get_blacklist(int* size);
-
-/**
-  * @brief Return blacklist mutex lock
-  */
-void return_blacklist();
-
-/**
   * @brief Add url to blacklist
   *
   * @param URL url structure with url string to be added
@@ -35,7 +21,7 @@ void return_blacklist();
   *    - ESP_OK Success
   *    - ESP_FAIL unable to get info from flash
   */
-esp_err_t add_to_blacklist(URL url);
+esp_err_t add_to_blacklist(const char* hostname);
 
 /**
   * @brief Remove URL from blacklist
@@ -46,27 +32,7 @@ esp_err_t add_to_blacklist(URL url);
   *    - ESP_OK Success
   *    - ESP_FAIL unable to get info from flash
   */
-esp_err_t remove_from_blacklist(URL url);
-
-/**
-  * @brief Build json object with urls to be added
-  *
-  * @param json pointer to JSON to be filled with blacklist
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t build_blacklist_json(cJSON* json);
-
-/**
-  * @brief Read default blacklist file and store in flash
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t store_default_blacklists();
+esp_err_t remove_from_blacklist(const char* hostname);
 
 /**
   * @brief Pull blacklist from flash and store in RAM
@@ -86,7 +52,7 @@ esp_err_t initialize_blocklists();
   *     - true URL valid
   *     - false URL invalid
   */
-bool valid_url(URL url);
+bool valid_url(const char* url);
 
 /**
   * @brief Check to see if URL is in blacklist

@@ -280,7 +280,7 @@ static IRAM_ATTR void dns_t(void* parameters)
             {
                 ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                 forward_query(packet);
-                // log_query(url, false, packet->src.sin_addr.s_addr);
+                log_query(url, false, packet->src.sin_addr.s_addr);
             }
             else 
             {
@@ -288,19 +288,19 @@ static IRAM_ATTR void dns_t(void* parameters)
                 {
                     ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
-                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                    log_query(url, false, packet->src.sin_addr.s_addr);
                 }
                 else if( check_bit(BLOCKING_BIT) && in_blacklist(url) ) // check if url is in blacklist
                 {
                     ESP_LOGW(TAG, "Blocking question for %.*s", url.length, url.string);
                     block_query(packet);
-                    // log_query(url, true, packet->src.sin_addr.s_addr);
+                    log_query(url, true, packet->src.sin_addr.s_addr);
                 }
                 else
                 {
                     ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
                     forward_query(packet);
-                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                    log_query(url, false, packet->src.sin_addr.s_addr);
                 }
             }
             
@@ -312,24 +312,17 @@ static IRAM_ATTR void dns_t(void* parameters)
 
 static esp_err_t load_settings()
 {
-    cJSON* json = get_settings_json();
-    if( json == NULL)
-    {
-        log_error(ESP_ERR_NOT_FOUND, "get_settings_json()", __func__, __FILE__);
-        return ESP_FAIL;
-    }
-
-    cJSON* url = cJSON_GetObjectItem(json, "url");
-    strcpy(device_url, url->valuestring);
+    ATTEMPT(get_setting("url", device_url))
     ESP_LOGD(TAG, "Device URL %s", device_url);
 
-    cJSON* upstream_dns_str = cJSON_GetObjectItem(json, "upstream_server");
+    char dns[IP4ADDR_STRLEN_MAX];
+    ATTEMPT(get_setting("upstream_server", dns))
+    ip4addr_aton(dns, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
     upstream_dns.sin_family = PF_INET;
     upstream_dns.sin_port = htons(DNS_PORT);
-    ip4addr_aton(upstream_dns_str->valuestring, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
     ESP_LOGD(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
 
-    cJSON_Delete(json);
+    // cJSON_Delete(json);
     return ESP_OK;
 }
 

@@ -1,0 +1,3 @@
+[submodule "software/firmware/components/littlefs"]
+	path = software/firmware/components/littlefs
+	url = https://github.com/joltwallet/esp_littlefs.git

@@ -2,6 +2,7 @@
 #define DATETIME_H
 
 #include <esp_system.h>
+#include "sys/time.h"
 
 /**
   * @brief Convert time_t scruct into string

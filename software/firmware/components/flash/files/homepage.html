@@ -75,7 +75,7 @@
                 </div>
                 <div>
                     <label>Entries per page</label>
-                    <select id='sizeselect'>
+                    <select id='sizeselect' onchange=loadQueries()>
                         <option value='10'>10</option>
                         <option value='20'>25</option>
                         <option value='50'>50</option>
@@ -84,7 +84,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 3em">Time</th>
+                            <th style="width: 6em">Time</th>
                             <th>Domain</th>
                             <th style="width: 8em">Client</th>
                             <th style="width: 3em"></th>

@@ -68,6 +68,13 @@ esp_err_t submitauth_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static httpd_uri_t submitauth = {
+    .uri       = "/submitauth",
+    .method    = HTTP_POST,
+    .handler   = submitauth_handler,
+};
+
+
 esp_err_t scan_handler(httpd_req_t *req)
 {
     if( wifi_scan() != ESP_OK )
@@ -79,6 +86,13 @@ esp_err_t scan_handler(httpd_req_t *req)
     httpd_resp_sendstr(req, "could not connect");
     return ESP_OK;
 }
+
+static httpd_uri_t scan = {
+    .uri       = "/scan",
+    .method    = HTTP_POST,
+    .handler   = scan_handler,
+};
+
 
 esp_err_t finish_handler(httpd_req_t *req)
 {
@@ -98,6 +112,22 @@ esp_err_t finish_handler(httpd_req_t *req)
     {
         SEND_ERR(req, HTTPD_400_BAD_REQUEST, "Previous connection attempt was unsuccessful")
     }
+
+    return ESP_OK;
+}
+
+static httpd_uri_t finish = {
+    .uri       = "/finish",
+    .method    = HTTP_POST,
+    .handler   = finish_handler,
+};
+
+
+esp_err_t register_post_handlers(httpd_handle_t server)
+{
+    ATTEMPT(httpd_register_uri_handler(server, &submitauth))
+    ATTEMPT(httpd_register_uri_handler(server, &scan))
+    ATTEMPT(httpd_register_uri_handler(server, &finish))
 
     return ESP_OK;
 }

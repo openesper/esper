@@ -8,12 +8,45 @@
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "cJSON.h"
+#include "lwip/inet.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "WIFI";
 
-static esp_err_t store_ap_records()
+esp_err_t store_connection_json(esp_netif_ip_info_t ip_info)
+{
+    FILE* connection = open_file("/prov/connection.json", "w");
+    if( !connection )
+        return ESP_FAIL;
+
+    cJSON* json = cJSON_CreateObject();
+    if( !json )
+        return ESP_FAIL;
+
+    wifi_config_t wifi_config = {0};
+    esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
+    cJSON_AddStringToObject(json, "ssid", (char*)wifi_config.ap.ssid);
+    cJSON_AddStringToObject(json, "ip", inet_ntoa(ip_info.ip));
+
+    char* json_str = cJSON_Print(json);
+    if( fwrite(json_str, 1, strlen(json_str), connection) == strlen(json_str) )
+    {
+        set_network_info(ip_info);
+        set_bit(WIFI_CONNECTED_BIT);
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Error saving ssid & password");
+    }
+
+    cJSON_Delete(json);
+    fclose(connection);
+
+    return ESP_OK;
+}
+
+static esp_err_t store_wifi_json()
 {
     uint16_t number = MAX_SCAN_RECORDS;
     static wifi_ap_record_t ap_list[MAX_SCAN_RECORDS];
@@ -69,7 +102,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         case WIFI_EVENT_SCAN_DONE:
         {
             ESP_LOGI(TAG, "WIFI_EVENT_SCAN_DONE");
-            store_ap_records();
+            store_wifi_json();
             break;
         }
         case WIFI_EVENT_STA_START:
@@ -94,12 +127,15 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
             wifi_event_sta_disconnected_t* event = (wifi_event_sta_disconnected_t*) event_data;
             ESP_LOGW(TAG, "WIFI_EVENT_STA_DISCONNECTED %d", event->reason);
             clear_bit(WIFI_CONNECTED_BIT);
+            if( !check_bit(PROVISIONING_BIT) )
+            {
+                esp_wifi_connect();
+            }
             break;
         }
         case WIFI_EVENT_STA_AUTHMODE_CHANGE:
         {
             ESP_LOGI(TAG, "WIFI_EVENT_STA_AUTHMODE_CHANGE");
-            // (wifi_event_sta_authmode_change_t*)event_data;
             break;
         }
         case WIFI_EVENT_AP_START:
@@ -130,7 +166,6 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         case WIFI_EVENT_AP_PROBEREQRECVED:
         {
             ESP_LOGI(TAG, "WIFI_EVENT_AP_PROBEREQRECVED");
-            // (wifi_event_ap_probe_req_rx_t*)event_data;
             break;
         }
         default:

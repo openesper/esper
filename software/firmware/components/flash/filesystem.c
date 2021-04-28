@@ -1,19 +1,19 @@
 #include "filesystem.h"
 #include "error.h"
 #include "events.h"
-#include "esp_spiffs.h"
 #include "cJSON.h"
 #include "string.h"
-// #include "esp_flash_partitions.h"
 #include "esp_partition.h"
 #include "esp_ota_ops.h"
 #include "errno.h"
+#include "esp_littlefs.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "FILE";
 
-static char base_path[MAX_FILENAME_LENGTH];          // /spiffs/ota_0 or /spiffs/ota_1
+#define BASE_PATH "/littlefs"
+static char base_path[MAX_FILENAME_LENGTH];          // /littlefs/ota_0 or /littlefs/ota_1
 
 
 FILE* open_file(const char* filename, const char* mode){
@@ -39,6 +39,46 @@ int stat_file(const char* filename, struct stat* s)
 
     ESP_LOGD(TAG, "Stating %s", path);
     return stat(path, s);
+}
+
+esp_err_t delete_file(const char* filename)
+{
+    char path[MAX_FILENAME_LENGTH];
+    strcpy(path, base_path);
+    strcat(path, filename);
+    unlink(filename);
+
+    return ESP_OK;
+}
+
+esp_err_t rename_file(const char* before, const char* after)
+{
+    char b[MAX_FILENAME_LENGTH];
+    strcpy(b, base_path);
+    strcat(b, before);
+
+    char a[MAX_FILENAME_LENGTH];
+    strcpy(a, base_path);
+    strcat(a, after);
+
+    rename(b, a);
+
+    return ESP_OK;
+}
+
+esp_err_t get_setting(const char* key, char* buffer)
+{
+    cJSON* json = get_settings_json();
+    if( json == NULL)
+    {
+        log_error(ESP_ERR_NOT_FOUND, "get_settings_json()", __func__, __FILE__);
+        return ESP_FAIL;
+    }
+
+    cJSON* object = cJSON_GetObjectItem(json, key);
+    strcpy(buffer, object->valuestring);
+    cJSON_Delete(json);
+    return ESP_OK;
 }
 
 cJSON* get_settings_json()
@@ -74,13 +114,13 @@ cJSON* get_settings_json()
         ESP_LOGE(TAG, "Could not copy %s (%d)", #SRC, errno);                   \
         return ESP_FAIL;                                                        \
     }                                                                           \
-    ESP_LOGD(TAG, "Copied %s", #SRC );                                          \
+    ESP_LOGW(TAG, "Saved %s", #SRC );                                           \
     fclose(file);                                                               \
 } while(0)
 
 static esp_err_t initialize_files()
 {
-    ESP_LOGI(TAG, "Initializing files...");
+    ESP_LOGW(TAG, "Copying files from app binary...");
 
     COPY_EMBED("/app/blacklist/index.html",     blacklist_html);
     COPY_EMBED("/app/settings/index.html",      settings_html);
@@ -108,37 +148,39 @@ static esp_err_t initialize_files()
     fclose(v);
 
     return ESP_OK;
+    
 }
 
 esp_err_t init_filesystem()
 {
-    ESP_LOGI(TAG, "Initializing SPIFFS...");
-    esp_vfs_spiffs_conf_t conf = {
-      .base_path = "/spiffs",
-      .partition_label = NULL,
-      .max_files = 10,
-      .format_if_mount_failed = true
+    ESP_LOGI(TAG, "Initializing LittleFS...");
+    esp_vfs_littlefs_conf_t conf = {
+      .base_path = BASE_PATH,
+      .partition_label = "littlefs",
+      .format_if_mount_failed = true,
+      .dont_mount = false
     };
     
 
-    esp_err_t ret = esp_vfs_spiffs_register(&conf);
+    esp_err_t ret = esp_vfs_littlefs_register(&conf);
     if (ret != ESP_OK) {
         if (ret == ESP_FAIL) {
             ESP_LOGE(TAG, "Failed to mount or format filesystem");
         } else if (ret == ESP_ERR_NOT_FOUND) {
-            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
+            ESP_LOGE(TAG, "Failed to find LittleFS partition");
         } else {
-            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
+            ESP_LOGE(TAG, "Failed to initialize LittleFS (%s)", esp_err_to_name(ret));
         }
         return ret;
     }
-    
 
-    strcpy(base_path, "/spiffs/");
+    // assign base_path to either ota_0 or ota_1
+    strcpy(base_path, BASE_PATH"/");
     const esp_partition_t *running = esp_ota_get_running_partition();
     strcat(base_path, running->label);
-    ESP_LOGI(TAG, "Spiffs base: %s", base_path);
+    ESP_LOGI(TAG, "LittleFS base: %s", base_path);
 
+    // check if files have been initialized by checking version.txt
     FILE* ver = open_file("/version.txt", "r");
     if( ver == NULL ){
         ATTEMPT(initialize_files())
@@ -153,14 +195,15 @@ esp_err_t init_filesystem()
             ATTEMPT(initialize_files())
     }
 
+    // LittleFS stats
     size_t total = 0, used = 0;
-    ret = esp_spiffs_info(NULL, &total, &used);
+    ret = esp_littlefs_info(NULL, &total, &used);
     if (ret != ESP_OK) {
-        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Failed to get LittleFS partition information (%s)", esp_err_to_name(ret));
         return ESP_FAIL;
     }
 
-    ESP_LOGI(TAG, "Spiffs Partition size: total: %d, used: %d", total, used);
+    ESP_LOGI(TAG, "LittleFS Partition size: total: %d, used: %d", total, used);
     return ESP_OK;
 }
 

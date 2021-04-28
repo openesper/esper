@@ -78,7 +78,7 @@ void app_main()
     CHECK(init_tcpip())
     CHECK(init_interfaces())
 
-    // CHECK(initialize_logging())
+    CHECK(initialize_logging())
     CHECK(start_dns())
 
     CHECK(start_interfaces())
