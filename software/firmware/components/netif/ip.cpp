@@ -139,7 +139,7 @@ esp_err_t set_static_ip(esp_netif_t* interface)
     char ip[IP4ADDR_STRLEN_MAX];
     ATTEMPT(get_setting("upstream_server", ip))
 
-    esp_netif_dns_info_t dns = {0};
+    esp_netif_dns_info_t dns = {};
     ip4addr_aton(ip, (ip4_addr_t*)&dns.ip.u_addr.ip4);
     dns.ip.type = IPADDR_TYPE_V4;
     

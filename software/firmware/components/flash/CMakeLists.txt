@@ -1,4 +1,4 @@
-idf_component_register( SRCS "flash.c" "filesystem.c"
+idf_component_register( SRCS "flash.cpp" "filesystem.cpp"
                         INCLUDE_DIRS "."
                         PRIV_REQUIRES nvs_flash spiffs logging url error events netif json app_update littlefs
                         EMBED_FILES files/blacklist.html

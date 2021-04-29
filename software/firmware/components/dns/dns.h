@@ -123,7 +123,7 @@ typedef struct{
 typedef struct __attribute__((__packed__)){
     uint16_t name; // Name can be a 16bit pointer to qname
     uint16_t type;
-    uint16_t class;
+    uint16_t cls;
     uint32_t ttl;
     uint16_t rdlength;
     uint32_t rddata;

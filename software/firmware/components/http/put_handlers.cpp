@@ -51,6 +51,7 @@ static httpd_uri_t blacklistadd = {
     .uri       = "/blacklist/*",
     .method    = HTTP_PUT,
     .handler   = blacklist_put_handler,
+    .user_ctx  = NULL
 };
 
 

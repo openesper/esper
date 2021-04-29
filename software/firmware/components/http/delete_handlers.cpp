@@ -57,6 +57,7 @@ static httpd_uri_t blacklistremove = {
     .uri       = "/blacklist/*",
     .method    = HTTP_DELETE,
     .handler   = blacklist_delete_handler,
+    .user_ctx  = NULL
 };
 
 

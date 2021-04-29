@@ -4,18 +4,22 @@
 #include "filesystem.h"
 #include "gpio.h"
 #include "ip.h"
-#include "webserver.h"
-#include "url.h"
 #include "logging.h"
-#include "datetime.h"
 #include "dns.h"
+#include "webserver.h"
+#include "datetime.h"
 #include "ota.h"
-
-#include "sys/stat.h"
-#include "freertos/FreeRTOS.h"
-#include "esp_log.h"
 #include "esp_ota_ops.h"
 
+// #include "sys/stat.h"
+// #include "freertos/FreeRTOS.h"
+
+
+extern "C" {
+    void app_main();
+}
+
+#include "esp_log.h"
 static const char *TAG = "APP_BOOT";
 
 // Simple macro that will rollback to previous version if any of the initialization steps fail

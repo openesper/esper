@@ -29,7 +29,7 @@ static esp_err_t set_content_type(httpd_req_t *req, const char* filepath)
 {
     const char* ext = get_filename_ext(filepath);
 
-    char* type = "text/html";
+    const char* type;
     if( strcmp(ext, "html") == 0 ){
         type = "text/html";
     } else if( strcmp(ext, "css") == 0 ){
@@ -46,6 +46,8 @@ static esp_err_t set_content_type(httpd_req_t *req, const char* filepath)
         type = "image/png";
     } else if( strcmp(ext, "jpg") == 0 ){
         type = "image/jpg";
+    } else {
+        type = "text/html";
     }
 
     return httpd_resp_set_type(req, type);
@@ -147,6 +149,7 @@ static httpd_uri_t get = {
     .uri       = "*",
     .method    = HTTP_GET,
     .handler   = get_handler,
+    .user_ctx  = NULL
 };
 
 esp_err_t querylog_csv_handler(httpd_req_t *req)
@@ -158,7 +161,7 @@ esp_err_t querylog_csv_handler(httpd_req_t *req)
     httpd_resp_sendstr_chunk(req, "[");
 
     
-    Log_Entry entry = {0};
+    Log_Entry entry = {};
     char str[500];
     uint8_t index = 0;
     while( get_entry(index).time )
@@ -183,6 +186,7 @@ static httpd_uri_t querylog = {
     .uri       = "/querylog.json",
     .method    = HTTP_GET,
     .handler   = querylog_csv_handler,
+    .user_ctx  = NULL
 };
 
 

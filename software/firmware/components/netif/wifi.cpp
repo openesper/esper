@@ -24,8 +24,8 @@ esp_err_t store_connection_json(esp_netif_ip_info_t ip_info)
     if( !json )
         return ESP_FAIL;
 
-    wifi_config_t wifi_config = {0};
-    esp_wifi_get_config(ESP_IF_WIFI_STA, &wifi_config);
+    wifi_config_t wifi_config = {};
+    esp_wifi_get_config(WIFI_IF_STA, &wifi_config);
     cJSON_AddStringToObject(json, "ssid", (char*)wifi_config.ap.ssid);
     cJSON_AddStringToObject(json, "ip", inet_ntoa(ip_info.ip));
 
@@ -153,14 +153,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         {
             ESP_LOGI(TAG, "WIFI_EVENT_AP_STACONNECTED");
             wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-            ESP_LOGI(TAG, "station "MACSTR" join, AID=%d", MAC2STR(event->mac), event->aid);
+            ESP_LOGI(TAG, "station " MACSTR " join, AID=%d", MAC2STR(event->mac), event->aid);
             break;
         }
         case WIFI_EVENT_AP_STADISCONNECTED:
         {
             ESP_LOGW(TAG, "WIFI_EVENT_AP_STADISCONNECTED");
             wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-            ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d", MAC2STR(event->mac), event->aid);
+            ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d", MAC2STR(event->mac), event->aid);
             break;
         }
         case WIFI_EVENT_AP_PROBEREQRECVED:
@@ -206,17 +206,14 @@ esp_err_t init_wifi_ap_netif(esp_netif_t** ap_netif)
     ATTEMPT(esp_netif_attach_wifi_ap(*ap_netif))
     ATTEMPT(esp_wifi_set_default_wifi_ap_handlers())
 
-    wifi_config_t ap_config = {
-        .ap = {
-            .ssid = "esper",
-            .ssid_len = 5,
-            .channel = 1,
-            .password = "",
-            .max_connection = 5,
-            .authmode = WIFI_AUTH_OPEN
-        },
-    };
-    ATTEMPT(esp_wifi_set_config(ESP_IF_WIFI_AP, &ap_config))
+    wifi_config_t ap_config = {};
+    strcpy((char*)ap_config.ap.ssid, "esper");
+    strcpy((char*)ap_config.ap.password, "");
+    ap_config.ap.channel = 1;
+    ap_config.ap.max_connection = 5;
+    ap_config.ap.authmode = WIFI_AUTH_OPEN;
+
+    ATTEMPT(esp_wifi_set_config(WIFI_IF_AP, &ap_config))
 
     return ESP_OK;
 }
@@ -253,14 +250,14 @@ esp_err_t attempt_to_connect(char* ssid, char* pass, bool* result)
     fclose(f);
 
     // clear saved ip info
-    esp_netif_ip_info_t ip_info = {0};
+    esp_netif_ip_info_t ip_info = {};
     set_network_info(ip_info);
 
     // Copy ssid & pass to wifi_config
-    wifi_config_t wifi_config = {0};
+    wifi_config_t wifi_config = {};
     strcpy((char*)wifi_config.sta.ssid, ssid);
     strcpy((char*)wifi_config.sta.password, pass);
-    esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config);
+    esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 
     // try connecting
     ESP_LOGI(TAG, "SSID: %s (%d)", (char*)&wifi_config.sta.ssid, strlen((char*)&wifi_config.sta.ssid));

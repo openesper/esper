@@ -23,10 +23,10 @@ static const char *TAG = "GPIO";
 #define GREEN_LED_CHANNEL LEDC_CHANNEL_1        // Green LED Channel
 #define BLUE_LED_CHANNEL LEDC_CHANNEL_2         // Blue LED Channel
 
-static int button = -1;                         // Button GPIO
-static int red_led = -1;                        // Red LED GPIO
-static int green_led = -1;                      // Green LED GPIO
-static int blue_led = -1;                       // Blue LED GPIO
+static gpio_num_t button = GPIO_NUM_NC;         // Button GPIO
+static gpio_num_t red_led = GPIO_NUM_NC;        // Red LED GPIO
+static gpio_num_t green_led = GPIO_NUM_NC;      // Green LED GPIO
+static gpio_num_t blue_led = GPIO_NUM_NC;       // Blue LED GPIO
 
 static TaskHandle_t button_task_handle;         // Task handle for button listening task
 static TaskHandle_t led_task_handle;            // Task handle for LED task
@@ -134,7 +134,7 @@ static void led_task(void* args)
 static esp_err_t init_button()
 {
     gpio_pad_select_gpio(button);
-    ATTEMPT(gpio_set_direction(button, GPIO_MODE_DEF_INPUT))
+    ATTEMPT(gpio_set_direction(button, GPIO_MODE_INPUT))
     ATTEMPT(gpio_set_pull_mode(button, GPIO_PULLUP_ONLY))
     ATTEMPT(gpio_set_intr_type(button, GPIO_INTR_ANYEDGE))
     ATTEMPT(gpio_install_isr_service(0))
@@ -148,9 +148,10 @@ static esp_err_t init_leds()
     // Set up LED PWM timer configs 
     ledc_timer_config_t led_timer_config = {
         .speed_mode = LED_SPEED_MODE,
+        .duty_resolution = LEDC_TIMER_10_BIT,
         .timer_num = LEDC_TIMER_0,
         .freq_hz = 5000,
-        .duty_resolution = LEDC_TIMER_10_BIT,
+        .clk_cfg = LEDC_AUTO_CLK
     };
     ATTEMPT(ledc_timer_config(&led_timer_config))
     
@@ -162,6 +163,7 @@ static esp_err_t init_leds()
         .intr_type = LEDC_INTR_DISABLE,
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
+        .hpoint = 0
     };
     ATTEMPT(ledc_channel_config(&led_channel_config_blue))
     
@@ -173,6 +175,7 @@ static esp_err_t init_leds()
         .intr_type = LEDC_INTR_DISABLE,
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
+        .hpoint = 0
     };
     ATTEMPT(ledc_channel_config(&led_channel_config_red))
     
@@ -185,6 +188,7 @@ static esp_err_t init_leds()
         .intr_type = LEDC_INTR_DISABLE,
         .timer_sel = LEDC_TIMER_0,
         .duty = 0,
+        .hpoint = 0
     };
     ATTEMPT(ledc_channel_config(&led_channel_config_green))
     
@@ -197,7 +201,15 @@ esp_err_t init_gpio()
     if( check_bit(GPIO_ENABLED_BIT) )
     {
         ESP_LOGI(TAG, "Initializing GPIO...");
-        get_gpio_config(&button, &red_led, &green_led, &blue_led);
+
+        int btn,r,g,b;
+        get_gpio_config(&btn, &r, &g, &b);
+
+        button    = static_cast<gpio_num_t>(btn);
+        red_led   = static_cast<gpio_num_t>(r);
+        green_led = static_cast<gpio_num_t>(g);
+        blue_led  = static_cast<gpio_num_t>(b);
+
         ATTEMPT(init_leds())
         ATTEMPT(init_button())
 

@@ -66,7 +66,7 @@ static IRAM_ATTR void listening_t(void* parameters)
     ESP_LOGI(TAG, "Listening...");
     while(1)
     {
-        Packet* packet = malloc(sizeof(*packet));
+        Packet* packet = (Packet*)malloc(sizeof(*packet));
         packet->length = recvfrom(dns_srv_sock, packet->data, MAX_PACKET_SIZE, 0, (struct sockaddr *)&(packet->src), &addrlen);
         if( packet->length < 1 )
         {
@@ -130,7 +130,7 @@ static IRAM_ATTR esp_err_t answer_query(Packet* packet, uint32_t ip)
         DNS_Answer answer = {
             answer.name = htons(0xC00C),
             answer.type = htons(1),
-            answer.class = htons(1),
+            answer.cls = htons(1),
             answer.ttl = htonl(128),
             answer.rdlength = htons(4),
             answer.rddata = htonl(ip)

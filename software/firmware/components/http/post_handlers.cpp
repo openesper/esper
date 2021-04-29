@@ -72,6 +72,7 @@ static httpd_uri_t submitauth = {
     .uri       = "/submitauth",
     .method    = HTTP_POST,
     .handler   = submitauth_handler,
+    .user_ctx  = NULL
 };
 
 
@@ -91,6 +92,7 @@ static httpd_uri_t scan = {
     .uri       = "/scan",
     .method    = HTTP_POST,
     .handler   = scan_handler,
+    .user_ctx  = NULL
 };
 
 
@@ -105,7 +107,7 @@ esp_err_t finish_handler(httpd_req_t *req)
         set_provisioning_status(true);
         httpd_resp_set_status(req, HTTPD_200);
         httpd_resp_sendstr(req, "");
-        xTimerHandle restartTimer = xTimerCreate("restart", pdMS_TO_TICKS(500), pdTRUE, (void*)0, (void *)esp_restart);
+        xTimerHandle restartTimer = xTimerCreate("restart", pdMS_TO_TICKS(500), pdTRUE, (void*)0, (TimerCallbackFunction_t)esp_restart);
         xTimerStart(restartTimer, 0);
     }
     else
@@ -120,6 +122,7 @@ static httpd_uri_t finish = {
     .uri       = "/finish",
     .method    = HTTP_POST,
     .handler   = finish_handler,
+    .user_ctx  = NULL
 };
 
 

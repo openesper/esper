@@ -33,7 +33,7 @@ esp_err_t initialize_sntp()
 
     // Poll SNTP server until current time is retrieved, 
     time_t now = 0;
-    struct tm timeinfo = { 0 };
+    struct tm timeinfo = {};
     do {
         ESP_LOGI(TAG, "Getting time from SNTP server...");
 

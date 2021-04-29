@@ -30,7 +30,7 @@ IRAM_ATTR URL convert_qname_to_url(char* qname_ptr)
 {
     // QNAME is a sequence of labels, where each label consists of a length octet followed by that number of octets. 
     // The domain name terminates with the zero length octet for the null label of the root. 
-    URL url = {0};
+    URL url = {};
     char* url_ptr = url.string;
 
     uint8_t label_length = (uint8_t)*qname_ptr;

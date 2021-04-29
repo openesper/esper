@@ -16,7 +16,7 @@ static SemaphoreHandle_t log_mutex;
 
 Log_Entry get_entry(uint8_t offset)
 {
-    Log_Entry entry = {0};
+    Log_Entry entry = {};
     if( offset >= LOG_SIZE )
         return entry;
 
@@ -34,7 +34,7 @@ Log_Entry get_entry(uint8_t offset)
 
 esp_err_t log_query(URL url, bool blocked, uint32_t client)
 {
-    Log_Entry entry = {0};
+    Log_Entry entry = {};
     time(&entry.time);
     entry.url = url;
     entry.blocked = blocked;
@@ -61,6 +61,7 @@ esp_err_t log_query(URL url, bool blocked, uint32_t client)
 
 esp_err_t initialize_logging()
 {
+    ESP_LOGI(TAG, "Initializing DNS...");
     log_mutex = xSemaphoreCreateMutex();
     if( log_mutex == NULL )
     {
