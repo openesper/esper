@@ -2,7 +2,7 @@
 #include "error.h"
 #include "events.h"
 #include "flash.h"
-#include "filesystem.h"
+#include "settings.h"
 #include "url.h"
 #include "logging.h"
 #include "datetime.h"
@@ -312,11 +312,11 @@ static IRAM_ATTR void dns_t(void* parameters)
 
 static esp_err_t load_settings()
 {
-    ATTEMPT(get_setting("url", device_url))
+    ATTEMPT(read_setting(HOSTNAME, device_url))
     ESP_LOGD(TAG, "Device URL %s", device_url);
 
     char dns[IP4ADDR_STRLEN_MAX];
-    ATTEMPT(get_setting("upstream_server", dns))
+    ATTEMPT(read_setting(DNS_SRV, dns))
     ip4addr_aton(dns, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
     upstream_dns.sin_family = PF_INET;
     upstream_dns.sin_port = htons(DNS_PORT);

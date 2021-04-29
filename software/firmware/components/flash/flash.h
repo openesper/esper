@@ -14,72 +14,6 @@
 
 
 /**
-  * @brief Retreive upstream dns server from flash
-  *
-  * @param str pre-allocated buffer, at least IP4ADDR_STRLEN_MAX in size, that the string will be sent to.
-  * 
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get server ip from flash
-  */
-esp_err_t get_upstream_dns(char* str);
-
-/**
-  * @brief Store upstream dns server in flash
-  *
-  * @param str string to store in flash
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to set server ip in flash
-  */
-esp_err_t set_upstream_dns(char* str);
-
-/**
-  * @brief Retreive device url from flash
-  *
-  * @param str pre-allocated buffer, at least HOSTNAME_STRLEN_MAX in size, that the string will be sent to
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get url from flash
-  */
-esp_err_t get_device_url(char* str);
-
-/**
-  * @brief Store device url in flash
-  *
-  * @param str string to store in flash
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to set device url in flash
-  */
-esp_err_t set_device_url(char* str);
-
-/**
-  * @brief Retreive update url from flash
-  *
-  * @param str pre-allocated buffer, at least HOSTNAME_STRLEN_MAX in size, that the string will be sent to
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get url from flash
-  */
-esp_err_t get_update_url(char* str);
-
-/**
-  * @brief Store update url in flash
-  *
-  * @param str string to store in flash
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to set update url in flash
-  */
-esp_err_t set_update_url(char* str);
-
-/**
   * @brief Retreive network info (ip, gw, nm) from flash
   *
   * @param info pointer to esp_netif_ip_info_t struct that will be filled
@@ -100,19 +34,6 @@ esp_err_t get_network_info(esp_netif_ip_info_t* info);
   *     - ESP_FAIL unable to set info in flash
   */
 esp_err_t set_network_info(esp_netif_ip_info_t info);
-
-/**
-  * @brief Retreive enabled interfaces
-  *
-  * @param eth bool pointer to fill with ethernet enabled status
-  * 
-  * @param wifi bool pointer to fill with wifi enabled status
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-// esp_err_t get_enabled_interfaces(bool* eth, bool* wifi);
 
 /**
   * @brief Get PHY hardware configuration 
@@ -145,17 +66,6 @@ esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, 
 esp_err_t get_gpio_config(int* button, int* red, int* green, int* blue);
 
 /**
-  * @brief Get provisioning status from flash
-  *
-  * @param provisioned pointer to bool that will be filled with provisioning status
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t get_provisioning_status(bool* provisioned);
-
-/**
   * @brief Set provisioning status in flash
   *
   * @param provisioned provisioning status
@@ -165,32 +75,6 @@ esp_err_t get_provisioning_status(bool* provisioned);
   *    - ESP_FAIL unable to get info from flash
   */
 esp_err_t set_provisioning_status(bool provisioned);
-
-/**
-  * @brief Get current position & status of log file
-  *
-  * @param head pointer to fill with location of beginning of log
-  * 
-  * @param full bool pointer for log_full status
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t get_log_data(uint16_t* head, bool* full);
-
-/**
-  * @brief Set position and status of log file
-  *
-  * @param head position of log
-  * 
-  * @param full full log status
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t update_log_data(uint16_t head, bool full);
 
 esp_err_t init_nvs();
 

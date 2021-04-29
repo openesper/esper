@@ -4,22 +4,6 @@
 #include "esp_system.h"
 #include "errno.h"
 
-#define STRING(x) #x
-
-/**
-  * @brief print error, log to error.txt, and return ESP_FAIL if function does not succeed
-  * 
-  * @param x function with esp_err_t return type
-  */
-#define ATTEMPT(func) do {                  \
-    esp_err_t tmp_err;                      \
-    if( (tmp_err = func) != ESP_OK ) {                    \
-        log_error(tmp_err, STRING(func), __func__, __FILE__);   \
-        return ESP_FAIL;                                  \
-    }                                                     \
-} while(0);
-
-
 #define WIFI_ERR_BASE               0x200
 #define WIFI_ERR_MODE_NULL          (WIFI_ERR_BASE + 1)     // Wifi does not currently have a mode
 #define WIFI_ERR_NULL_NETIF         (WIFI_ERR_BASE + 2)     // Wifi netif is null, needs to be initialized
@@ -57,6 +41,25 @@
 #define ETH_ERR_BASE                 0x900
 #define ETH_ERR_INIT                 (ETH_ERR_BASE + 1)       // Failed to initialize eth
 
-void log_error(esp_err_t err, const char* error_str, const char* function, const char* file);
+#define FS_ERR_BASE                   0xA00
+#define FS_ERR_INVALID_KEY            (ETH_ERR_BASE + 1)       // Failed to initialize eth
+
+
+#define STRING(x) #x
+
+/**
+  * @brief print error, log to error.txt, and return ESP_FAIL if function does not succeed
+  * 
+  * @param x function with esp_err_t return type
+  */
+#define ATTEMPT(func) do {                  \
+    esp_err_t tmp_err;                      \
+    if( (tmp_err = func) != ESP_OK ) {                    \
+        log_error(tmp_err, STRING(func), __func__, __FILE__);   \
+        return ESP_FAIL;                                  \
+    }                                                     \
+} while(0);
+
+void log_error(int err, const char* error_str, const char* function, const char* file);
 
 #endif

@@ -96,7 +96,7 @@ esp_err_t get_handler(httpd_req_t *req)
 
     // See file extension exists, otherwise assume 
     // it's a directory and look for index.html
-    struct stat s;
+    // struct stat s;
     const char* ext = get_filename_ext(filepath);
     if( ext[0] == '\0' )
     {
@@ -109,7 +109,7 @@ esp_err_t get_handler(httpd_req_t *req)
     }
 
     // Check if file exists
-    if( stat_file(filepath, &s) < 0 )
+    if( !file_exists(filepath) )
     {
         // Redirect to "/" if currently provisioning
         if( check_bit(PROVISIONING_BIT) )

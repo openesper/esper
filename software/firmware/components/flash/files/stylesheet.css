@@ -52,7 +52,7 @@ button{
     border-radius: 0.3rem;
     border: 0px solid white;
     font-weight: bold;
-    font-size: 1.3rem;
+    font-size: 1rem;
     outline: none;
 }
 button.altbtn {
@@ -133,4 +133,7 @@ td button {
     border: 1px solid #888;
     width: 80%;
     max-width: 40rem;
+}
+input:disabled select:disabled button:disabled {
+    background-color: #ccc;
 }

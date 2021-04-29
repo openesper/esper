@@ -53,13 +53,18 @@ function loadQueries(){
 
 function loadBlacklist(){
     let err = document.getElementById('error');
+    err.style.visibility = 'hidden';
+
+    let sumbit = document.getElementById('urlinput');
+    sumbit.disabled = true
+
     const http = new XMLHttpRequest();
     http.open("GET", '/blacklist.txt');
 
     http.onreadystatechange = function() {
         if (http.readyState == 4){
             if (http.status == 200){
-                err.style.visibility = 'hidden'
+                sumbit.disabled = false
                 list = http.response.split('\n').reverse();
                 console.log(list);
                 
@@ -113,6 +118,86 @@ function updateBlacklist(action, hostname){
             }
             else{
                 
+                err.innerHTML = http.responseText;
+                err.style.visibility = 'visible';
+            }
+        }
+    };
+    http.send();
+}
+
+function loadSettings(){
+    let err = document.getElementById('error');
+    err.style.visibility = 'hidden'
+
+    const http = new XMLHttpRequest();
+    http.open("GET", '/settings.json');
+
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (http.status == 200){
+                let settings = JSON.parse(http.response);
+                console.log(settings);
+
+                var button = document.getElementById("blockStatus")
+                var version = document.getElementById("version");
+                var updatesrv = document.getElementsByName("updatesrv")[0];
+                var dnssrv = document.getElementsByName("dnssrv")[0];
+                var url = document.getElementsByName("url")[0];
+                var ip = document.getElementsByName("ip")[0];
+                var update_available = document.getElementById("update_available");
+                var updateButton = document.getElementById("updateButton");
+
+                if(settings.ip){
+                    ip.value = settings.ip;
+                    ip.disabled = false
+                }
+
+                if(settings.url){
+                    url.value = settings.url;
+                    url.disabled = false
+                }
+
+                if(settings.update_srv){
+                    updatesrv.value = settings.update_srv;
+                    updatesrv.disabled = false
+                }
+
+                if(settings.version){
+                    version.value = settings.version;
+                }
+
+                for(let j = 0; j < dnssrv.options.length; j++){
+                    if (dnssrv.options[j].value == settings.dns_srv){
+                        dnssrv.selectedIndex = j;
+                        dnssrv.disabled = false;
+                    }
+                }
+
+                if( settings.blocking ){
+                    button.innerHTML = 'Blocking On';
+                    button.className = "";
+                    button.disabled = false;
+                    button.style.visibility = "visible";
+                }else if(!settings.blocking){
+                    button.className = "altbtn";
+                    button.innerHTML = 'Blocking Off';
+                    button.disabled = false;
+                    button.style.visibility = "visible";
+                }
+
+                if( settings.update_status ){
+                    err.innerHTML = settings.update_status;
+                    err.style.visibility = 'visible'
+                }
+
+                if( settings.update_available ){
+                    update_available.style.visibility = 'visible';
+                }else{
+                    update_available.style.visibility = 'hidden';
+                }
+            }
+            else {
                 err.innerHTML = http.responseText;
                 err.style.visibility = 'visible';
             }

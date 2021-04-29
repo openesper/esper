@@ -1,6 +1,7 @@
 #include "ip.h"
 #include "events.h"
 #include "error.h"
+#include "settings.h"
 #include "eth.h"
 #include "wifi.h"
 #include "string.h"
@@ -137,7 +138,7 @@ esp_err_t set_static_ip(esp_netif_t* interface)
     }
 
     char ip[IP4ADDR_STRLEN_MAX];
-    ATTEMPT(get_setting("upstream_server", ip))
+    ATTEMPT(read_setting(DNS_SRV, ip))
 
     esp_netif_dns_info_t dns = {};
     ip4addr_aton(ip, (ip4_addr_t*)&dns.ip.u_addr.ip4);

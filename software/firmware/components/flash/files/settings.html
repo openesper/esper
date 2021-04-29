@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Esper</title>
+        <script src="/scripts.js"></script>
         <link rel="stylesheet" href="/stylesheet.css">
         <style>
             button#blockStatus {
@@ -51,22 +52,22 @@
                 <h1>Settings</h1>
             </div>
             <div>
-                <button id="blockStatus" onclick=toggleBlockingStatus()>Blocking On</button>
+                <button id="blockStatus" disabled=true style="visibility: hidden;">Blocking On</button>
                 <div class='error' id='error'>
                     Error
                 </div>
                 <form>
                     <div>
                         <label for="ip">Device IP</label>
-                        <input name="ip" type="text" autocorrect="off" autocapitalize="none"/>
+                        <input name="ip" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
                     </div>
                     <div>
                         <label for="url">Device URL</label>
-                        <input name="url" type="text" autocorrect="off" autocapitalize="none"/>
+                        <input name="url" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
                     </div>
                     <div>
                         <label for="dnssrv">Server</label>
-                        <select name='dnssrv' id='dnssrv'>
+                        <select name='dnssrv' id='dnssrv' disabled=true>
                             <option value='8.8.8.8'>Google</option>
                             <option value='1.1.1.1'>Cloudfare</option>
                             <option value='208.67.222.222'>OpenDNS</option>
@@ -75,26 +76,29 @@
                     </div>
                     <div>
                         <label for='updatesrv'>Update Server</label>
-                        <input name="updatesrv" type="text" autocorrect="off" autocapitalize="none"/>
+                        <input name="updatesrv" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
                     </div>
                     <div>
-                        <label>Version</label><div id="version">00.00.04</div>
+                        <label>Version</label><div id="version"></div>
                     </div>
                     <br>
                     <button>Save</button>
                 </form>
+                <script>
+                    loadSettings();
+                </script>
                 <br>
 
                 <div id="update_available">
                     <p>Update Available!</p>
-                    <button id="updateButton" onclick='updateFirmware()'>Update Firmware</button>
+                    <button id="updateButton" disabled=true>Update Firmware</button>
                 </div>
                 <div class='modal' id='updateModal'>
                     <div class="modal-content">
                         <p>Updating firmware, this may take a few minutes...</p>
                         <div class="loader"></div>
                         <br><br>
-                        <button class="txtbtn altbtn" onclick='cancelUpdate()'>Cancel</button>
+                        <button class="txtbtn altbtn" >Cancel</button>
                     </div>
                 </div>
                 <div class='modal' id='restartModal'>
