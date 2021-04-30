@@ -304,7 +304,7 @@ static IRAM_ATTR void dns_t(void* parameters)
                 }
                 else
                 {
-                    ESP_LOGI(TAG, "Forwarding question for %.*s", url.length, url.string);
+                    ESP_LOGD(TAG, "Forwarding question for %.*s", url.length, url.string);
                     forward_query(packet);
                     log_query(url, false, packet->src.sin_addr.s_addr);
                 }
