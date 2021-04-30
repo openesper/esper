@@ -1,0 +1,25 @@
+{
+    "env": {
+        "idfPath": "~/esp/esp-idf"
+    },
+    "configurations": [
+        {
+            "name": "Linux",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "includePath": [
+                "${idfPath}/components/**",
+                "${workspaceFolder}/**"
+            ],
+            "browse": {
+                "path": [
+                    "${idfPath}/components",
+                    "${workspaceFolder}"
+                ],
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "compileCommands": "${workspaceFolder}/firmware/build/compile_commands.json"
+        }
+    ],
+    "version": 4
+}

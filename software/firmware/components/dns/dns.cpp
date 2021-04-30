@@ -19,7 +19,7 @@
 #include "esp_netif.h"
 #include "cJSON.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_WARN
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "DNS";
 
@@ -63,7 +63,7 @@ static esp_err_t initialize_dns_server_socket(int* sock)
 
 static IRAM_ATTR void listening_t(void* parameters)
 {
-    ESP_LOGI(TAG, "Listening...");
+    ESP_LOGD(TAG, "Listening...");
     while(1)
     {
         Packet* packet = (Packet*)malloc(sizeof(*packet));
@@ -162,14 +162,17 @@ static IRAM_ATTR esp_err_t answer_query(Packet* packet, uint32_t ip)
 
 static IRAM_ATTR esp_err_t capture_query(Packet* packet)
 {
-    uint32_t ip = 0xc0a80401; // 192.168.4.1 in hex, the default ip in access point mode
+    uint32_t ip = inet_addr("192.168.4.1"); // default ip in access point mode
 
     if( !check_bit(PROVISIONING_BIT) )
     {
         // If not provisioning, return current IP
-        esp_netif_ip_info_t info;
-        get_network_info(&info);
-        ip = ntohl(info.ip.addr);
+        // esp_netif_ip_info_t info;
+        // get_network_info(&info);
+        char ip_str[IP4_STRLEN_MAX];
+        read_setting(IP, ip_str);
+
+        ip = ntohl(inet_addr(ip_str));
     }
 
     return answer_query(packet, ip);
@@ -284,13 +287,16 @@ static IRAM_ATTR void dns_t(void* parameters)
             }
             else 
             {
+                bool blocking;
+                read_setting(BLOCK, &blocking);
+
                 if( memcmp(url.string, device_url, url.length) == 0 ) // Check is qname matches current device url
                 {
                     ESP_LOGW(TAG, "Capturing DNS request %.*s", url.length, url.string);
                     capture_query(packet);
                     log_query(url, false, packet->src.sin_addr.s_addr);
                 }
-                else if( check_bit(BLOCKING_BIT) && in_blacklist(url) ) // check if url is in blacklist
+                else if( blocking && in_blacklist(url) ) // check if url is in blacklist
                 {
                     ESP_LOGW(TAG, "Blocking question for %.*s", url.length, url.string);
                     block_query(packet);
@@ -310,30 +316,25 @@ static IRAM_ATTR void dns_t(void* parameters)
     }
 }
 
-static esp_err_t load_settings()
-{
-    ATTEMPT(read_setting(HOSTNAME, device_url))
-    ESP_LOGD(TAG, "Device URL %s", device_url);
-
-    char dns[IP4ADDR_STRLEN_MAX];
-    ATTEMPT(read_setting(DNS_SRV, dns))
-    ip4addr_aton(dns, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
-    upstream_dns.sin_family = PF_INET;
-    upstream_dns.sin_port = htons(DNS_PORT);
-    ESP_LOGD(TAG, "Upstream DNS Server %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
-
-    // cJSON_Delete(json);
-    return ESP_OK;
-}
-
 esp_err_t start_dns()
 {
     ESP_LOGI(TAG, "Initializing DNS...");
     packet_queue = xQueueCreate(PACKET_QUEUE_SIZE, sizeof(Packet*));
 
+    // read url
+    ATTEMPT(read_setting(HOSTNAME, device_url))
+    ESP_LOGI(TAG, "Device URL: %s", device_url);
+
+    // read upstream dns
+    char ip[IP4ADDR_STRLEN_MAX];
+    ATTEMPT(read_setting(DNS_SRV, ip))
+    ip4addr_aton(ip, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
+    upstream_dns.sin_family = PF_INET;
+    upstream_dns.sin_port = htons(DNS_PORT);
+    ESP_LOGI(TAG, "Upstream DNS: %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
+
+    // init sockets
     ATTEMPT(initialize_dns_server_socket(&dns_srv_sock))
-    ATTEMPT(load_settings())
-    set_bit(BLOCKING_BIT);
 
     BaseType_t xErr = xTaskCreatePinnedToCore(listening_t, "listening_task", 8000, NULL, 9, &listening, 0);
     xErr &= xTaskCreatePinnedToCore(dns_t, "dns_task", 15000, NULL, 9, &dns, 0);

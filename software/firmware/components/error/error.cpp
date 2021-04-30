@@ -17,7 +17,7 @@ void log_error(int err, const char* error_str, const char* function, const char*
     }
     else if ( 0x100 < err && err < 0x200 )
     {
-        ESP_LOGE(TAG, "%s (%d, %s) in %s", error_str, err, esp_err_to_name(err), function);
+        ESP_LOGE(TAG, "%s (%x, %s) in %s", error_str, err, esp_err_to_name(err), function);
     }
     else if ( err < 0x3000 )
     {

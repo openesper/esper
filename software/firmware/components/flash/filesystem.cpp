@@ -29,7 +29,7 @@ FILE* open_file(const char* filename, const char* mode){
     return fopen(path, mode);
 }
 
-static int stat_file(const char* filename, struct stat* s)
+esp_err_t stat_file(const char* filename, struct stat* s)
 {
     if( filename == NULL)
         return 0;
@@ -39,7 +39,12 @@ static int stat_file(const char* filename, struct stat* s)
     strcat(path, filename);
 
     ESP_LOGD(TAG, "Checking %s", path);
-    return stat(path, s);
+    if( stat(path, s) < 0 )
+    {
+        return ESP_FAIL;
+    }
+
+    return ESP_OK;
 }
 
 bool file_exists(const char* filename)
@@ -109,7 +114,7 @@ static esp_err_t initialize_files()
     COPY_EMBED("/app/stylesheet.css",           stylesheet_css);
     COPY_EMBED("/app/scripts.js",               app_scripts_js);
     COPY_EMBED("/app/blacklist.txt",            defaultblacklist_txt);
-    COPY_EMBED("/app/settings.json",                defaultsettings_json);
+    COPY_EMBED("/app/settings.json",            defaultsettings_json);
     COPY_EMBED("/app/404.html",                 404_html);
     COPY_EMBED("/prov/connected/index.html",    connected_html);
     COPY_EMBED("/prov/index.html",              wifi_select_html);
@@ -118,6 +123,7 @@ static esp_err_t initialize_files()
 
     // ATTEMPT(link_file("/settings.json", "/app/settings.json"))
     // ATTEMPT(link_file("/settings.json", "/prov/settings.json"))
+    ATTEMPT(load_settings())
 
     esp_app_desc_t desc;
     const esp_partition_t *running = esp_ota_get_running_partition();
@@ -157,7 +163,7 @@ esp_err_t init_filesystem()
     ESP_LOGI(TAG, "LittleFS base: %s", base_path);
 
     // check if files have been initialized by checking version in settings file
-    if( !file_exists("/app/settings.json") )
+    if( load_settings() != ESP_OK )
     {
         ESP_LOGW(TAG, "Settings.json not found");
         ATTEMPT(initialize_files())

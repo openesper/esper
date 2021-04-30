@@ -20,7 +20,6 @@ const int WIFI_CONNECTED_BIT = BIT8;
 const int WIFI_GOT_IP_BIT = BIT9;
 
 const int PROVISIONING_BIT = BIT10;
-const int BLOCKING_BIT = BIT11;
 const int INITIALIZING_BIT = BIT12;
 const int ERROR_BIT = BIT13;
 const int OTA_BIT = BIT14;

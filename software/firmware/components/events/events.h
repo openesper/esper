@@ -8,7 +8,6 @@
   * @brief Status bits
   */
 extern const int PROVISIONING_BIT;          // Device is currently in provisioning mode
-extern const int BLOCKING_BIT;              // Device is currently blocking DNS queries
 extern const int INITIALIZING_BIT;          // Device is currently initializing
 extern const int ERROR_BIT;                 // Device has detected an error
 extern const int OTA_BIT;                   // Device is currently undergoing an over-the-air update

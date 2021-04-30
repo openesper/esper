@@ -52,11 +52,26 @@
                 <h1>Settings</h1>
             </div>
             <div>
-                <button id="blockStatus" disabled=true style="visibility: hidden;">Blocking On</button>
+                <button id="blockStatus" disabled=true style="visibility: hidden;" onclick="toggleBlock()">Blocking On</button>
                 <div class='error' id='error'>
-                    Error
+                    <script>
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const myParam = urlParams.get('status');
+                        console.log(myParam);
+                        let err = document.getElementById('error');
+                        if( myParam == "success")
+                        {
+                            err.innerHTML = "Restart to apply new settings";
+                            err.style.visibility = 'visible';
+                        }
+                        else if( myParam == "failed" )
+                        {
+                            err.innerHTML = "Error saving settings";
+                            err.style.visibility = 'visible';
+                        }
+                    </script>
                 </div>
-                <form>
+                <form action="/settings" method="POST">
                     <div>
                         <label for="ip">Device IP</label>
                         <input name="ip" type="text" autocorrect="off" autocapitalize="none" disabled=true/>

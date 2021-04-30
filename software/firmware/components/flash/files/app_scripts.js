@@ -128,7 +128,7 @@ function updateBlacklist(action, hostname){
 
 function loadSettings(){
     let err = document.getElementById('error');
-    err.style.visibility = 'hidden'
+    // err.style.visibility = 'hidden'
 
     const http = new XMLHttpRequest();
     http.open("GET", '/settings.json');
@@ -164,7 +164,7 @@ function loadSettings(){
                 }
 
                 if(settings.version){
-                    version.value = settings.version;
+                    version.innerHTML = settings.version;
                 }
 
                 for(let j = 0; j < dnssrv.options.length; j++){
@@ -179,7 +179,7 @@ function loadSettings(){
                     button.className = "";
                     button.disabled = false;
                     button.style.visibility = "visible";
-                }else if(!settings.blocking){
+                }else if( !settings.blocking ){
                     button.className = "altbtn";
                     button.innerHTML = 'Blocking Off';
                     button.disabled = false;
@@ -195,6 +195,38 @@ function loadSettings(){
                     update_available.style.visibility = 'visible';
                 }else{
                     update_available.style.visibility = 'hidden';
+                }
+            }
+            else {
+                err.innerHTML = http.responseText;
+                err.style.visibility = 'visible';
+            }
+        }
+    };
+    http.send();
+}
+
+function toggleBlock()
+{
+    let err = document.getElementById('error');
+    const http = new XMLHttpRequest();
+    http.open("POST", '/toggleblock');
+
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (http.status == 200){
+                console.log(http.responseText)
+                var button = document.getElementById("blockStatus")
+
+                if( http.responseText == "false")
+                {
+                    button.className = "altbtn";
+                    button.innerHTML = 'Blocking Off';
+                }
+                else if( http.responseText == "true" )
+                {
+                    button.innerHTML = 'Blocking On';
+                    button.className = "";
                 }
             }
             else {

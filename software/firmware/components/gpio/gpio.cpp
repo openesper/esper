@@ -3,6 +3,7 @@
 #include "events.h"
 #include "flash.h"
 #include "dns.h"
+#include "settings.h"
 #include "error.h"
 #include "ota.h"
 #include "freertos/FreeRTOS.h"
@@ -68,7 +69,8 @@ static void button_task(void* args)             // Task keeping track of time be
             }
             else
             {
-                toggle_bit(BLOCKING_BIT);
+                bool blocking = !read_setting(BLOCK);
+                write_setting(BLOCK, blocking);
             }
         }
     }
@@ -120,7 +122,7 @@ static void led_task(void* args)
 
             clear_bit(BLOCKED_QUERY_BIT);
         }
-        else if( check_bit(BLOCKING_BIT) )
+        else if( read_setting(BLOCK) )
         {
             set_rgb(BLUE);
         }

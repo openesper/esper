@@ -57,6 +57,10 @@ static httpd_uri_t blacklistadd = {
 
 esp_err_t register_put_handlers(httpd_handle_t server)
 {
-    ATTEMPT(httpd_register_uri_handler(server, &blacklistadd))
+    if( !check_bit(PROVISIONING_BIT) )
+    {
+        ATTEMPT(httpd_register_uri_handler(server, &blacklistadd))
+    }
+    
     return ESP_OK;
 }

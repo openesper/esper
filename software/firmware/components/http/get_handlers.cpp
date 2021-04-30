@@ -192,8 +192,11 @@ static httpd_uri_t querylog = {
 
 esp_err_t register_get_handlers(httpd_handle_t server)
 {
-    ATTEMPT(httpd_register_uri_handler(server, &querylog))
+    if( !check_bit(PROVISIONING_BIT) )
+    {
+        ATTEMPT(httpd_register_uri_handler(server, &querylog))
+    }
     ATTEMPT(httpd_register_uri_handler(server, &get))
-
+    
     return ESP_OK;
 }

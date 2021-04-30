@@ -4,11 +4,13 @@
 #include "events.h"
 #include "wifi.h"
 #include "filesystem.h"
+#include "settings.h"
 #include "flash.h"
 #include "cJSON.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
+#include "lwip/ip4_addr.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -99,10 +101,13 @@ static httpd_uri_t scan = {
 esp_err_t finish_handler(httpd_req_t *req)
 {
     // network info will not be zero if last connection attempt was successful
-    esp_netif_ip_info_t ip_info;
-    get_network_info(&ip_info);
+    // esp_netif_ip_info_t ip_info;
+    // get_network_info(&ip_info);
 
-    if( ip_info.ip.addr )
+    char ip[IP4_STRLEN_MAX];
+    ATTEMPT(read_setting(IP, ip))
+    // if( ip_info.ip.addr )
+    if( strcmp(ip, "") )
     {
         set_provisioning_status(true);
         httpd_resp_set_status(req, HTTPD_200);
@@ -126,11 +131,98 @@ static httpd_uri_t finish = {
 };
 
 
+esp_err_t settings_post_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST to %s", req->uri);
+
+    // Determine if content is too large/small
+    if (req->content_len > 1024)
+        SEND_ERR(req, HTTPD_400_BAD_REQUEST, "Form data too large")
+
+    // receive data
+    char data[req->content_len+1] = {};
+    httpd_req_recv(req, data, req->content_len);
+
+    char param[255]= {};
+    if( httpd_query_key_value(data, "ip", param, sizeof(param)) == ESP_OK )
+    {
+        ip4_addr_t addr;
+        if( ip4addr_aton(param, &addr) > 0)
+            write_setting(IP, param);
+    }
+
+    if( httpd_query_key_value(data, "url", param, sizeof(param)) == ESP_OK )
+    {
+        write_setting(HOSTNAME, param);
+    }
+
+    if( httpd_query_key_value(data, "dnssrv", param, sizeof(param)) == ESP_OK )
+    {
+        ip4_addr_t addr;
+        if( ip4addr_aton(param, &addr) > 0)
+            write_setting(DNS_SRV, param);
+    }
+
+
+    if( httpd_query_key_value(data, "updatesrv", param, sizeof(param)) == ESP_OK )
+    {
+        write_setting(UPDATE_SRV, param);
+    }
+
+    httpd_resp_set_type(req, "text/html");
+    httpd_resp_set_status(req, "302 Found");
+    httpd_resp_set_hdr(req, "Location", "/settings?status=success");
+    httpd_resp_send(req, NULL, 0);
+
+    return ESP_OK;
+}
+
+static httpd_uri_t settings = {
+    .uri       = "/settings",
+    .method    = HTTP_POST,
+    .handler   = settings_post_handler,
+    .user_ctx  = NULL
+};
+
+
+esp_err_t toggleblock_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "POST to %s", req->uri);
+
+    bool blocking = !read_setting(BLOCK);
+    if( write_setting(BLOCK, blocking) != ESP_OK )
+    {
+        SEND_ERR(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error writing to settings.json")
+    }
+
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_set_status(req, HTTPD_200);
+    httpd_resp_sendstr(req, (read_setting(BLOCK) ? "true":"false") );
+
+    return ESP_OK;
+}
+
+static httpd_uri_t toggleblock = {
+    .uri       = "/toggleblock",
+    .method    = HTTP_POST,
+    .handler   = toggleblock_handler,
+    .user_ctx  = NULL
+};
+
+
 esp_err_t register_post_handlers(httpd_handle_t server)
 {
-    ATTEMPT(httpd_register_uri_handler(server, &submitauth))
-    ATTEMPT(httpd_register_uri_handler(server, &scan))
-    ATTEMPT(httpd_register_uri_handler(server, &finish))
+    if( !check_bit(PROVISIONING_BIT) )
+    {
+        ATTEMPT(httpd_register_uri_handler(server, &settings))
+        ATTEMPT(httpd_register_uri_handler(server, &toggleblock))
+    }
+    else
+    {
+        ATTEMPT(httpd_register_uri_handler(server, &submitauth))
+        ATTEMPT(httpd_register_uri_handler(server, &scan))
+        ATTEMPT(httpd_register_uri_handler(server, &finish))
+    }
 
     return ESP_OK;
 }

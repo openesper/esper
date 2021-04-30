@@ -3,6 +3,7 @@
 #include "ip.h"
 #include "error.h"
 #include "filesystem.h"
+#include "settings.h"
 #include "flash.h"
 #include "string.h"
 #include "esp_system.h"
@@ -32,7 +33,10 @@ esp_err_t store_connection_json(esp_netif_ip_info_t ip_info)
     char* json_str = cJSON_Print(json);
     if( fwrite(json_str, 1, strlen(json_str), connection) == strlen(json_str) )
     {
-        set_network_info(ip_info);
+        // set_network_info(ip_info);
+        write_setting(IP, inet_ntoa(ip_info.ip));
+        write_setting(NETMASK, inet_ntoa(ip_info.netmask));
+        write_setting(GATEWAY, inet_ntoa(ip_info.gw));
         set_bit(WIFI_CONNECTED_BIT);
     }
     else
@@ -250,8 +254,11 @@ esp_err_t attempt_to_connect(char* ssid, char* pass, bool* result)
     fclose(f);
 
     // clear saved ip info
-    esp_netif_ip_info_t ip_info = {};
-    set_network_info(ip_info);
+    write_setting(IP, "");
+    write_setting(NETMASK, "");
+    write_setting(GATEWAY, "");
+    // esp_netif_ip_info_t ip_info = {};
+    // set_network_info(ip_info);
 
     // Copy ssid & pass to wifi_config
     wifi_config_t wifi_config = {};

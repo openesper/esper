@@ -61,7 +61,7 @@ esp_err_t log_query(URL url, bool blocked, uint32_t client)
 
 esp_err_t initialize_logging()
 {
-    ESP_LOGI(TAG, "Initializing DNS...");
+    ESP_LOGI(TAG, "Initializing Logging...");
     log_mutex = xSemaphoreCreateMutex();
     if( log_mutex == NULL )
     {

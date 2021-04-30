@@ -27,7 +27,9 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             ESP_LOGI(TAG, "IP_EVENT_ETH_GOT_IP");
 
             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
-            set_network_info(ip_event.ip_info);
+            write_setting(IP, inet_ntoa(ip_event.ip_info.ip));
+            write_setting(NETMASK, inet_ntoa(ip_event.ip_info.netmask));
+            write_setting(GATEWAY, inet_ntoa(ip_event.ip_info.gw));
             set_bit(ETH_CONNECTED_BIT);
 
             break;
@@ -121,13 +123,19 @@ esp_err_t init_interfaces()
 
 esp_err_t set_static_ip(esp_netif_t* interface)
 {
-    // Get network info from flash
+    // Get network info from flash, if it exists
     esp_netif_ip_info_t ip_info;
-    get_network_info(&ip_info);
+    char ip[IP4_STRLEN_MAX];
 
-    // Static IP may not be assigned yet
-    if( ip_info.ip.addr )
+    ATTEMPT(read_setting(IP, ip))
+    if( inet_aton(ip, &(ip_info.ip)) )
     {
+        ATTEMPT(read_setting(NETMASK, ip))
+        ip_info.netmask.addr = inet_addr(ip);
+
+        ATTEMPT(read_setting(GATEWAY, ip))
+        ip_info.gw.addr = inet_addr(ip);
+
         esp_netif_dhcpc_stop(interface);
         esp_netif_set_ip_info(interface, &ip_info);
         ESP_LOGI(TAG, "Assigned static IP to interface");
@@ -137,16 +145,13 @@ esp_err_t set_static_ip(esp_netif_t* interface)
         ESP_LOGW(TAG, "No static IP found");
     }
 
-    char ip[IP4ADDR_STRLEN_MAX];
-    ATTEMPT(read_setting(DNS_SRV, ip))
-
     esp_netif_dns_info_t dns = {};
-    ip4addr_aton(ip, (ip4_addr_t*)&dns.ip.u_addr.ip4);
+    ATTEMPT(read_setting(DNS_SRV, ip))
+    inet_aton(ip, &dns.ip.u_addr.ip4);
     dns.ip.type = IPADDR_TYPE_V4;
     
     ATTEMPT(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
 
-    // cJSON_Delete(json);
     return ESP_OK;
 }
 

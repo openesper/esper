@@ -14,15 +14,18 @@ enum Setting {
     HOSTNAME,
     DNS_SRV,
     VERSION,
-    BLOCKING,
+    BLOCK,
     UPDATE_AVAILABLE,
     UPDATE_STATUS
 };
 
-esp_err_t write_setting(Setting key, char* buffer);
+esp_err_t write_setting(Setting key, const char* value);
+esp_err_t write_setting(Setting key, bool value);
 esp_err_t read_setting(Setting key, char* value);
 esp_err_t read_setting(Setting key, bool* value);
-cJSON* read_settings_json();
+bool      read_setting(Setting key);
+// cJSON* read_settings_json();
+esp_err_t load_settings();
 esp_err_t write_settings_json(cJSON* json);
 
 #endif

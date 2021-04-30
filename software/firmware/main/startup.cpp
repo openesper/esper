@@ -2,6 +2,7 @@
 #include "events.h"
 #include "flash.h"
 #include "filesystem.h"
+#include "settings.h"
 #include "gpio.h"
 #include "ip.h"
 #include "logging.h"

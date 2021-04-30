@@ -38,11 +38,15 @@
 #define IP_ERR_BASE                 0x800
 #define IP_ERR_INIT                 (IP_ERR_BASE + 1)       // Failed to initializ ip
 
-#define ETH_ERR_BASE                 0x900
-#define ETH_ERR_INIT                 (ETH_ERR_BASE + 1)       // Failed to initialize eth
+#define ETH_ERR_BASE                0x900
+#define ETH_ERR_INIT                (ETH_ERR_BASE + 1)      // Failed to initialize eth
 
-#define FS_ERR_BASE                   0xA00
-#define FS_ERR_INVALID_KEY            (ETH_ERR_BASE + 1)       // Failed to initialize eth
+#define FS_ERR_BASE                 0xA00     
+
+#define SETTING_ERR_BASE            0xA00
+#define SETTING_ERR_NULL            (SETTING_ERR_BASE + 1)
+#define SETTING_ERR_INVALID_KEY     (SETTING_ERR_BASE + 2) 
+#define SETTING_ERR_WRONG_TYPE      (SETTING_ERR_BASE + 3)          
 
 
 #define STRING(x) #x
@@ -53,7 +57,7 @@
   * @param x function with esp_err_t return type
   */
 #define ATTEMPT(func) do {                  \
-    esp_err_t tmp_err;                      \
+    int tmp_err;                      \
     if( (tmp_err = func) != ESP_OK ) {                    \
         log_error(tmp_err, STRING(func), __func__, __FILE__);   \
         return ESP_FAIL;                                  \
