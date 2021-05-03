@@ -2,9 +2,15 @@
 #define SETTINGS_H
 
 #include "esp_system.h"
-#include "cJSON.h"
-
 #include <string>
+
+// class Settings {
+//         fs::file file_handle;
+//         void* json;
+//     public:
+//         Settings();
+//         ~Settings();
+// };
 
 namespace sett
 {
@@ -29,29 +35,6 @@ namespace sett
     void write(Key key, const char* value);
     void write(Key key, bool value);
 }
-
-//enum Setting {
-//     IP = 0,
-//     NETMASK,
-//     GATEWAY,
-//     SSID,
-//     PASSWORD,
-//     UPDATE_SRV,
-//     HOSTNAME,
-//     DNS_SRV,
-//     VERSION,
-//     BLOCK,
-//     UPDATE_AVAILABLE
-// };
-
-// esp_err_t sett::write(Setting key, const char* value);
-// esp_err_t sett::write(Setting key, bool value);
-// esp_err_t sett::read(sett::Setting key, char* value);
-// esp_err_t sett::read(sett::Setting key, bool* value);
-// bool      sett::read(sett::Setting key);
-// // cJSON* read_settings_json();
-// esp_err_t load_settings();
-// esp_err_t sett::writes_json(cJSON* json);
 
 
 #endif

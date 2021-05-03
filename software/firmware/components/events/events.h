@@ -27,33 +27,24 @@ extern const int GPIO_ENABLED_BIT;
 /**
   * @brief Initialize FreeRTOS event group to keep track of system state
   *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to create event group
   */
-esp_err_t init_event_group();
+void init_event_group();
 
 /**
   * @brief Set a status bit
   *
   * @param bit One of the status bits
   *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to set bit
   */
-esp_err_t set_bit(int bit);
+void set_bit(int bit);
 
 /**
   * @brief Clear a status bit
   *
   * @param bit One of the status bits
   *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to clear bit
   */
-esp_err_t clear_bit(int bit);
+void clear_bit(int bit);
 
 /**
   * @brief Check the status of a bit
@@ -76,22 +67,16 @@ bool check_bit(int bit);
   *
   * @param TickType_t xTicksToWait : time to wait for bit to be set
   * 
-  * @return
-  *    - ESP_OK bit was set, or time expired
-  *    - ESP_FAIL error checking bit
   */
-esp_err_t wait_for(int bit, TickType_t xTicksToWait);
+void wait_for(int bit, TickType_t xTicksToWait);
 
 /**
   * @brief Toggle a status bit
   *
   * @param bit One of the status bits
   *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to toggle bit
   */
-esp_err_t toggle_bit(int bit);
+void toggle_bit(int bit);
 
 /**
   * @brief Return all event bits

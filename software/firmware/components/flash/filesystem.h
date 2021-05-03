@@ -26,7 +26,8 @@ namespace fs
     struct stat stat(std::string path);
     void unlink(std::string path);
     void rename(std::string before, std::string after);
-    void init();
 }
+
+void init_fs();
 
 #endif

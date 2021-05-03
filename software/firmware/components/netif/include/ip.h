@@ -10,7 +10,7 @@
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t init_interfaces();
+void init_interfaces();
 
 /**
   * @brief Start initialized interfaces in station mode
@@ -19,15 +19,6 @@ esp_err_t init_interfaces();
   *    - ESP_OK Success
   *    - ESP_FAIL Failure
   */
-esp_err_t start_interfaces();
-
-/**
-  * @brief Initialize TCP/IP stack & event loop
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL Failure
-  */
-esp_err_t init_tcpip();
+void start_interfaces();
 
 #endif

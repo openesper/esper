@@ -65,7 +65,7 @@ esp_err_t initialize_logging()
     log_mutex = xSemaphoreCreateMutex();
     if( log_mutex == NULL )
     {
-        log_error(ESP_FAIL, "xSemaphoreCreateMutex()", __func__, __FILE__);
+        log_error(ESP_FAIL, "xSemaphoreCreateMutex()", __func__, __FILE__, __LINE__);
         return ESP_FAIL;
     }
 

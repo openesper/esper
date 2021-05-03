@@ -5,6 +5,7 @@
 #include "string.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "cJSON.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -53,7 +54,7 @@ void sett::load_settings()
     }
     if( !exists("/settings.json") )
     {
-        THROW("Cannot load settings, settings.json doesn't exist");
+        THROWE(SETTING_ERR_NO_FILE, "Cannot load settings, settings.json doesn't exist");
     }
 
     struct stat s = stat("/settings.json");
@@ -67,7 +68,7 @@ void sett::load_settings()
 
     if(settings == NULL )
     {
-        THROW("Error parsing settings.json");
+        THROWE(SETTING_ERR_PARSE, "Unable to parse settings.json (%s)", cJSON_GetErrorPtr());
     }
 }
 
@@ -77,7 +78,7 @@ void sett::save_settings()
     char* json_str = cJSON_Print(settings);
     if( json_str == NULL )
     {
-        THROW("Failed to print settings json");
+        THROWE(SETTING_ERR_NULL, "Failed to print settings json");
     }
 
     file f = open("/settings.json", "w");
@@ -89,12 +90,12 @@ std::string sett::read_str(sett::Key key)
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !object )
     {
-        THROW("Invalid key %s", get_key(key));
+        THROWE(SETTING_ERR_INVALID_KEY, "Invalid key %s", get_key(key));
     }
 
     if( !cJSON_IsString(object) )
     {
-        THROW("%s is not a string", get_key(key));
+        THROWE(SETTING_ERR_WRONG_TYPE, "%s is not a string", get_key(key));
     }
 
     return std::string(object->valuestring);
@@ -105,12 +106,12 @@ bool sett::read_bool(sett::Key key)
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !object )
     {
-        THROW("Invalid key %s", get_key(key));
+        THROWE(SETTING_ERR_INVALID_KEY, "Invalid key %s", get_key(key));
     }
 
     if( !cJSON_IsBool(object) )
     {
-        THROW("%s is not a bool", get_key(key));
+        THROWE(SETTING_ERR_WRONG_TYPE, "%s is not a bool", get_key(key));
     }
 
     if( cJSON_IsTrue(object) )
@@ -130,13 +131,13 @@ void sett::write(sett::Key key, const char* value)
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !cJSON_IsString(object) )
     {
-        THROW("%s is not a string", get_key(key));
+        THROWE(SETTING_ERR_WRONG_TYPE, "%s is not a string", get_key(key));
     }
 
     if( cJSON_SetValuestring(object, value) == NULL )
     {
 
-        THROW("Error allocating space for %s", value);
+        THROWE(ESP_ERR_NO_MEM, "Error allocating space for %s", value);
     }
 
     save_settings();
@@ -149,7 +150,7 @@ void sett::write(sett::Key key, bool value)
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !cJSON_IsBool(object) )
     {
-        THROW("%s is not a bool", get_key(key));
+        THROWE(SETTING_ERR_WRONG_TYPE, "%s is not a bool", get_key(key));
     }
 
     cJSON_DeleteItemFromObject(settings, get_key(key));

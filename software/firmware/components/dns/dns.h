@@ -29,119 +29,65 @@ enum RecordTypes {
     AAAA=28,
 };
 
+typedef struct header{
+    uint16_t id;        // identification number
+ 
+    uint8_t rd :1;      // recursion desired
+    uint8_t tc :1;      // truncated message
+    uint8_t aa :1;      // authoritive answer
+    uint8_t opcode :4;  // purpose of message
+    uint8_t qr :1;      // query/response flag
+ 
+    uint8_t rcode :4;   // response code
+    uint8_t z :3;       // reserved (must be all 0)
+    uint8_t ra :1;      // recursion available
 
-/**
-  * @brief DNS Header
-  * 
-  *                                 1  1  1  1  1  1
-  *   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                     ID                        |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |QR| Opcode |AA|TC|RD|RA| Z      |    RCODE     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   QDCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   ANCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   NSCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   ARCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * 
-  */
+    uint16_t qcount;    // number of entries in the question section
+    uint16_t ancount;   // number of resource records in the answer section
+    uint16_t nscount;   // number of name server resource records in the authority records section
+    uint16_t arcount;   // number of resource records in the additional records section
+} Header;
 
 typedef struct{
-    uint16_t id; // identification number
- 
-    uint8_t rd :1; // recursion desired
-    uint8_t tc :1; // truncated message
-    uint8_t aa :1; // authoritive answer
-    uint8_t opcode :4; // purpose of message
-    uint8_t qr :1; // query/response flag
- 
-    uint8_t rcode :4; // response code
-    uint8_t cd :1; // checking disabled
-    uint8_t ad :1; // authenticated data
-    uint8_t z :1; // its z! reserved
-    uint8_t ra :1; // recursion available
- 
-    uint16_t q_count; // number of question entries
-    uint16_t ans_count; // number of answer entries
-    uint16_t auth_count; // number of authority entriesS
-    uint16_t add_count; // number of resource entries
-} DNS_Header;
+    uint16_t qtype;     // a two octet code which specifies the type of the query
+    uint16_t qclass;    // a two octet code that specifies the class of the query
+} QData; 
 
-/**
-  * @brief DNS Query
-  * 
-  *                                 1  1  1  1  1  1
-  *   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                                               |
-  * /                   QNAME                       /
-  * /                                               /
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   NSCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   ARCOUNT                     |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * 
-  */
- 
-typedef struct{
-    uint16_t qtype;
-    uint16_t qclass;
-} DNS_Query; 
-
-
-/**
-  * @brief DNS Answer
-  * 
-  *                                 1  1  1  1  1  1
-  *   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                                               |
-  * /                   Name                        /
-  * /                                               /
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   TYPE                        |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   CLASS                       |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   TTL                         |
-  * |                                               |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * |                   RDLENGTH                    |
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * /                   QNAME                       /
-  * /                                               /
-  * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
-  * 
-  */
+typedef struct question{
+    uint8_t* qname;     // a domain name represented as a sequence of labels
+    size_t qname_len;
+    QData* qdata;
+} Question;
 
 typedef struct __attribute__((__packed__)){
-    uint16_t name; // Name can be a 16bit pointer to qname
-    uint16_t type;
-    uint16_t cls;
-    uint32_t ttl;
-    uint16_t rdlength;
-    uint32_t rddata;
-} DNS_Answer;
+    uint16_t type;      // two octets containing one of the RR type codes
+    uint16_t cls;       // two octets which specify the class of the data in the RDATA field
+    uint32_t ttl;       // a 32 bit unsigned integer that specifies the time interval (in seconds) that the resource record may be cached before it should be discarded
+    uint16_t rdlength;  // an unsigned 16 bit integer that specifies the length in octets of the RDATA field
+} RRData;
 
-typedef struct {
-    DNS_Header* header;
-    char* qname;
-    DNS_Query* query;
-} DNS_Packet;
+typedef struct resource_record{
+    uint8_t* name;      // a domain name to which this resource record pertains
+    RRData* info;
+    uint8_t* rddata;    // a variable length string of octets that describes the resource
+} ResourceRecord;
 
-typedef struct {
-    struct sockaddr_in src;
-    uint8_t data[MAX_PACKET_SIZE];
-    uint32_t length;
-    int64_t recv_timestamp;
-    DNS_Packet dns;
-} Packet;
+class DNS {
+    public:
+        struct sockaddr_in src;
+        socklen_t addrlen;
+        int64_t recv_timestamp;
+
+        uint8_t buffer[MAX_PACKET_SIZE];
+        size_t size;
+
+        Header* header;
+        Question* question;
+        ResourceRecord rr[];
+
+        DNS();
+        esp_err_t parse_buffer();
+};
 
 typedef struct {
     struct sockaddr_in src_address;
@@ -150,34 +96,9 @@ typedef struct {
 } Client;
 
 /**
-  * @brief Retreive upstream dns server from flash
-  * 
-  * Stores the current server into static sockaddr_in struct
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get server ip from flash
-  */
-esp_err_t load_upstream_dns();
-
-/**
   * @brief Start listening and DNS parsing tasks
   *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to start tasks
   */
-esp_err_t start_dns();
-
-/**
-  * @brief Retreive device url from flash
-  * 
-  * Stores the current url in static char buffer
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get url from flash
-  */
-esp_err_t load_device_url();
+void start_dns();
 
 #endif

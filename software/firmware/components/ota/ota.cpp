@@ -48,11 +48,11 @@ ota::ota(std::string server)
 
     client_handle = esp_http_client_init(&config);
     if (client_handle == NULL) {
-        THROW("Failed to initialise connection to %s", server.c_str())
+        THROWE(OTA_ERR_INIT, "Failed to initialise connection to %s", server.c_str())
     }
 
     if (esp_http_client_open(client_handle, 0) != ESP_OK) {
-        THROW("Failed to open connection to %s", server.c_str())
+        THROWE(OTA_ERR_INIT, "Failed to open connection to %s", server.c_str())
     }
     esp_http_client_fetch_headers(client_handle);
 }
@@ -74,11 +74,7 @@ void ota::begin(const esp_partition_t *partition)
     update_handle = 0;
     update_partition = partition;
 
-    esp_err_t err = esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle);
-    if (err != ESP_OK) 
-    {
-        THROW("esp_ota_begin failed (%s)", esp_err_to_name(err));
-    }
+    TRY(esp_ota_begin(update_partition, OTA_SIZE_UNKNOWN, &update_handle))
 }
 
 int ota::read(char* buf, int bufsize)
@@ -86,17 +82,17 @@ int ota::read(char* buf, int bufsize)
     int data_read = esp_http_client_read(client_handle, buf, bufsize);
     if (data_read < 0) 
     {
-        THROW("SSL data read error");
+        THROWE(OTA_ERR_READ, "SSL data read error");
     }
     else if (data_read == 0)
     {
         if( errno == ECONNRESET) 
         {    
-            THROW("Connection reset by peer");
+            THROWE(OTA_ERR_READ, "Connection reset by peer");
         }
         else if( errno == ENOTCONN ) 
         {    
-            THROW("Client not connected");
+            THROWE(OTA_ERR_READ, "Client not connected");
         }
     }
     return data_read;
@@ -104,10 +100,7 @@ int ota::read(char* buf, int bufsize)
 
 void ota::write(char* buffer, int bytes)
 {
-    esp_err_t err = esp_ota_write( update_handle, (const void *)buffer, bytes);
-    if (err != ESP_OK) {
-        THROW("esp_ota_begin failed (%s)", esp_err_to_name(err));
-    }
+    TRY(esp_ota_write( update_handle, (const void *)buffer, bytes))
 }
 
 void ota::download()
@@ -144,14 +137,10 @@ void ota::end()
         if (err == ESP_ERR_OTA_VALIDATE_FAILED) {
             ESP_LOGE(TAG, "Image validation failed, image is corrupted");
         }
-        THROW("esp_ota_end failed (%s)!", esp_err_to_name(err));
+        THROWE(err, "esp_ota_end(update_handle)");
     }
 
-    // change boot partition
-    err = esp_ota_set_boot_partition(update_partition);
-    if (err != ESP_OK) {
-        THROW("esp_ota_set_boot_partition failed (%s)!", esp_err_to_name(err));
-    }
+    TRY(esp_ota_set_boot_partition(update_partition))
 }
 
 void update_checking_task(void* parameters)
@@ -168,7 +157,7 @@ void update_checking_task(void* parameters)
             int data_read = client.read(buffer, 512);
             if (data_read < sizeof(esp_image_header_t) + sizeof(esp_image_segment_header_t) + sizeof(esp_app_desc_t))
             {
-                THROW("Header received from update server was too small");
+                THROWE(OTA_ERR_INIT, "Header received from update server was too small");
             }
 
             // check current version with downloading
@@ -209,7 +198,7 @@ void update_firmware()
     const esp_partition_t *update_partition = esp_ota_get_next_update_partition(NULL);
     if( client.get_content_len() >= update_partition->size )
     {
-        THROW("Update binary too large for partition");
+        THROWE(OTA_ERR_TOO_LARGE, "Update binary too large for partition");
     }
 
     ESP_LOGI(TAG, "Updating partition %s", update_partition->label);
@@ -224,7 +213,7 @@ void update_firmware()
     }
     else
     {
-        THROW("Error in receiving complete file");
+        THROWE(OTA_ERR_INCOMPLETE, "Error in receiving complete file");
     }
 
     client.end();
@@ -275,7 +264,7 @@ esp_err_t init_ota()
     running = esp_ota_get_running_partition();
     xTaskCreatePinnedToCore(&update_checking_task, "update_checking_task", 8192, NULL, 5, &update_check_task_handle, tskNO_AFFINITY);
 
-    xTimerHandle updateCheckTimer = xTimerCreate("Check for update", pdMS_TO_TICKS(1000*10), pdTRUE, (void*)0, updateCheckCallback);
+    xTimerHandle updateCheckTimer = xTimerCreate("Check for update", pdMS_TO_TICKS(1000*UPDATE_CHECK_INTERVAL_S), pdTRUE, (void*)0, updateCheckCallback);
     xTimerStart(updateCheckTimer, 0);
 
     return ESP_OK;

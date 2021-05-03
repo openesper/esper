@@ -5,7 +5,7 @@
 #include "eth.h"
 #include "wifi.h"
 #include "string.h"
-#include "flash.h"
+// 
 #include "filesystem.h"
 #include "lwip/sockets.h"
 
@@ -57,108 +57,91 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
     }
 }
 
-esp_err_t init_tcpip()
+void init_interfaces()
 {
     // Initialize TCP/IP stack
-    ATTEMPT(esp_netif_init())
-    ATTEMPT(esp_event_loop_create_default())
-    ATTEMPT(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &ip_event_handler, NULL))
+    TRY(esp_netif_init())
+    TRY(esp_event_loop_create_default())
+    TRY(esp_event_handler_register(IP_EVENT, ESP_EVENT_ANY_ID, &ip_event_handler, NULL))
 
-    return ESP_OK;
-}
-
-static esp_err_t init_eth()
-{
-    ATTEMPT(init_eth_netif(&eth_netif))
-    ATTEMPT(init_eth_handle(&eth_handle))
-    ATTEMPT(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)))
-    ESP_LOGI(TAG, "Ethernet initialized");
-
-    return ESP_OK;
-}
-
-static esp_err_t init_wifi()
-{
-    ATTEMPT(configure_wifi())
-    esp_wifi_set_mode(WIFI_MODE_STA);
-    ATTEMPT(init_wifi_sta_netif(&wifi_sta_netif))
-    
-    ESP_LOGI(TAG, "Wifi initialized");
-
-    return ESP_OK;
-}
-
-esp_err_t init_interfaces()
-{
     // Turn on available interfaces
     if( check_bit(ETH_ENABLED_BIT) )
     {
-        ATTEMPT(init_eth())
+        eth_netif = init_eth_netif();
+        eth_handle = init_eth_handle();
+        TRY(esp_netif_attach(eth_netif, esp_eth_new_netif_glue(eth_handle)))
+
         set_bit(ETH_INITIALIZED_BIT);
+        ESP_LOGI(TAG, "Ethernet initialized");
     }
     else if( check_bit(WIFI_ENABLED_BIT) )
     {
-        ATTEMPT(init_wifi())
+        wifi_sta_netif = init_wifi_sta_netif();
+        
         set_bit(WIFI_INITIALIZED_BIT);
+        ESP_LOGI(TAG, "Wifi initialized");
     }
-
-    if( !check_bit(ETH_INITIALIZED_BIT) && !check_bit(WIFI_INITIALIZED_BIT))
+    else
     {
-        return IP_ERR_INIT;
+        THROWE(IP_ERR_INIT, "No interfaces are enabled")
     }
-
-    return ESP_OK;
 }
 
-esp_err_t set_static_ip(esp_netif_t* interface)
+static void set_static_ip(esp_netif_t* interface)
 {
     // Get network info from flash, if it exists
     esp_netif_ip_info_t ip_info;
     
-    std::string ip = sett::read_str(sett::IP);
-    if( inet_aton(ip.c_str(), &(ip_info.ip)) )
-    {
-        ip = sett::read_str(sett::NETMASK);
-        ip_info.netmask.addr = inet_addr(ip.c_str());
+    try{
+        std::string ip = sett::read_str(sett::IP);
+        if( inet_aton(ip.c_str(), &(ip_info.ip)) )
+        {
+            ip = sett::read_str(sett::NETMASK);
+            ip_info.netmask.addr = inet_addr(ip.c_str());
 
-        ip = sett::read_str(sett::GATEWAY);
-        ip_info.gw.addr = inet_addr(ip.c_str());
+            ip = sett::read_str(sett::GATEWAY);
+            ip_info.gw.addr = inet_addr(ip.c_str());
 
-        esp_netif_dhcpc_stop(interface);
-        esp_netif_set_ip_info(interface, &ip_info);
-        ESP_LOGI(TAG, "Assigned static IP to interface");
+            esp_netif_dhcpc_stop(interface);
+            esp_netif_set_ip_info(interface, &ip_info);
+            ESP_LOGI(TAG, "Assigned static IP to interface");
+        }
+        else
+        {
+            ESP_LOGW(TAG, "No static IP in settings.json");
+        }
+
+        esp_netif_dns_info_t dns = {};
+        ip = sett::read_str(sett::DNS_SRV);
+        inet_aton(ip.c_str(), &dns.ip.u_addr.ip4);
+        dns.ip.type = IPADDR_TYPE_V4;
+        esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns);
     }
-    else
-    {
-        ESP_LOGW(TAG, "No static IP found");
+    catch(const Err& e){
+        ESP_LOGE(TAG, "Error setting static ip, turing DHCP on");
+        esp_netif_dhcpc_start(interface);
+
+        esp_netif_dns_info_t dns = {};
+        inet_aton("8.8.8.8", &dns.ip.u_addr.ip4);
+        dns.ip.type = IPADDR_TYPE_V4;
+        esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns);
     }
-
-    esp_netif_dns_info_t dns = {};
-    ip = sett::read_str(sett::DNS_SRV);
-    inet_aton(ip.c_str(), &dns.ip.u_addr.ip4);
-    dns.ip.type = IPADDR_TYPE_V4;
-    
-    ATTEMPT(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
-
-    return ESP_OK;
 }
 
-esp_err_t start_interfaces()
+void start_interfaces()
 {
     if( check_bit(ETH_INITIALIZED_BIT) )
     {
         ESP_LOGI(TAG, "Starting Ethernet");
-        ATTEMPT(set_static_ip(eth_netif))
-        ATTEMPT(esp_eth_start(eth_handle))
+        set_static_ip(eth_netif);
+        TRY(esp_eth_start(eth_handle))
     }
 
     if( check_bit(WIFI_INITIALIZED_BIT) )
     {
         esp_wifi_start();
-        ATTEMPT(set_static_ip(wifi_sta_netif))
+        set_static_ip(wifi_sta_netif);
         esp_wifi_connect();
     }
-
-    return ESP_OK;
 }
 

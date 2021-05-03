@@ -1,16 +1,15 @@
 #include "gpio.h"
 #include "error.h"
 #include "events.h"
-#include "flash.h"
 #include "dns.h"
 #include "settings.h"
-#include "error.h"
 #include "ota.h"
+
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "freertos/queue.h"
 #include "driver/gpio.h"
 #include "driver/ledc.h"
+#include "nvs_flash.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -188,37 +187,48 @@ static esp_err_t init_leds()
     return ESP_OK;
 }
 
-esp_err_t init_gpio()
+void init_gpio()
 {
     if( check_bit(GPIO_ENABLED_BIT) )
     {
         ESP_LOGI(TAG, "Initializing GPIO...");
 
-        int btn,r,g,b;
-        get_gpio_config(&btn, &r, &g, &b);
+        
+        nvs_handle nvs;
+        esp_err_t err;
+        if ( (err = nvs_open("storage", NVS_READONLY, &nvs)) != ESP_OK )
+        {
+            THROWE(err, "Failed to open nvs")
+        }
+
+        uint8_t btn,r,g,b;
+        err = nvs_get_u8(nvs, "button", &btn);
+        err |= nvs_get_u8(nvs, "red_led", &r);
+        err |= nvs_get_u8(nvs, "green_led", &g);
+        err |= nvs_get_u8(nvs, "blue_led", &b);
+        if( err != ESP_OK )
+        {
+            THROWE(GPIO_ERR_INIT, "Failed to load gpio settings from nvs");
+        }
 
         button    = static_cast<gpio_num_t>(btn);
         red_led   = static_cast<gpio_num_t>(r);
         green_led = static_cast<gpio_num_t>(g);
         blue_led  = static_cast<gpio_num_t>(b);
 
-        ATTEMPT(init_leds())
-        ATTEMPT(init_button())
+        if( init_leds() != ESP_OK || init_button() != ESP_OK )
+        {
+            THROWE(GPIO_ERR_INIT, "Failed to initialize gpio")
+        }
 
         if( xTaskCreatePinnedToCore(led_task, "led_task", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY) == pdFAIL )
         {
-            log_error(GPIO_ERR_INIT, "xTaskCreatePinnedToCore(led_task, \"led_task\", 2000, NULL, 2, &led_task_handle, tskNO_AFFINITY)",
-                      __func__, __FILE__);
-            return GPIO_ERR_INIT;
+            THROWE(GPIO_ERR_INIT, "Failed to start led_task")
         }
 
         if( xTaskCreatePinnedToCore(button_task, "button_task", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY) == pdFAIL )
         {
-            log_error(GPIO_ERR_INIT, "xTaskCreatePinnedToCore(led_task, \"button_task\", 3000, NULL, 2, &button_task_handle, tskNO_AFFINITY)",
-                      __func__, __FILE__);
-            return GPIO_ERR_INIT;
+            THROWE(GPIO_ERR_INIT, "Failed to start button_task")
         }
     }
-    
-    return ESP_OK;
 }

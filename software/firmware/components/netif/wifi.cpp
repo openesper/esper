@@ -4,11 +4,10 @@
 #include "error.h"
 #include "filesystem.h"
 #include "settings.h"
-#include "flash.h"
+
 #include "string.h"
 #include "esp_system.h"
 #include "esp_wifi.h"
-#include "cJSON.h"
 #include "lwip/inet.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
@@ -43,7 +42,7 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
         {
             ESP_LOGI(TAG, "WIFI_EVENT_STA_CONNECTED");
             // (wifi_event_sta_connected_t*)event_data;
-            // set_bit(WIFI_CONNECTED_BIT);
+            set_bit(WIFI_CONNECTED_BIT);
             break;
         }
         case WIFI_EVENT_STA_DISCONNECTED:
@@ -93,20 +92,29 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
     }
 }
 
-esp_err_t init_wifi_sta_netif(esp_netif_t** sta_netif)
+esp_netif_t* init_wifi_sta_netif()
 {
+    // esp_err_t err;
+
+    wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
+    TRY(esp_wifi_init(&init_cfg))
+    TRY(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
+    // esp_wifi_set_mode(WIFI_MODE_STA);
+
     esp_netif_config_t sta_cfg = {                                                 
         .base = ESP_NETIF_BASE_DEFAULT_WIFI_STA,      
         .driver = NULL,                               
         .stack = ESP_NETIF_NETSTACK_DEFAULT_WIFI_STA, 
     };
 
-    *sta_netif = esp_netif_new(&sta_cfg);
-    if( !*sta_netif )
-        return ESP_FAIL;
+    esp_netif_t* sta_netif;
+    IF_NULL(sta_netif = esp_netif_new(&sta_cfg))
+    {
+        THROWE(WIFI_ERR_NULL_NETIF, "Failed to creat instance of sta netif")
+    }
     
-    ATTEMPT(esp_netif_attach_wifi_station(*sta_netif))
-    ATTEMPT(esp_wifi_set_default_wifi_sta_handlers())
+    TRY(esp_netif_attach_wifi_station(sta_netif))
+    TRY(esp_wifi_set_default_wifi_sta_handlers())
 
     std::string ssid = sett::read_str(sett::SSID);
     std::string pass = sett::read_str(sett::PASSWORD);
@@ -119,15 +127,5 @@ esp_err_t init_wifi_sta_netif(esp_netif_t** sta_netif)
     strcpy((char*)wifi_config.sta.password, pass.c_str());
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
 
-    return ESP_OK;
-}
-
-esp_err_t configure_wifi()
-{
-    ATTEMPT(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
-
-    wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ATTEMPT(esp_wifi_init(&init_cfg))
-
-    return ESP_OK;
+    return sta_netif;
 }

@@ -1,18 +1,25 @@
 #include "eth.h"
 #include "error.h"
-#include "flash.h"
+// 
+
 #include "esp_system.h"
 #include "esp_eth.h"
 #include "esp_netif.h"
 #include "esp_event.h"
 #include "esp_wifi.h"
+#include "nvs_flash.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "ETH";
 
-esp_netif_t* eth_netif = NULL;
-esp_eth_handle_t eth_handle = NULL;
+enum Phy {
+    NONE,
+    LAN8720,
+    IP101,
+    RTL8201,
+    DP83848
+};
 
 static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
@@ -34,10 +41,9 @@ static void eth_event_handler(void *arg, esp_event_base_t event_base, int32_t ev
     }
 }
 
-esp_err_t init_eth_netif(esp_netif_t** eth_netif)
+esp_netif_t* init_eth_netif()
 {
-    // ATTEMPT(esp_netif_init())
-    ATTEMPT(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
+    TRY(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
 
     esp_netif_config_t netif_cfg =     {
         .base = ESP_NETIF_BASE_DEFAULT_ETH,      
@@ -45,31 +51,34 @@ esp_err_t init_eth_netif(esp_netif_t** eth_netif)
         .stack = ESP_NETIF_NETSTACK_DEFAULT_ETH, 
     };
 
-    *eth_netif = esp_netif_new(&netif_cfg);
+    esp_netif_t* eth_netif = esp_netif_new(&netif_cfg);
     if( eth_netif == NULL)
     {
-        log_error(ESP_FAIL, "esp_netif_new(&netif_cfg)", __func__, __FILE__);
-        return ESP_FAIL;
+        THROWE(ETH_ERR_INIT, "Failed to create eth_netif")
     }
 
-    // Set default handlers to process TCP/IP stuffs
-     ATTEMPT(esp_eth_set_default_handlers(*eth_netif))
+    TRY(esp_eth_set_default_handlers(eth_netif))
 
-    return ESP_OK;
+     return eth_netif;
 }
 
-esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
+esp_eth_handle_t init_eth_handle()
 {
     // Get hardware configuration from flash
-    esp_eth_phy_t* phy;
-    uint32_t phy_id = 0, addr = 0, rst = 0, mdc = 0, mdio = 0;
-    get_ethernet_phy_config(&phy_id, &addr, &rst, &mdc, &mdio);
+    nvs_handle nvs;
+    TRY( nvs_open("storage", NVS_READONLY, &nvs) )
+
+    uint8_t phy_id = 0, addr = 0, rst = 0;
+    TRY(nvs_get_u8(nvs, "phy", &phy_id))
+    TRY(nvs_get_u8(nvs, "phy_addr", &addr))
+    TRY(nvs_get_u8(nvs, "phy_rst", &rst))
     
     // Setup phy configuration
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
     phy_config.phy_addr = addr;
     phy_config.reset_gpio_num = rst;
 
+    esp_eth_phy_t* phy;
     switch(phy_id) {
         case LAN8720:
             phy = esp_eth_phy_new_lan8720(&phy_config);
@@ -89,11 +98,14 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
     }
     if( phy == NULL )
     {
-        log_error(ESP_FAIL, "esp_eth_phy_new()", __func__, __FILE__);
-        return ESP_FAIL;
+        THROWE(ETH_ERR_INIT, "Failed to init PHY")
     }
 
     // Setup MAC configuration
+    uint8_t  mdc = 0, mdio = 0;
+    TRY(nvs_get_u8(nvs, "phy_mdc", &mdc))
+    TRY(nvs_get_u8(nvs, "phy_mdio", &mdio))
+
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     mac_config.smi_mdc_gpio_num = mdc;
     mac_config.smi_mdio_gpio_num = mdio;
@@ -101,12 +113,12 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
     esp_eth_mac_t *mac = esp_eth_mac_new_esp32(&mac_config);
     if( mac == NULL )
     {
-        log_error(ESP_FAIL, "esp_eth_mac_new_esp32(&mac_config)", __func__, __FILE__);
-        return ESP_FAIL;
+        THROWE(ETH_ERR_INIT, "Failed to init MAC")
     }
 
+    esp_eth_handle_t eth_handle;
     esp_eth_config_t config = ETH_DEFAULT_CONFIG(mac, phy);
-    ATTEMPT(esp_eth_driver_install(&config, eth_handle))
+    TRY( esp_eth_driver_install(&config, &eth_handle) )
 
-    return ESP_OK;
+    return eth_handle;
 }

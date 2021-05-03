@@ -1,8 +1,6 @@
 #include "events.h"
 #include "error.h"
-#include "gpio.h"
 #include "freertos/event_groups.h"
-#include "freertos/task.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -27,37 +25,25 @@ const int UPDATE_AVAILABLE_BIT = BIT15;
 const int BLOCKED_QUERY_BIT = BIT16;
 
 
-esp_err_t init_event_group()
+void init_event_group()
 {
-    event_group = xEventGroupCreate();
+    event_group = xEventGroupCreate();;
     if( event_group == NULL )
     {
-        log_error(EVENT_ERR_INIT, "xEventGroupCreate()", __func__, __FILE__);
-        return ESP_FAIL;
+        THROWE(EVENT_ERR_INIT, "Error creating event group")
     }
-
-    ESP_LOGI(TAG, "Event Group Started");
-    return ESP_OK;
 }
 
-esp_err_t set_bit(int bit)
+void set_bit(int bit)
 {
-    if( xEventGroupSetBits(event_group, bit) == pdFALSE )
-    {
-        ESP_LOGD(TAG, "Failed to set bit %X", bit);
-    }
-
-    return ESP_OK;
+    ESP_LOGD(TAG, "Setting %d", bit);
+    xEventGroupSetBits(event_group, bit);
 }
 
-esp_err_t clear_bit(int bit)
+void clear_bit(int bit)
 {
-    if( xEventGroupClearBits(event_group, bit) == pdFALSE )
-    {
-        ESP_LOGD(TAG, "Failed to clear bit %X", bit);
-    }
-    
-    return ESP_OK;
+    ESP_LOGD(TAG, "Clearing %d", bit);
+    xEventGroupClearBits(event_group, bit);
 }
 
 bool check_bit(int bit)
@@ -65,27 +51,21 @@ bool check_bit(int bit)
     return (xEventGroupGetBits(event_group) & bit);
 }
 
-esp_err_t wait_for(int bit, TickType_t xTicksToWait)
+void wait_for(int bit, TickType_t xTicksToWait)
 {
+    ESP_LOGD(TAG, "Waiting for %d", bit);
     uint32_t bits_before = get_bits();
     uint32_t bits_after = xEventGroupWaitBits(event_group, bit, pdFALSE, pdFALSE, xTicksToWait);
     if( bits_before == bits_after ) // bits will be equal if timeout expired
-        return ESP_FAIL;
-    return ESP_OK;
+    {
+        THROWE(ESP_ERR_TIMEOUT, "Timeout while waiting for bits %d", bit)
+    }
 }
 
-esp_err_t toggle_bit(int bit)
+void toggle_bit(int bit)
 {
-    if( check_bit(bit) )
-    {
-        ATTEMPT(clear_bit(bit))
-    }
-    else
-    {
-        ATTEMPT(set_bit(bit))
-    }
-
-    return ESP_OK;
+    ESP_LOGD(TAG, "Toggling %d", bit);
+    check_bit(bit) ? clear_bit(bit) : set_bit(bit);
 }
 
 uint32_t get_bits()
