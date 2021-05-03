@@ -17,7 +17,6 @@
 #include "lwip/sockets.h"
 #include "lwip/ip_addr.h"
 #include "esp_netif.h"
-#include "cJSON.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
@@ -169,10 +168,9 @@ static IRAM_ATTR esp_err_t capture_query(Packet* packet)
         // If not provisioning, return current IP
         // esp_netif_ip_info_t info;
         // get_network_info(&info);
-        char ip_str[IP4_STRLEN_MAX];
-        read_setting(IP, ip_str);
-
-        ip = ntohl(inet_addr(ip_str));
+        // char ip_str[IP4_STRLEN_MAX];
+        std::string ip_str = sett::read_str(sett::IP);
+        ip = ntohl(inet_addr(ip_str.c_str()));
     }
 
     return answer_query(packet, ip);
@@ -287,8 +285,8 @@ static IRAM_ATTR void dns_t(void* parameters)
             }
             else 
             {
-                bool blocking;
-                read_setting(BLOCK, &blocking);
+                bool blocking = sett::read_bool(sett::BLOCK);
+                // sett::read(sett::BLOCK, &blocking);
 
                 if( memcmp(url.string, device_url, url.length) == 0 ) // Check is qname matches current device url
                 {
@@ -322,13 +320,16 @@ esp_err_t start_dns()
     packet_queue = xQueueCreate(PACKET_QUEUE_SIZE, sizeof(Packet*));
 
     // read url
-    ATTEMPT(read_setting(HOSTNAME, device_url))
+    // ATTEMPT(sett::read(sett::HOSTNAME, device_url))
+    std::string url = sett::read_str(sett::HOSTNAME);
+    strcpy(device_url, url.c_str());
     ESP_LOGI(TAG, "Device URL: %s", device_url);
 
     // read upstream dns
-    char ip[IP4ADDR_STRLEN_MAX];
-    ATTEMPT(read_setting(DNS_SRV, ip))
-    ip4addr_aton(ip, (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
+    std::string ip = sett::read_str(sett::DNS_SRV);
+    // char ip[IP4ADDR_STRLEN_MAX];
+    // ATTEMPT(sett::read(sett::DNS_SRV, ip))
+    ip4addr_aton(ip.c_str(), (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
     upstream_dns.sin_family = PF_INET;
     upstream_dns.sin_port = htons(DNS_PORT);
     ESP_LOGI(TAG, "Upstream DNS: %s", inet_ntoa(upstream_dns.sin_addr.s_addr));

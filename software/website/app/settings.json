@@ -1,14 +1,13 @@
 {
-    "ip": "",
-    "netmask": "",
-    "gateway": "",
-    "ssid": "",
-    "password": "",
+    "ip": "192.168.1.2",
+    "netmask": "255.255.255.0",
+    "gateway": "192.168.1.1",
+    "ssid": "ssid",
+    "password": "password",
     "update_srv": "update.openesper.com",
     "url": "esper.com",
     "dns_srv": "8.8.8.8",
-    "version": "",
+    "version": "00.00.03",
     "blocking": true,
-    "update_available": false,
-    "update_status": ""
+    "update_available": true,
 }

@@ -11,8 +11,6 @@
 #include "esp_log.h"
 static const char* TAG = "HTTP";
 
-static const char* app_directory = "/app";
-static const char* prov_directory = "/prov";
 static const char* index_html = "index.html";
 
 #define MAX_CHUNK_SIZE 1000          // Size of chunks to send
@@ -55,24 +53,18 @@ static esp_err_t set_content_type(httpd_req_t *req, const char* filepath)
 
 static esp_err_t send_file(httpd_req_t *req, const char* filepath)
 {
-    FILE* f = open_file(filepath, "r");
-    if (f == NULL)
-    {
-        ESP_LOGE(TAG, "Unable to open %s", filepath);
-        return ESP_FAIL;
-    }
+    fs::file f = fs::open(filepath, "r");
 
     size_t chunksize;
     do {
-        chunksize = fread(chunk, 1, MAX_CHUNK_SIZE, f);
+        chunksize = f.read(chunk, 1, MAX_CHUNK_SIZE);
         if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
             ESP_LOGE(TAG, "Error sending %s", filepath);
-            fclose(f);
             return ESP_FAIL;
         }
     } while(chunksize != 0);
 
-    fclose(f);
+    // fclose(f);
     return ESP_OK;
 }
 
@@ -84,15 +76,9 @@ esp_err_t get_handler(httpd_req_t *req)
     uri[strcspn(req->uri, "?")] = '\0';
     ESP_LOGI(TAG, "Request for %s", uri);
 
-    // Choose directory
-    const char* src_directory = app_directory;
-    if( check_bit(PROVISIONING_BIT) )
-        src_directory = prov_directory;
-
     // Build filepath
-    char filepath[strlen(src_directory)+HTTPD_MAX_URI_LEN+strlen(index_html)+1+1];
-    strcpy(filepath, src_directory);
-    strcat(filepath, uri);
+    char filepath[HTTPD_MAX_URI_LEN+strlen(index_html)+1+1];
+    strcpy(filepath, uri);
 
     // See file extension exists, otherwise assume 
     // it's a directory and look for index.html
@@ -109,27 +95,15 @@ esp_err_t get_handler(httpd_req_t *req)
     }
 
     // Check if file exists
-    if( !file_exists(filepath) )
+    if( !fs::exists(filepath) )
     {
-        // Redirect to "/" if currently provisioning
-        if( check_bit(PROVISIONING_BIT) )
+        ESP_LOGD(TAG, "Sending 404.html");
+        httpd_resp_set_status(req, HTTPD_404);
+        httpd_resp_set_type(req, "text/html");
+        if( send_file(req, "/404.html") != ESP_OK )
         {
-            ESP_LOGD(TAG, "Redirecting to /");
-            httpd_resp_set_type(req, "text/html");
-            httpd_resp_set_status(req, "302 Found");
-            httpd_resp_set_hdr(req, "Location", "/");
-            httpd_resp_send(req, NULL, 0);
-        }
-        else // Send 404 page
-        {
-            ESP_LOGD(TAG, "Sending 404.html");
-            httpd_resp_set_status(req, HTTPD_404);
-            httpd_resp_set_type(req, "text/html");
-            if( send_file(req, "/app/404.html") != ESP_OK )
-            {
-                httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Unable to send 404");
-            }  
-        }
+            httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Unable to send 404");
+        }  
         return ESP_OK;
     }
 

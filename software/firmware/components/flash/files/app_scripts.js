@@ -137,7 +137,6 @@ function loadSettings(){
         if (http.readyState == 4){
             if (http.status == 200){
                 let settings = JSON.parse(http.response);
-                console.log(settings);
 
                 var button = document.getElementById("blockStatus")
                 var version = document.getElementById("version");
@@ -185,12 +184,7 @@ function loadSettings(){
                     button.disabled = false;
                     button.style.visibility = "visible";
                 }
-
-                if( settings.update_status ){
-                    err.innerHTML = settings.update_status;
-                    err.style.visibility = 'visible'
-                }
-
+                
                 if( settings.update_available ){
                     update_available.style.visibility = 'visible';
                 }else{
@@ -232,6 +226,76 @@ function toggleBlock()
             else {
                 err.innerHTML = http.responseText;
                 err.style.visibility = 'visible';
+            }
+        }
+    };
+    http.send();
+}
+
+
+function closeModal()
+{
+    let updateModal = document.getElementById("updateModal")
+    updateModal.style.display = "none"
+}
+
+
+function updateFirmware()
+{
+    let updateModal = document.getElementById("updateModal");
+    let updatestatus = document.getElementById('updatestatus')
+    let closebutton = document.getElementById('closemodal')
+    updateModal.style.display = "block";
+
+    let err = document.getElementById('error');
+    const http = new XMLHttpRequest();
+    http.open("POST", '/updatefirmware');
+
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (http.status == 200){
+                updatestatus.innerHTML = "Restarting..."
+                closebutton.style.visibility = "hidden";
+                restart();
+            }
+            else {
+                err.innerHTML = http.responseText;
+                err.style.visibility = 'visible';
+            }
+        }
+    };
+    http.send();
+}
+
+function restart()
+{
+    const http = new XMLHttpRequest();
+    http.open("POST", '/restart');
+
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (http.status == 200){
+                window.setTimeout(restartFinished, 2000);
+            }
+            else {
+                closeModal()
+                err.innerHTML = http.responseText;
+                err.style.visibility = 'visible';
+            }
+        }
+    };
+    http.send();
+}
+
+function restartFinished()
+{
+    const http = new XMLHttpRequest();
+    http.open("GET", '/settings.json');
+
+    http.onreadystatechange = function() {
+        if (http.readyState == 4){
+            if (http.status == 200){
+                location.href = "/settings";
             }
         }
     };

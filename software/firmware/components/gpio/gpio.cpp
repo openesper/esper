@@ -58,19 +58,13 @@ static void button_task(void* args)             // Task keeping track of time be
             if( length > 8000 )
             {
                 ESP_LOGW(TAG, "Rolling back");
-                // rollback_ota();
-                esp_restart();
-            }
-            else if( length > 3000 )
-            {
-                ESP_LOGW(TAG, "Putting esper back into provisioning mode");
-                set_provisioning_status(false);
+                rollback();
                 esp_restart();
             }
             else
             {
-                bool blocking = !read_setting(BLOCK);
-                write_setting(BLOCK, blocking);
+                bool blocking = !sett::read_bool(sett::BLOCK);
+                sett::write(sett::BLOCK, blocking);
             }
         }
     }
@@ -107,10 +101,6 @@ static void led_task(void* args)
         {
             set_rgb(RED);
         }
-        else if( check_bit(PROVISIONING_BIT) )
-        {
-            set_rgb(GREEN);
-        }
         else if( check_bit(INITIALIZING_BIT) )
         {
             set_rgb(PURPLE);
@@ -122,7 +112,7 @@ static void led_task(void* args)
 
             clear_bit(BLOCKED_QUERY_BIT);
         }
-        else if( read_setting(BLOCK) )
+        else if( sett::read_bool(sett::BLOCK) )
         {
             set_rgb(BLUE);
         }

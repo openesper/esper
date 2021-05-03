@@ -63,10 +63,8 @@ static httpd_uri_t blacklistremove = {
 
 esp_err_t register_delete_handlers(httpd_handle_t server)
 {
-    if( !check_bit(PROVISIONING_BIT) )
-    {
-        ATTEMPT(httpd_register_uri_handler(server, &blacklistremove))
-    }
+    ATTEMPT(httpd_register_uri_handler(server, &blacklistremove))
+
 
     return ESP_OK;
 }

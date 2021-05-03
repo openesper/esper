@@ -3,135 +3,116 @@
 #include "events.h"
 #include "filesystem.h"
 #include "string.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "SETTINGS";
 
+static SemaphoreHandle_t lock;
 static cJSON* settings;
 
-static cJSON* read_settings_json()
-{
-    cJSON* ret;
-    char* buffer = NULL;
-    FILE* settings_f = NULL;
-
-    struct stat s;
-    if( stat_file("/app/settings.json", &s) != ESP_OK )
-    {
-        log_error(ESP_ERR_NOT_FOUND, "open_file(\"/app/settings.json\", \"r\")", __func__, __FILE__);
-        ret =  NULL;
-        goto cleanup;
-    }
-
-    // This function gets called from esp event loop, so stack has to be kept small
-    // buffer is kept in heap to prevent errors
-    buffer = (char*)malloc(s.st_size+1); 
-    settings_f = open_file("/app/settings.json", "r");
-    if( settings_f == NULL )
-    {
-        log_error(ESP_ERR_NOT_FOUND, "open_file(\"/app/settings.json\", \"r\")", __func__, __FILE__);
-        ret = NULL;
-        goto cleanup;
-    }
-
-    int bytes_read;
-    if( (bytes_read = fread(buffer, 1, s.st_size, settings_f)) < s.st_size )
-    {
-        log_error(ESP_ERR_NOT_FOUND, "fread(buffer, 1, s.st_size, settings))", __func__, __FILE__);
-        ret = NULL;
-        goto cleanup;
-    }
-
-    buffer[bytes_read] = '\0';
-    ret = cJSON_Parse(buffer);
-
-cleanup:
-    if( settings_f )
-        fclose(settings_f);
-    if( buffer )
-        free(buffer);
-
-    return ret;
-}
-
-static const char* get_key(Setting s)
+static const char* get_key(sett::Key s)
 {
     switch( s )
     {
-        case IP:
+        case sett::IP:
             return "ip";
-        case NETMASK:
+        case sett::NETMASK:
             return "netmask";
-        case GATEWAY:
+        case sett::GATEWAY:
             return "gateway";
-        case SSID:
+        case sett::SSID:
             return "ssid";
-        case PASSWORD:
+        case sett::PASSWORD:
             return "password";
-        case UPDATE_SRV:
+        case sett::UPDATE_SRV:
             return "update_srv";
-        case HOSTNAME:
+        case sett::HOSTNAME:
             return "url";
-        case DNS_SRV:
+        case sett::DNS_SRV:
             return "dns_srv";
-        case VERSION:
+        case sett::VERSION:
             return "version";
-        case BLOCK:
+        case sett::BLOCK:
             return "blocking";
-        case UPDATE_AVAILABLE:
+        case sett::UPDATE_AVAILABLE:
             return "update_available";
-        case UPDATE_STATUS:
-            return "update_status";
         default:
             return "";
     }
 }
 
-esp_err_t read_setting(Setting key, char* value)
+void sett::load_settings()
+{
+    using namespace fs;
+    if( lock == NULL )
+    {
+        lock = xSemaphoreCreateMutex();
+    }
+    if( !exists("/settings.json") )
+    {
+        THROW("Cannot load settings, settings.json doesn't exist");
+    }
+
+    struct stat s = stat("/settings.json");
+    char* buffer = new char[s.st_size];
+
+    file f = open("/settings.json", "r");
+    f.read(buffer, 1, s.st_size);
+
+    settings = cJSON_Parse(buffer);
+    delete[] buffer;
+
+    if(settings == NULL )
+    {
+        THROW("Error parsing settings.json");
+    }
+}
+
+void sett::save_settings()
+{
+    using namespace fs;
+    char* json_str = cJSON_Print(settings);
+    if( json_str == NULL )
+    {
+        THROW("Failed to print settings json");
+    }
+
+    file f = open("/settings.json", "w");
+    f.write(json_str, 1, strlen(json_str));
+}
+
+std::string sett::read_str(sett::Key key)
 {
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !object )
     {
-        return SETTING_ERR_INVALID_KEY;
+        THROW("Invalid key %s", get_key(key));
     }
 
     if( !cJSON_IsString(object) )
     {
-        return SETTING_ERR_WRONG_TYPE;
+        THROW("%s is not a string", get_key(key));
     }
 
-    strcpy(value, object->valuestring);
-    return ESP_OK;
+    return std::string(object->valuestring);
 }
 
-esp_err_t read_setting(Setting key, bool* value)
+bool sett::read_bool(sett::Key key)
 {
-    ESP_LOGI(TAG, "Reading %s", get_key(key));
-
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
+    if( !object )
+    {
+        THROW("Invalid key %s", get_key(key));
+    }
+
     if( !cJSON_IsBool(object) )
     {
-        return SETTING_ERR_WRONG_TYPE;
+        THROW("%s is not a bool", get_key(key));
     }
 
-    if( cJSON_IsTrue(object) )
-    {
-        *value = true;
-    }
-    else
-    {
-        *value = false;
-    }
-
-    return ESP_OK;
-}
-
-bool read_setting(Setting key)
-{
-    ESP_LOGI(TAG, "Reading %s", get_key(key));
-
-    cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( cJSON_IsTrue(object) )
     {
         return true;
@@ -142,42 +123,33 @@ bool read_setting(Setting key)
     }
 }
 
-esp_err_t write_setting(Setting key, const char* value)
+void sett::write(sett::Key key, const char* value)
 {
     ESP_LOGI(TAG, "Writing %s to %s", value, get_key(key) );
-    if( !value )
-    {
-        return ESP_ERR_INVALID_ARG;
-    }
 
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !cJSON_IsString(object) )
     {
-        return SETTING_ERR_WRONG_TYPE;
+        THROW("%s is not a string", get_key(key));
     }
 
     if( cJSON_SetValuestring(object, value) == NULL )
     {
 
-        return ESP_ERR_INVALID_ARG;
+        THROW("Error allocating space for %s", value);
     }
 
-    if( write_settings_json(settings) != ESP_OK )
-    {
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
+    save_settings();
 }
 
-esp_err_t write_setting(Setting key, bool value)
+void sett::write(sett::Key key, bool value)
 {
     ESP_LOGI(TAG, "Writing %d to %s", value, get_key(key) );
 
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !cJSON_IsBool(object) )
     {
-        return SETTING_ERR_WRONG_TYPE;
+        THROW("%s is not a bool", get_key(key));
     }
 
     cJSON_DeleteItemFromObject(settings, get_key(key));
@@ -190,42 +162,5 @@ esp_err_t write_setting(Setting key, bool value)
         cJSON_AddFalseToObject(settings, get_key(key));
     }
 
-    if( write_settings_json(settings) != ESP_OK )
-    {
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
-}
-
-esp_err_t write_settings_json(cJSON* json)
-{
-    FILE* settings_f = open_file("/app/settings.json", "w");
-    if( !settings_f )
-    {
-        log_error(ESP_FAIL, "open_file(\"/app/settings.json\", \"w\")", __func__, __FILE__);
-        return ESP_FAIL;
-    }
-
-    char* json_str = cJSON_Print(json); 
-    if( fwrite(json_str, 1, strlen(json_str), settings_f) < 1 )
-    {
-        log_error(ESP_FAIL, "fwrite(json_str, 1, strlen(json_str)+1, settings)", __func__, __FILE__);
-        fclose(settings_f);
-        return ESP_FAIL;
-    }
-    fclose(settings_f);
-    
-    return ESP_OK;
-}
-
-esp_err_t load_settings()
-{
-    settings = read_settings_json();
-    if( settings == NULL )
-    {
-        return ESP_FAIL;
-    }
-
-    return ESP_OK;
+    save_settings();
 }

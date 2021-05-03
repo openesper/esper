@@ -106,14 +106,14 @@
 
                 <div id="update_available">
                     <p>Update Available!</p>
-                    <button id="updateButton" disabled=true>Update Firmware</button>
+                    <button id="updateButton" onclick="updateFirmware()">Update Firmware</button>
                 </div>
                 <div class='modal' id='updateModal'>
                     <div class="modal-content">
-                        <p>Updating firmware, this may take a few minutes...</p>
+                        <p id='updatestatus'>Updating firmware, this may take a few minutes...</p>
                         <div class="loader"></div>
                         <br><br>
-                        <button class="txtbtn altbtn" >Cancel</button>
+                        <button class="altbtn" id="closemodal" onclick="closeModal()">Cancel</button>
                     </div>
                 </div>
                 <div class='modal' id='restartModal'>

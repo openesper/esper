@@ -4,6 +4,9 @@
 #include "esp_system.h"
 #include "errno.h"
 
+#include <string>
+#include <exception>
+
 #define WIFI_ERR_BASE               0x200
 #define WIFI_ERR_MODE_NULL          (WIFI_ERR_BASE + 1)     // Wifi does not currently have a mode
 #define WIFI_ERR_NULL_NETIF         (WIFI_ERR_BASE + 2)     // Wifi netif is null, needs to be initialized
@@ -49,6 +52,26 @@
 #define SETTING_ERR_WRONG_TYPE      (SETTING_ERR_BASE + 3)          
 
 
+#define THROW(str, ...) {                                           \
+  ESP_LOGE(TAG, str,##__VA_ARGS__);                                 \
+  const char* format = str;                                         \
+  size_t size = snprintf(NULL, 0, str,##__VA_ARGS__);               \
+  char buf[size+1];                                                 \
+  snprintf(buf, size, format,##__VA_ARGS__);                        \
+  throw std::string(buf);                                           \
+}
+
+class esp_exception : public std::exception {
+        const char* func;
+        const char* file;
+        int line;
+        std::string msg;
+        int errcode;
+    public:
+        esp_exception(std::string msg_, int errcode_, const char* file_, const char* func_, int line) throw();
+        virtual const char* what() const throw();
+};
+
 #define STRING(x) #x
 
 /**
@@ -63,6 +86,7 @@
         return ESP_FAIL;                                  \
     }                                                     \
 } while(0);
+
 
 void log_error(int err, const char* error_str, const char* function, const char* file);
 

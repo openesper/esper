@@ -5,7 +5,7 @@
 #include <esp_system.h>
 #include <string.h>
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
 #include "esp_log.h"
 static const char *TAG = "URL";
 
@@ -75,14 +75,11 @@ IRAM_ATTR bool in_blacklist(URL url)
     int64_t start = esp_timer_get_time();
 
     bool inBlacklist = false;
-    FILE* blacklist = open_file("/app/blacklist.txt", "r");
-    if( blacklist == NULL ){
-        ESP_LOGE(TAG, "Could not open blacklist");
-        return false;
-    }
+    using namespace fs;
+    file blacklist = open("/blacklist.txt", "r");
 
     char hostname[255];
-    while( fgets(hostname, 255, blacklist) != NULL )
+    while( fgets(hostname, 255, blacklist.handle) != NULL )
     {
         hostname[strcspn(hostname, "\r")] = 0;
         hostname[strcspn(hostname, "\n")] = 0;
@@ -92,7 +89,6 @@ IRAM_ATTR bool in_blacklist(URL url)
             break;
         }
     }
-    fclose(blacklist);
 
     int64_t end = esp_timer_get_time();
     ESP_LOGI(TAG, "Processing Time: %lld ms", (end-start)/1000);
@@ -106,44 +102,31 @@ esp_err_t add_to_blacklist(const char* hostname)
     if ( !valid_url(hostname) )
         return URL_ERR_INVALID_URL;
 
-    FILE* blacklist = open_file("/app/blacklist.txt", "a");
-    if( blacklist == NULL ){
-        ESP_LOGE(TAG, "Could not open blacklist");
-        return ESP_FAIL;
-    }
+    using namespace fs;
+    file blacklist = open("/blacklist.txt", "a");
 
-    fputs(hostname, blacklist);
-    fputc('\n', blacklist);
-    fclose(blacklist);
-
+    fputs(hostname, blacklist.handle);
+    fputc('\n', blacklist.handle);
     return ESP_OK;
 }
 
-esp_err_t remove_from_blacklist(const char* hostname)
+static bool remove_hostname(const char* hostname)
 {
-    // Check url validity
-    if ( !valid_url(hostname) )
-        return URL_ERR_INVALID_URL;
-
-    // Open blacklist, as well as a temporary file
-    FILE* f = open_file("/app/blacklist.txt", "r");
-    FILE* tmp = open_file("/app/tmplist", "w");
-
-    if ( !f || !tmp)
-        return URL_ERR_LIST_UNAVAILBLE;
+    using namespace fs;
+    file blacklist = open("/blacklist.txt", "r");
+    file tmp = open("/tmplist", "w");
 
     // Copy every url in blacklist to tmplist, except url to be removed
     bool found_url = false;
     char buffer[MAX_URL_LENGTH+1];
-    while( fgets(buffer, MAX_URL_LENGTH, f) )
+    while( fgets(buffer, MAX_URL_LENGTH, blacklist.handle) )
     {
         strtok(buffer, "\r\n");
-        // buffer[strlen(buffer)-1] = '\0'; // remove '\n'
         ESP_LOGD(TAG, "Read %s from blacklist.txt", buffer);
         if( strcmp( buffer, hostname) != 0 )
         {
-            fputs(buffer, tmp);
-            fputc('\n', tmp);
+            fputs(buffer, tmp.handle);
+            fputc('\n', tmp.handle);
         }
         else
         {
@@ -152,11 +135,24 @@ esp_err_t remove_from_blacklist(const char* hostname)
         }
     }
 
-    fclose(tmp);
-    fclose(f);
-    delete_file("/app/blacklist.txt");
-    rename_file("/app/tmplist", "/app/blacklist.txt");
-    
+    return found_url;
+}
+
+esp_err_t remove_from_blacklist(const char* hostname)
+{
+    // Check url validity
+    if ( !valid_url(hostname) )
+        return URL_ERR_INVALID_URL;
+
+    bool found_url = false;
+    try{
+        found_url = remove_hostname(hostname);
+        fs::unlink("/blacklist.txt");
+        fs::rename("/tmplist", "/blacklist.txt");
+    } catch(std::string e) {
+        return ESP_FAIL;
+    }
+
     if(found_url)
         return ESP_OK;
     else

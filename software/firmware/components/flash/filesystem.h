@@ -4,13 +4,29 @@
 #include "esp_system.h"
 #include "sys/stat.h"
 
-#define MAX_FILENAME_LENGTH 64
+#include <string>
 
-FILE* open_file(const char* filename, const char* mode);
-bool file_exists(const char* filename);
-esp_err_t stat_file(const char* filename, struct stat* s);
-esp_err_t delete_file(const char* filename);
-esp_err_t rename_file(const char* before, const char* after);
-esp_err_t init_filesystem();
+#define MAX_FILENAME_LENGTH CONFIG_LITTLEFS_OBJ_NAME_LEN
+
+namespace fs
+{
+    class file{
+        public:
+            FILE* handle;
+            std::string fpath;
+            
+            file(std::string path, const char* mode);
+            ~file();
+            size_t read(void* buffer, size_t size, size_t count);
+            size_t write(const void* buffer, size_t size, size_t count);
+    };
+
+    file open(std::string path, const char* mode);
+    bool exists(std::string path);
+    struct stat stat(std::string path);
+    void unlink(std::string path);
+    void rename(std::string before, std::string after);
+    void init();
+}
 
 #endif

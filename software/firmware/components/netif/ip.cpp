@@ -14,7 +14,6 @@
 static const char *TAG = "IP";
 
 static esp_netif_t* wifi_sta_netif = NULL;
-static esp_netif_t* wifi_ap_netif = NULL;
 static esp_netif_t* eth_netif = NULL;
 static esp_eth_handle_t eth_handle = NULL;
 
@@ -27,9 +26,9 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             ESP_LOGI(TAG, "IP_EVENT_ETH_GOT_IP");
 
             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
-            write_setting(IP, inet_ntoa(ip_event.ip_info.ip));
-            write_setting(NETMASK, inet_ntoa(ip_event.ip_info.netmask));
-            write_setting(GATEWAY, inet_ntoa(ip_event.ip_info.gw));
+            sett::write(sett::IP, inet_ntoa(ip_event.ip_info.ip));
+            sett::write(sett::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
+            sett::write(sett::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
             set_bit(ETH_CONNECTED_BIT);
 
             break;
@@ -37,15 +36,12 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
         case IP_EVENT_STA_GOT_IP:
         {
             ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
-             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
-            
-            if( check_bit(PROVISIONING_BIT) )
-            {               
-                store_connection_json(ip_event.ip_info);
-            }
-            else{
-                set_bit(WIFI_CONNECTED_BIT);
-            }
+
+            ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
+            sett::write(sett::IP, inet_ntoa(ip_event.ip_info.ip));
+            sett::write(sett::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
+            sett::write(sett::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
+            set_bit(WIFI_CONNECTED_BIT);
 
             break;
         }
@@ -87,13 +83,6 @@ static esp_err_t init_wifi()
     esp_wifi_set_mode(WIFI_MODE_STA);
     ATTEMPT(init_wifi_sta_netif(&wifi_sta_netif))
     
-
-    if( check_bit(PROVISIONING_BIT) )
-    {
-        esp_wifi_set_mode(WIFI_MODE_APSTA);
-        ATTEMPT(init_wifi_ap_netif(&wifi_ap_netif))
-    }
-        
     ESP_LOGI(TAG, "Wifi initialized");
 
     return ESP_OK;
@@ -125,16 +114,15 @@ esp_err_t set_static_ip(esp_netif_t* interface)
 {
     // Get network info from flash, if it exists
     esp_netif_ip_info_t ip_info;
-    char ip[IP4_STRLEN_MAX];
-
-    ATTEMPT(read_setting(IP, ip))
-    if( inet_aton(ip, &(ip_info.ip)) )
+    
+    std::string ip = sett::read_str(sett::IP);
+    if( inet_aton(ip.c_str(), &(ip_info.ip)) )
     {
-        ATTEMPT(read_setting(NETMASK, ip))
-        ip_info.netmask.addr = inet_addr(ip);
+        ip = sett::read_str(sett::NETMASK);
+        ip_info.netmask.addr = inet_addr(ip.c_str());
 
-        ATTEMPT(read_setting(GATEWAY, ip))
-        ip_info.gw.addr = inet_addr(ip);
+        ip = sett::read_str(sett::GATEWAY);
+        ip_info.gw.addr = inet_addr(ip.c_str());
 
         esp_netif_dhcpc_stop(interface);
         esp_netif_set_ip_info(interface, &ip_info);
@@ -146,8 +134,8 @@ esp_err_t set_static_ip(esp_netif_t* interface)
     }
 
     esp_netif_dns_info_t dns = {};
-    ATTEMPT(read_setting(DNS_SRV, ip))
-    inet_aton(ip, &dns.ip.u_addr.ip4);
+    ip = sett::read_str(sett::DNS_SRV);
+    inet_aton(ip.c_str(), &dns.ip.u_addr.ip4);
     dns.ip.type = IPADDR_TYPE_V4;
     
     ATTEMPT(esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns))
@@ -167,11 +155,8 @@ esp_err_t start_interfaces()
     if( check_bit(WIFI_INITIALIZED_BIT) )
     {
         esp_wifi_start();
-        if( !check_bit(PROVISIONING_BIT) )
-        {
-            ATTEMPT(set_static_ip(wifi_sta_netif))
-            esp_wifi_connect();
-        }
+        ATTEMPT(set_static_ip(wifi_sta_netif))
+        esp_wifi_connect();
     }
 
     return ESP_OK;

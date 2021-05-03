@@ -70,6 +70,20 @@ menu "Esper Configuration"
         default y
         help
             Turn wifi on
+
+    if WIFI_ENABLE
+        config WIFI_SSID
+            string "Access point SSID (2.4GHz only)"
+            default "myssid"
+            help
+            Name of your wifi
+
+        config WIFI_PASSWORD
+            string "Access point password"
+            default "password"
+            help
+            Wifi password
+    endif # WIFI_ENABLE
  
     menuconfig GPIO_ENABLE
         bool "Enable GPIO"

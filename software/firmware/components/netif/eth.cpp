@@ -110,11 +110,3 @@ esp_err_t init_eth_handle(esp_eth_handle_t* eth_handle)
 
     return ESP_OK;
 }
-
-// esp_err_t init_eth()
-// {
-//     ESP_LOGI(TAG, "Initializing Ethernet...");
-//     ATTEMPT(esp_event_handler_register(ETH_EVENT, ESP_EVENT_ANY_ID, &eth_event_handler, NULL))
-
-//     return ESP_OK;
-// }

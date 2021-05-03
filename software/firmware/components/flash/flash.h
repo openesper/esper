@@ -65,17 +65,6 @@ esp_err_t get_ethernet_phy_config(uint32_t* phy, uint32_t* addr, uint32_t* rst, 
   */
 esp_err_t get_gpio_config(int* button, int* red, int* green, int* blue);
 
-/**
-  * @brief Set provisioning status in flash
-  *
-  * @param provisioned provisioning status
-  *
-  * @return
-  *    - ESP_OK Success
-  *    - ESP_FAIL unable to get info from flash
-  */
-esp_err_t set_provisioning_status(bool provisioned);
-
 esp_err_t init_nvs();
 
 #endif
