@@ -75,19 +75,23 @@ IRAM_ATTR bool in_blacklist(URL url)
     int64_t start = esp_timer_get_time();
 
     bool inBlacklist = false;
-    using namespace fs;
-    file blacklist = open("/blacklist.txt", "r");
+    try{
+        using namespace fs;
+        file blacklist = open("/blacklist.txt", "r");
 
-    char hostname[255];
-    while( fgets(hostname, 255, blacklist.handle) != NULL )
-    {
-        hostname[strcspn(hostname, "\r")] = 0;
-        hostname[strcspn(hostname, "\n")] = 0;
-        if( wildcmp(hostname, url.string) )
+        char hostname[255];
+        while( fgets(hostname, 255, blacklist.handle) != NULL )
         {
-            inBlacklist = true;
-            break;
+            hostname[strcspn(hostname, "\r")] = 0;
+            hostname[strcspn(hostname, "\n")] = 0;
+            if( wildcmp(hostname, url.string) )
+            {
+                inBlacklist = true;
+                break;
+            }
         }
+    }catch(std::string e){
+        inBlacklist = false;
     }
 
     int64_t end = esp_timer_get_time();
@@ -102,11 +106,16 @@ esp_err_t add_to_blacklist(const char* hostname)
     if ( !valid_url(hostname) )
         return URL_ERR_INVALID_URL;
 
-    using namespace fs;
-    file blacklist = open("/blacklist.txt", "a");
+    try{
+        using namespace fs;
+        file blacklist = open("/blacklist.txt", "a");
 
-    fputs(hostname, blacklist.handle);
-    fputc('\n', blacklist.handle);
+        fputs(hostname, blacklist.handle);
+        fputc('\n', blacklist.handle);
+    }catch(std::string e){
+        return ESP_FAIL;
+    }
+    
     return ESP_OK;
 }
 

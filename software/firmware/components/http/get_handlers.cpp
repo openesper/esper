@@ -53,18 +53,20 @@ static esp_err_t set_content_type(httpd_req_t *req, const char* filepath)
 
 static esp_err_t send_file(httpd_req_t *req, const char* filepath)
 {
-    fs::file f = fs::open(filepath, "r");
+    try{
+        fs::file f = fs::open(filepath, "r");
 
-    size_t chunksize;
-    do {
-        chunksize = f.read(chunk, 1, MAX_CHUNK_SIZE);
-        if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
-            ESP_LOGE(TAG, "Error sending %s", filepath);
-            return ESP_FAIL;
-        }
-    } while(chunksize != 0);
-
-    // fclose(f);
+        size_t chunksize;
+        do {
+            chunksize = f.read(chunk, 1, MAX_CHUNK_SIZE);
+            if (httpd_resp_send_chunk(req, chunk, chunksize) != ESP_OK) {
+                ESP_LOGE(TAG, "Error sending %s", filepath);
+                return ESP_FAIL;
+            }
+        } while(chunksize != 0);
+    }catch(std::string e){
+        return ESP_FAIL;
+    }
     return ESP_OK;
 }
 

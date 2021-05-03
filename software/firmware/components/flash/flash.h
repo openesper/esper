@@ -13,28 +13,6 @@
 #define HOSTNAME_STRLEN_MAX 255 // Max hostname length
 
 
-// /**
-//   * @brief Retreive network info (ip, gw, nm) from flash
-//   *
-//   * @param info pointer to esp_netif_ip_info_t struct that will be filled
-//   *
-//   * @return
-//   *    - ESP_OK Success
-//   *    - ESP_FAIL unable to get info from flash
-//   */
-// esp_err_t get_network_info(esp_netif_ip_info_t* info);
-
-// /**
-//   * @brief Store network info (ip, gw, nm) in flash
-//   *
-//   * @param info pointer to esp_netif_ip_info_t struct that will be stored in flash
-//   *
-//   * @return
-//   *     - ESP_OK Success
-//   *     - ESP_FAIL unable to set info in flash
-//   */
-// esp_err_t set_network_info(esp_netif_ip_info_t info);
-
 /**
   * @brief Get PHY hardware configuration 
   *

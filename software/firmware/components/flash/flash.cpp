@@ -1,15 +1,7 @@
 #include "flash.h"
 #include "error.h"
 #include "events.h"
-#include "url.h"
-#include "wifi.h"
-#include "logging.h"
-#include "esp_system.h"
-#include "string.h"
 #include "nvs_flash.h"
-#include "esp_netif.h"
-#include "lwip/inet.h"
-#include "esp_wifi.h"
 
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
