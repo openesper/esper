@@ -4,10 +4,12 @@
 #include <esp_system.h>
 #include "lwip/sockets.h"
 #include <string>
+#include <vector>
 
 #define DNS_PORT 53
 
 #define MAX_PACKET_SIZE 512
+#define MAX_URL_LENGTH 255
 
 #define A_RECORD_ANSWER_SIZE 16
 #define AAAA_RECORD_ANSWER_SIZE 28
@@ -62,7 +64,6 @@ typedef struct{
 typedef struct question{
     uint8_t* qname;     // a domain name represented as a sequence of labels
     size_t qname_len;
-    std::string domain; // domain in string format, instead of qname
     QData* qdata;
     uint8_t* end;       // point to uint8_t immediatly after Question
 } Question;
@@ -85,29 +86,28 @@ typedef struct resource_record{
 
 class DNS {
     private:
-        esp_err_t parse_records(uint8_t* start, size_t record_num, ResourceRecord* record);
-
-    public:
-        struct sockaddr_in src;
-        socklen_t addrlen;
-        int64_t recv_timestamp;
-
-        uint8_t buffer[MAX_PACKET_SIZE];
-        size_t size;
-
-        Header* header;
-        Question* question;
-        ResourceRecord* records;
+        std::vector<uint8_t> buffer;
         uint8_t answers;
         uint8_t authorities;
         uint8_t additional;
         uint8_t total_records;
-        // ResourceRecord* authority;
-        // ResourceRecord* additional;
 
-        DNS();
-        ~DNS();
-        esp_err_t parse_buffer();
+        IRAM_ATTR esp_err_t parse_buffer();
+        IRAM_ATTR esp_err_t parse_records(uint8_t* start, size_t record_num, ResourceRecord* record);
+    public:
+        struct sockaddr_in addr;
+        socklen_t addrlen;
+        int64_t recv_timestamp;
+        
+        Header* header;
+        Question* question;
+        ResourceRecord* records;
+
+        IRAM_ATTR DNS(uint8_t* buf, size_t size, sockaddr_in addr_, socklen_t addrlen_);
+        IRAM_ATTR ~DNS();
+        
+        IRAM_ATTR std::string convert_qname_url();
+        IRAM_ATTR esp_err_t send(int socket, struct sockaddr_in addr);
 };
 
 typedef struct {

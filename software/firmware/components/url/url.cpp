@@ -26,29 +26,6 @@ bool valid_url(const char* url)
     return true;
 }
 
-IRAM_ATTR URL convert_qname_to_url(char* qname_ptr)
-{
-    // QNAME is a sequence of labels, where each label consists of a length octet followed by that number of octets. 
-    // The domain name terminates with the zero length octet for the null label of the root. 
-    URL url = {};
-    char* url_ptr = url.string;
-
-    uint8_t label_length = (uint8_t)*qname_ptr;
-    while( label_length != 0 )
-    {
-        memcpy(url_ptr, qname_ptr+1, label_length);
-        *(url_ptr+label_length) = '.';
-        url_ptr += label_length + 1;
-        qname_ptr += label_length + 1;
-        url.length += label_length + 1;
-        label_length = (uint8_t)*qname_ptr;
-    }
-    *(url_ptr-1) = '\0'; // remove last '.'
-    url.length--;
-    
-    return url;
-}
-
 // This was shamlessly stolen off the internet 
 // Only works with \0 terminated strings
 static IRAM_ATTR bool wildcmp(const char *pattern, const char *string)
@@ -91,6 +68,37 @@ IRAM_ATTR bool in_blacklist(URL url)
             }
         }
     }catch(std::string e){
+        inBlacklist = false;
+    }
+
+    int64_t end = esp_timer_get_time();
+    ESP_LOGI(TAG, "Processing Time: %lld ms", (end-start)/1000);
+
+    return inBlacklist;
+}
+
+IRAM_ATTR bool in_blacklist(const char* domain)
+{
+    ESP_LOGD(TAG, "Checking Blacklist for %s", domain);
+    int64_t start = esp_timer_get_time();
+
+    bool inBlacklist = false;
+    try{
+        using namespace fs;
+        file blacklist = open("/blacklist.txt", "r");
+
+        char entry[255];
+        while( fgets(entry, 255, blacklist.handle) != NULL )
+        {
+            entry[strcspn(entry, "\r")] = 0;
+            entry[strcspn(entry, "\n")] = 0;
+            if( wildcmp(entry, domain) )
+            {
+                inBlacklist = true;
+                break;
+            }
+        }
+    }catch(const Err& e){
         inBlacklist = false;
     }
 

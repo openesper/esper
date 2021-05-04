@@ -63,17 +63,6 @@ bool valid_url(const char* url);
   *     - False Not in blacklist
   */
 IRAM_ATTR bool in_blacklist(URL url);
-
-/**
-  * @brief Convert qname string into URL structure
-  * 
-  * QNAME is not a standard string, needs to be converted before it
-  * can be compared to blacklist
-  *
-  * @param url url to be checked
-  *
-  * @return URL structure with URL string
-  */
-IRAM_ATTR URL convert_qname_to_url(char* qname_ptr);
+IRAM_ATTR bool in_blacklist(const char* domain);
 
 #endif

@@ -15,7 +15,7 @@
 #include "lwip/ip_addr.h"
 #include "esp_netif.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_DEBUG
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #include "esp_log.h"
 static const char *TAG = "DNS";
 
@@ -27,28 +27,30 @@ static struct sockaddr_in upstream_dns;                 // sockaddr struct conta
 static TaskHandle_t dns;                                // Handle for DNS task
 static TaskHandle_t listening;                          // Handle for listening task
 static QueueHandle_t packet_queue;                      // FreeRTOS queue of DNS query packets
-// static Client client_queue[CLIENT_QUEUE_SIZE];          // FIFO Array of clients waiting for DNS response
+static Client client_queue[CLIENT_QUEUE_SIZE];          // FIFO Array of clients waiting for DNS response
 static char device_url[MAX_URL_LENGTH];                 // Buffer to store current URL in RAM
 
 
-DNS::DNS()
+IRAM_ATTR DNS::DNS(uint8_t* buf, size_t size, sockaddr_in addr_, socklen_t addrlen_)
+: addr(addr_), addrlen(addrlen_)
 {
     recv_timestamp = esp_timer_get_time();
+    buffer.assign(buf, buf+size);
+    parse_buffer();
 }
 
-DNS::~DNS()
+IRAM_ATTR DNS::~DNS()
 {
     delete question;
     delete[] records;
 }
 
-
-esp_err_t DNS::parse_buffer()
+IRAM_ATTR esp_err_t DNS::parse_buffer()
 {
-    ESP_LOG_BUFFER_HEXDUMP(TAG, buffer, size, ESP_LOG_VERBOSE);
+    ESP_LOG_BUFFER_HEXDUMP(TAG, buffer.data(), buffer.size(), ESP_LOG_VERBOSE);
 
     // Cast header to beginning of buffer
-    header = (Header*)buffer;
+    header = (Header*)buffer.data();
     answers     = ntohs(header->ancount);
     authorities = ntohs(header->nscount);
     additional  = ntohs(header->arcount);
@@ -67,38 +69,55 @@ esp_err_t DNS::parse_buffer()
     ESP_LOGD(TAG, "QCOUNT  (%.4X)", ntohs(header->qcount));
     ESP_LOGD(TAG, "ANCOUNT (%.4X)", answers);
     ESP_LOGD(TAG, "NSCOUNT (%.4X)", authorities);
-    ESP_LOGD(TAG, "ARCOUNT (%.4X)", additional);
+    ESP_LOGD(TAG, "ARCOUNT (%.4X)\n", additional);
 
     // point to question in buffer
-    question = new Question; // Multiple questions in one packet is in RFC, but isn't widely supported
-    question->qname = buffer + sizeof(Header);  // qname is immediatly after header
+    question            = new Question; // Multiple questions in one packet is in RFC, but isn't widely supported
+    question->qname     = (uint8_t*)header + sizeof(Header);  // qname is immediatly after header
     question->qname_len = strlen((char*)question->qname) + 1;  // qname is \0 terminated so strlen will work
-    question->qdata = (QData*)(question->qname + question->qname_len); // qdata is immediatly after qname
-    question->end = (uint8_t*)question->qdata + sizeof(QData);
+    question->qdata     = (QData*)(question->qname + question->qname_len); // qdata is immediatly after qname
+    question->end       = (uint8_t*)question->qdata + sizeof(QData);
 
     if( question->qname_len > MAX_URL_LENGTH)
     {
-        ESP_LOGW(TAG, "QNAME too large");
-        return DNS_ERR_INVALID_QNAME;
+        THROWE(DNS_ERR_INVALID_QNAME, "QNAME too large");
     }
 
     ESP_LOGD(TAG, "Question: %p", question->qname);
-    ESP_LOGD(TAG, "QNAME   (%s)(%d)", (char*)(buffer + sizeof(*header)), question->qname_len);
+    ESP_LOGD(TAG, "QNAME   (%s)(%d)", (char*)(question->qname), question->qname_len);
     ESP_LOGD(TAG, "QTYPE   (%.4X)", ntohs(question->qdata->qtype));
-    ESP_LOGD(TAG, "QCLASS  (%.4X)", ntohs(question->qdata->qclass));
+    ESP_LOGD(TAG, "QCLASS  (%.4X)\n", ntohs(question->qdata->qclass));
 
+    // fill in records
     ESP_LOGD(TAG, "Records:");
     records = new ResourceRecord[total_records];
     if( parse_records(question->end, total_records, records) != ESP_OK )
     {
-        ESP_LOGW(TAG, "Error parsing records");
-        return ESP_FAIL;
+        THROWE(ESP_FAIL, "Error parsing records");
     }
 
     return ESP_OK;
 }
 
-esp_err_t DNS::parse_records(uint8_t* start, size_t record_num, ResourceRecord* record)
+IRAM_ATTR std::string DNS::convert_qname_url()
+{
+    char temp[question->qname_len];
+    memcpy(temp, question->qname, question->qname_len);
+    
+    char* i = temp;
+    while( *i != '\0')
+    {
+        size_t jmp = *i;
+        *i = '.';
+        i += jmp + 1;
+    }
+    
+    std::string domain (temp);
+    domain.erase(0,1); // rease first '.'
+    return domain;
+}
+
+IRAM_ATTR esp_err_t DNS::parse_records(uint8_t* start, size_t record_num, ResourceRecord* record)
 {
     for(int i = 0; i < record_num; i++)
     {
@@ -134,7 +153,28 @@ esp_err_t DNS::parse_records(uint8_t* start, size_t record_num, ResourceRecord* 
         ESP_LOGD(TAG, "CLASS   (%.4X)", ntohs(record[i].rrdata->cls));
         ESP_LOGD(TAG, "TTL     (%.8X)", ntohs(record[i].rrdata->ttl));
         ESP_LOGD(TAG, "RDLEN   (%.4X)", ntohs(record[i].rrdata->rdlength));
-        ESP_LOGD(TAG, "RDDATA  (%.*X)", ntohs(record[i].rrdata->rdlength), *record[i].rddata);
+        ESP_LOGD(TAG, "RDDATA  (%.*X)\n", ntohs(record[i].rrdata->rdlength), *record[i].rddata);
+    }
+
+    return ESP_OK;
+}
+
+IRAM_ATTR esp_err_t DNS::send(int socket, struct sockaddr_in addr)
+{
+    socklen_t addrlen = sizeof(addr);
+    int sendlen = sendto(socket, buffer.data(), buffer.size(), 0, (struct sockaddr *)&addr, addrlen);
+
+    // Wait ~25ms to resend if out of memory
+    while( errno == ENOMEM && sendlen < 1)
+    {
+        vTaskDelay( 25 / portTICK_PERIOD_MS );
+        sendlen = sendto(socket, buffer.data(), buffer.size(), 0, (struct sockaddr *)&addr, addrlen);
+    }
+
+    if(sendlen < 1)
+    {
+        ESP_LOGE(TAG, "Failed to send packet, errno=%s", strerror(errno));
+        return ESP_FAIL;
     }
 
     return ESP_OK;
@@ -143,32 +183,71 @@ esp_err_t DNS::parse_records(uint8_t* start, size_t record_num, ResourceRecord* 
 static IRAM_ATTR void listening_t(void* parameters)
 {
     ESP_LOGD(TAG, "Listening...");
+    static uint8_t buffer[MAX_PACKET_SIZE];
     while(1)
     {
-        DNS* packet = new DNS();
-        packet->size = recvfrom(dns_srv_sock, packet->buffer, MAX_PACKET_SIZE, 0, (struct sockaddr *)&(packet->src), &packet->addrlen);
-        if( packet->size < 1 )
+        DNS* packet;
+        size_t size;
+        sockaddr_in addr;
+        socklen_t addrlen;
+        size = recvfrom(dns_srv_sock, buffer, MAX_PACKET_SIZE, 0, (struct sockaddr *)&addr, &addrlen);
+        if( size < 1 )
         {
             ESP_LOGW(TAG, "Error Receiving Packet");
-            free(packet);
             continue;
         }
-        ESP_LOGD(TAG, "Received %d Byte Packet from %s", packet->size, inet_ntoa(packet->src.sin_addr.s_addr));
 
-        if( packet->parse_buffer() != ESP_OK )
-        {
-            free(packet);
+        try{
+            packet = new DNS(buffer, size, addr, addrlen);
+            ESP_LOGD(TAG, "Received %d Byte Packet from %s", size, inet_ntoa(packet->addr.sin_addr.s_addr));
+        }catch(const Err& e){
+            delete packet;
             continue;
         }
         
         if( xQueueSend(packet_queue, &packet, 0) == errQUEUE_FULL )
         {
             ESP_LOGE(TAG, "Queue Full, could not add packet");
-            free(packet);
+            delete packet;
             continue;
         }
     }
 }
+
+static IRAM_ATTR esp_err_t forward_query(DNS* packet)
+{
+    if( packet->send(dns_srv_sock, upstream_dns) == ESP_OK )
+    {
+        for(int i = CLIENT_QUEUE_SIZE-1; i >= 1; i--) 
+        {
+            client_queue[i] = client_queue[i-1];
+        }
+
+        // Add client to beginning of client queue
+        client_queue[0].src_address = packet->addr;
+        client_queue[0].id = packet->header->id;
+        client_queue[0].response_latency = packet->recv_timestamp;
+    }
+
+    return ESP_OK;
+}
+
+static IRAM_ATTR esp_err_t forward_answer(DNS* packet)
+{
+    // Go through client queue, searching for client with matching ID.
+    // Do nothing if no client is found
+    for(int i = 0; i < CLIENT_QUEUE_SIZE; i++)
+    {
+        if(packet->header->id == client_queue[i].id)
+        {
+            ESP_LOGD(TAG, "Forwarding answer to %s", inet_ntoa(client_queue[i].src_address.sin_addr.s_addr));
+            packet->send(dns_srv_sock, client_queue[i].src_address);
+            break;
+        }
+    }
+    return ESP_OK;
+}
+
 
 static IRAM_ATTR void dns_t(void* parameters)
 {
@@ -178,11 +257,51 @@ static IRAM_ATTR void dns_t(void* parameters)
         delete packet;
 
         BaseType_t xErr = xQueueReceive(packet_queue, &packet, portMAX_DELAY);
-
         if(xErr == pdFALSE)
         {
             ESP_LOGW(TAG, "Error receiving from queue");
             continue;
+        }
+
+        std::string domain = packet->convert_qname_url();
+        ESP_LOGD(TAG, "Domain  (%s)",   domain.c_str());
+
+        if( packet->header->qr == ANSWER ) // Forward all answers
+        {
+            ESP_LOGI(TAG, "Forwarding answer for %s", domain.c_str());
+            forward_answer(packet);
+        }
+        else if( packet->header->qr == QUERY )
+        {
+            uint16_t qtype = ntohs(packet->question->qdata->qtype);
+            if( !(qtype == A || qtype == AAAA) ) // Forward all queries that are not A & AAAA
+            {
+                ESP_LOGI(TAG, "Forwarding question for %s", domain.c_str());
+                forward_query(packet);
+                // log_query(url, false, packet->src.sin_addr.s_addr);
+            }
+            else 
+            {
+                if( memcmp(domain.c_str(), device_url, domain.size()) == 0 ) // Check is qname matches current device url
+                {
+                    ESP_LOGW(TAG, "Capturing DNS request %s", domain.c_str());
+                    // capture_query(packet);
+                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                }
+                else if( sett::read_bool(sett::BLOCK) && in_blacklist(domain.c_str()) ) // check if url is in blacklist
+                {
+                    ESP_LOGW(TAG, "Blocking question for %s", domain.c_str());
+                    // block_query(packet);
+                    // log_query(url, true, packet->src.sin_addr.s_addr);
+                }
+                else
+                {
+                    ESP_LOGD(TAG, "Forwarding question for %s", domain.c_str());
+                    forward_query(packet);
+                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                }
+            }
+            
         }
 
         int64_t end = esp_timer_get_time();
