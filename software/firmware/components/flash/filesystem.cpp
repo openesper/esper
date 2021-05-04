@@ -191,15 +191,21 @@ void init_fs()
     prev_dir += "/" + std::string(prev_partition->label);
     ESP_LOGI(TAG, "Previous base: %s", prev_dir.c_str());
 
-    if( !fs::exists("/settings.json") )
-    {
+    try {
+        sett::load_settings();
+    } catch (const Err& e) {
         ESP_LOGE(TAG, "Settings.json not found, copying files from binary");
         copy_from_binary();
     }
-    else
-    {
-        sett::load_settings();
-    }
+    // if( !fs::exists("/settings.json") )
+    // {
+    //     ESP_LOGE(TAG, "Settings.json not found, copying files from binary");
+    //     copy_from_binary();
+    // }
+    // else
+    // {
+    //     sett::load_settings();
+    // }
 
     // LittleFS stats
     size_t total = 0, used = 0;

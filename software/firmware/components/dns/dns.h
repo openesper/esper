@@ -3,6 +3,7 @@
 
 #include <esp_system.h>
 #include "lwip/sockets.h"
+#include <string>
 
 #define DNS_PORT 53
 
@@ -14,7 +15,10 @@
 /**
   * @brief structs and enums used to parse DNS packets
   * 
-  * Documentation: https://www2.cs.duke.edu/courses/fall16/compsci356/DNS/DNS-primer.pdf
+  * Documentation:
+  * https://tools.ietf.org/html/rfc1035
+  * https://www.freesoft.org/CIE/RFC/1035/39.htm
+  * https://www2.cs.duke.edu/courses/fall16/compsci356/DNS/DNS-primer.pdf
   * 
   */
 
@@ -39,7 +43,9 @@ typedef struct header{
     uint8_t qr :1;      // query/response flag
  
     uint8_t rcode :4;   // response code
-    uint8_t z :3;       // reserved (must be all 0)
+    uint8_t cd :1;      // checking disabled
+    uint8_t ad :1;      // authenticated data
+    uint8_t z :1;       // its z! reserved
     uint8_t ra :1;      // recursion available
 
     uint16_t qcount;    // number of entries in the question section
@@ -56,7 +62,9 @@ typedef struct{
 typedef struct question{
     uint8_t* qname;     // a domain name represented as a sequence of labels
     size_t qname_len;
+    std::string domain; // domain in string format, instead of qname
     QData* qdata;
+    uint8_t* end;       // point to uint8_t immediatly after Question
 } Question;
 
 typedef struct __attribute__((__packed__)){
@@ -68,11 +76,17 @@ typedef struct __attribute__((__packed__)){
 
 typedef struct resource_record{
     uint8_t* name;      // a domain name to which this resource record pertains
-    RRData* info;
+    size_t name_len;
+    bool name_ptr;
+    RRData* rrdata;
     uint8_t* rddata;    // a variable length string of octets that describes the resource
+    uint8_t* end;       // point to uint8_t immediatly after Question
 } ResourceRecord;
 
 class DNS {
+    private:
+        esp_err_t parse_records(uint8_t* start, size_t record_num, ResourceRecord* record);
+
     public:
         struct sockaddr_in src;
         socklen_t addrlen;
@@ -83,9 +97,16 @@ class DNS {
 
         Header* header;
         Question* question;
-        ResourceRecord rr[];
+        ResourceRecord* records;
+        uint8_t answers;
+        uint8_t authorities;
+        uint8_t additional;
+        uint8_t total_records;
+        // ResourceRecord* authority;
+        // ResourceRecord* additional;
 
         DNS();
+        ~DNS();
         esp_err_t parse_buffer();
 };
 
