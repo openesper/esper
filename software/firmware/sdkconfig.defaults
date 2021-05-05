@@ -8,8 +8,6 @@ CONFIG_WIFI_ENABLE=y
 CONFIG_UPSTREAM_DNS_CLOUDFARE=y
 # CONFIG_UPSTREAM_DNS_OPENDNS is not set
 # CONFIG_UPSTREAM_DNS_ADGUARD is not set
-CONFIG_DEFAULT_DEVICE_URL="esper.com"
-CONFIG_DEFAULT_UPDATE_URI="openesper.com/OpenEsper.bin"
 # end of Esper Configuration
 
 #

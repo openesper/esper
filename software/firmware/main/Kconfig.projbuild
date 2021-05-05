@@ -112,4 +112,8 @@ menu "Esper Configuration"
             range 0 35
             default 34
     endif # GPIO_ENABLE
+
+    config LOCAL_LOG_LEVEL
+        bool "Enable local (per file) log levels"
+            default n
 endmenu

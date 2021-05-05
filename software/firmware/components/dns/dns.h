@@ -56,57 +56,47 @@ typedef struct header{
     uint16_t arcount;   // number of resource records in the additional records section
 } Header;
 
-typedef struct{
-    uint16_t qtype;     // a two octet code which specifies the type of the query
-    uint16_t qclass;    // a two octet code that specifies the class of the query
-} QData; 
+class Question {
+    public:
+        std::vector<uint8_t> qname;
+        uint16_t qtype;
+        uint16_t qclass;
+        std::vector<uint8_t> serialize();
+};
 
-typedef struct question{
-    uint8_t* qname;     // a domain name represented as a sequence of labels
-    size_t qname_len;
-    QData* qdata;
-    uint8_t* end;       // point to uint8_t immediatly after Question
-} Question;
-
-typedef struct __attribute__((__packed__)){
-    uint16_t type;      // two octets containing one of the RR type codes
-    uint16_t cls;       // two octets which specify the class of the data in the RDATA field
-    uint32_t ttl;       // a 32 bit unsigned integer that specifies the time interval (in seconds) that the resource record may be cached before it should be discarded
-    uint16_t rdlength;  // an unsigned 16 bit integer that specifies the length in octets of the RDATA field
-} RRData;
-
-typedef struct resource_record{
-    uint8_t* name;      // a domain name to which this resource record pertains
-    size_t name_len;
-    bool name_ptr;
-    RRData* rrdata;
-    uint8_t* rddata;    // a variable length string of octets that describes the resource
-    uint8_t* end;       // point to uint8_t immediatly after Question
-} ResourceRecord;
+class ResourceRecord {
+    public:
+        std::vector<uint8_t> name;
+        uint16_t type;
+        uint16_t clss;
+        uint32_t ttl;
+        uint16_t rdlength;
+        std::vector<uint8_t> rddata;
+        std::vector<uint8_t> serialize();
+};
 
 class DNS {
     private:
-        std::vector<uint8_t> buffer;
-        uint8_t answers;
-        uint8_t authorities;
-        uint8_t additional;
-        uint8_t total_records;
+        IRAM_ATTR esp_err_t parse_buffer(uint8_t* buffer, size_t size);
+        IRAM_ATTR esp_err_t unpack_name(std::vector<uint8_t>* buffer, int* index, std::vector<uint8_t>* name);
+        IRAM_ATTR esp_err_t unpack_vector(std::vector<uint8_t>* buffer, int* index, size_t size, std::vector<uint8_t>* dest);
 
-        IRAM_ATTR esp_err_t parse_buffer();
-        IRAM_ATTR esp_err_t parse_records(uint8_t* start, size_t record_num, ResourceRecord* record);
+        template<typename T>
+        IRAM_ATTR esp_err_t unpack(std::vector<uint8_t>* buffer, int* index, T* dest);
+
     public:
         struct sockaddr_in addr;
         socklen_t addrlen;
         int64_t recv_timestamp;
-        
-        Header* header;
-        Question* question;
-        ResourceRecord* records;
 
-        IRAM_ATTR DNS(uint8_t* buf, size_t size, sockaddr_in addr_, socklen_t addrlen_);
-        IRAM_ATTR ~DNS();
+        Header header;
+        Question question;
+        std::vector<ResourceRecord> records;
+
+        IRAM_ATTR DNS(std::vector<uint8_t>* buffer, sockaddr_in addr_, socklen_t addrlen_);
         
         IRAM_ATTR std::string convert_qname_url();
+        IRAM_ATTR esp_err_t add_answer(const char* ip);
         IRAM_ATTR esp_err_t send(int socket, struct sockaddr_in addr);
 };
 
