@@ -9,6 +9,7 @@
 #include "webserver.h"
 #include "datetime.h"
 #include "ota.h"
+// #include "dns/server"
 
 #include "nvs_flash.h"
 
@@ -150,7 +151,7 @@ void app_main()
         init_fs();
         init_interfaces();
 
-        CHECK(initialize_logging())
+        // CHECK(initialize_logging())
         start_dns();
 
         start_interfaces();

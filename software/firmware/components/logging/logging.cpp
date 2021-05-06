@@ -4,70 +4,44 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#include <stack>
+
+#ifdef CONFIG_LOCAL_LOG_LEVEL
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
 #include "esp_log.h"
-static const char *TAG = "LOGGING";
+static const char *TAG = "LOG";
 
 #define LOG_SIZE 100
-static Log_Entry log[LOG_SIZE];
-static uint8_t head = -1;
-static SemaphoreHandle_t log_mutex;
+static std::stack<Log_Entry> log;
 
-
-Log_Entry get_entry(uint8_t offset)
+Log_Entry get_entry()
 {
-    Log_Entry entry = {};
-    if( offset >= LOG_SIZE )
-        return entry;
-
-    int8_t index = head - offset;
-    if( index < 0 )
-        index = index + LOG_SIZE;
-
-    ESP_LOGD(TAG, "Reading %d", index);
-    xSemaphoreTake(log_mutex, portMAX_DELAY);
-    entry = log[index];
-    xSemaphoreGive(log_mutex);
-    
+    Log_Entry entry = log.top();
+    log.pop();
+    ESP_LOGV(TAG, "Poping %s", entry.domain.c_str());
     return entry;
 }
 
-esp_err_t log_query(URL url, bool blocked, uint32_t client)
+size_t get_log_size()
+{
+    ESP_LOGV(TAG, "Log Size: %d", log.size());
+    return log.size();
+}
+
+esp_err_t log_query(std::string domain, bool blocked, uint16_t type, uint32_t client)
 {
     Log_Entry entry = {};
     time(&entry.time);
-    entry.url = url;
+    entry.domain = domain;
     entry.blocked = blocked;
     entry.client = client;
 
-    if( head == LOG_SIZE-1 )
-    {
-        head = 0;
-    }
-    else
-    {
-        head++;
-    }
+    ESP_LOGV(TAG, "Adding %s", entry.domain.c_str());
+    log.push(entry);
 
-    ESP_LOGD(TAG, "Adding %s at %d", entry.url.string, head);
-    xSemaphoreTake(log_mutex, portMAX_DELAY);
-    log[head] = entry;
-    xSemaphoreGive(log_mutex);
-
-
-    return ESP_OK;
-}
-
-
-esp_err_t initialize_logging()
-{
-    ESP_LOGI(TAG, "Initializing Logging...");
-    log_mutex = xSemaphoreCreateMutex();
-    if( log_mutex == NULL )
-    {
-        log_error(ESP_FAIL, "xSemaphoreCreateMutex()", __func__, __FILE__, __LINE__);
-        return ESP_FAIL;
-    }
+    if( log.size() == LOG_SIZE )
+        log.pop();
 
     return ESP_OK;
 }

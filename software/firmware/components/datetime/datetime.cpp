@@ -5,7 +5,9 @@
 #include "lwip/err.h"
 #include "lwip/apps/sntp.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#ifdef CONFIG_LOCAL_LOG_LEVEL
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
 #include "esp_log.h"
 static const char *TAG = "TIME";
 

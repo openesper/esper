@@ -13,7 +13,6 @@ function loadQueries(){
             if (http.status == 200)
             {
                 let log = JSON.parse(http.response);
-                log.pop(); // last element is always empty object
                 console.log(log);
                 
                 var size = document.getElementById('sizeselect').value;

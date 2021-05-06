@@ -11,7 +11,9 @@
 #include "driver/ledc.h"
 #include "nvs_flash.h"
 
+#ifdef CONFIG_LOCAL_LOG_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
 #include "esp_log.h"
 static const char *TAG = "GPIO";
 

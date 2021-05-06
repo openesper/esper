@@ -7,7 +7,9 @@
 #include "esp_http_server.h"
 #include "lwip/inet.h"
 
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#ifdef CONFIG_LOCAL_LOG_LEVEL
+#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#endif
 #include "esp_log.h"
 static const char* TAG = "HTTP";
 
@@ -64,7 +66,7 @@ static esp_err_t send_file(httpd_req_t *req, const char* filepath)
                 return ESP_FAIL;
             }
         } while(chunksize != 0);
-    }catch(std::string e){
+    }catch(const Err& e){
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -84,7 +86,6 @@ esp_err_t get_handler(httpd_req_t *req)
 
     // See file extension exists, otherwise assume 
     // it's a directory and look for index.html
-    // struct stat s;
     const char* ext = get_filename_ext(filepath);
     if( ext[0] == '\0' )
     {
@@ -136,23 +137,28 @@ esp_err_t querylog_csv_handler(httpd_req_t *req)
     httpd_resp_set_type(req, "application/json");
     httpd_resp_sendstr_chunk(req, "[");
 
-    
-    Log_Entry entry = {};
     char str[500];
-    uint8_t index = 0;
-    while( get_entry(index).time )
+    while( get_log_size() != 0 )
     {
-        entry = get_entry(index);
-        sprintf(str, "{ \"time\":\"%s\", \"domain\":\"%s\", \"client\":\"%s\", \"blocked\":%d},\n", get_time_str(entry.time), entry.url.string, inet_ntoa(entry.client), entry.blocked);
-        ESP_LOGD(TAG, "Sending %s", str);
+        Log_Entry entry = get_entry();
+        sprintf(str, "{ \"time\":\"%s\", \"domain\":\"%s\", \"client\":\"%s\", \"blocked\":%d}", get_time_str(entry.time), entry.domain.c_str(), inet_ntoa(entry.client), entry.blocked);
+        if( get_log_size() != 0 )
+        {
+            strcat(str, ",\n");
+        }
+        else
+        {
+            strcat(str, "]");
+        }
+
+        ESP_LOGV(TAG, "Sending %s", str);
         if( httpd_resp_sendstr_chunk(req, str) != ESP_OK )
         {
             httpd_resp_send_500(req);
             return ESP_OK;
         }
-        index++;
     }
-    httpd_resp_sendstr_chunk(req, "{}]");
+
     httpd_resp_sendstr_chunk(req, NULL);
 
     return ESP_OK;

@@ -9,7 +9,9 @@
 #include "esp_http_server.h"
 // #include "esp_https_server.h"
 
+#ifdef CONFIG_LOCAL_LOG_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
 #include "esp_log.h"
 static const char* TAG = "HTTP";
 

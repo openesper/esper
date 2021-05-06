@@ -18,12 +18,10 @@
 #include <stdexcept>
 
 #ifdef CONFIG_LOCAL_LOG_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
 #include "esp_log.h"
 static const char *TAG = "DNS";
-#else
-#include "esp_log.h"
-#endif
 
 #define PACKET_QUEUE_SIZE 10
 #define CLIENT_QUEUE_SIZE 50
@@ -207,7 +205,7 @@ IRAM_ATTR esp_err_t DNS::add_answer(const char* ip_str)
     answer.ttl = 128;
     answer.rdlength = 4;
 
-    uint32_t ip = htonl(inet_addr(ip_str));
+    uint32_t ip = inet_addr(ip_str);
     answer.rddata.resize(sizeof(ip));
     memcpy(answer.rddata.data(), &ip, sizeof(ip));
 
@@ -361,7 +359,7 @@ static IRAM_ATTR void dns_t(void* parameters)
             {
                 ESP_LOGI(TAG, "Forwarding question for %s", domain.c_str());
                 forward_query(packet);
-                // log_query(url, false, packet->src.sin_addr.s_addr);
+                log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
             }
             else 
             {
@@ -373,8 +371,7 @@ static IRAM_ATTR void dns_t(void* parameters)
                     packet->header.arcount = 0;
                     packet->add_answer(ip_str.c_str());
                     packet->send(dns_srv_sock, packet->addr);
-                    // capture_query(packet);
-                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                    log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
                 }
                 else if( sett::read_bool(sett::BLOCK) && in_blacklist(domain.c_str()) ) // check if url is in blacklist
                 {
@@ -383,14 +380,13 @@ static IRAM_ATTR void dns_t(void* parameters)
                     packet->header.arcount = 0;
                     packet->add_answer("0.0.0.0");
                     packet->send(dns_srv_sock, packet->addr);
-                    // block_query(packet);
-                    // log_query(url, true, packet->src.sin_addr.s_addr);
+                    log_query(domain, true, qtype, packet->addr.sin_addr.s_addr);
                 }
                 else
                 {
                     ESP_LOGV(TAG, "Forwarding question for %s", domain.c_str());
                     forward_query(packet);
-                    // log_query(url, false, packet->src.sin_addr.s_addr);
+                    log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
                 }
             }
         }

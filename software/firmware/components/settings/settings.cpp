@@ -7,7 +7,9 @@
 #include "freertos/semphr.h"
 #include "cJSON.h"
 
+#ifdef CONFIG_LOCAL_LOG_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
 #include "esp_log.h"
 static const char *TAG = "SETTINGS";
 
