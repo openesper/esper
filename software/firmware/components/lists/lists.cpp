@@ -1,4 +1,4 @@
-#include "url.h"
+#include "lists.h"
 #include "error.h"
 #include "events.h"
 #include "filesystem.h"
@@ -45,38 +45,6 @@ static IRAM_ATTR bool wildcmp(const char *pattern, const char *string)
         return wildcmp(pattern+1,string) || wildcmp(pattern,string+1);
 
     return false;
-}
-
-IRAM_ATTR bool in_blacklist(URL url)
-{
-    ESP_LOGD(TAG, "Checking Blacklist for %.*s", url.length, url.string);
-    // xSemaphoreTake(blacklist_mutex, portMAX_DELAY);
-    int64_t start = esp_timer_get_time();
-
-    bool inBlacklist = false;
-    try{
-        using namespace fs;
-        file blacklist = open("/blacklist.txt", "r");
-
-        char hostname[255];
-        while( fgets(hostname, 255, blacklist.handle) != NULL )
-        {
-            hostname[strcspn(hostname, "\r")] = 0;
-            hostname[strcspn(hostname, "\n")] = 0;
-            if( wildcmp(hostname, url.string) )
-            {
-                inBlacklist = true;
-                break;
-            }
-        }
-    }catch(std::string e){
-        inBlacklist = false;
-    }
-
-    int64_t end = esp_timer_get_time();
-    ESP_LOGI(TAG, "Processing Time: %lld ms", (end-start)/1000);
-
-    return inBlacklist;
 }
 
 IRAM_ATTR bool in_blacklist(const char* domain)

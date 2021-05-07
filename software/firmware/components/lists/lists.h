@@ -3,13 +3,8 @@
 
 #include <esp_system.h>
 
-#define MAX_BLACKLIST_SIZE 50000
 #define MAX_URL_LENGTH 255
 
-typedef struct {
-    uint8_t length;
-    char string[MAX_URL_LENGTH];
-} URL;
 
 /**
   * @brief Add url to blacklist
@@ -62,7 +57,6 @@ bool valid_url(const char* url);
   *     - True In blacklist
   *     - False Not in blacklist
   */
-IRAM_ATTR bool in_blacklist(URL url);
 IRAM_ATTR bool in_blacklist(const char* domain);
 
 #endif

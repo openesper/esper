@@ -3,7 +3,7 @@
 #include "events.h"
 #include "filesystem.h"
 #include "datetime.h"
-#include "logging.h"
+#include "dns/logging.h"
 #include "esp_http_server.h"
 #include "lwip/inet.h"
 
@@ -141,7 +141,7 @@ esp_err_t querylog_csv_handler(httpd_req_t *req)
     while( get_log_size() != 0 )
     {
         Log_Entry entry = get_entry();
-        sprintf(str, "{ \"time\":\"%s\", \"domain\":\"%s\", \"client\":\"%s\", \"blocked\":%d}", get_time_str(entry.time), entry.domain.c_str(), inet_ntoa(entry.client), entry.blocked);
+        sprintf(str, "{ \"time\":\"%s\", \"domain\":\"%s\", \"client\":\"%s\", \"blocked\":%d}", get_time_str(entry.time).c_str(), entry.domain.c_str(), inet_ntoa(entry.client), entry.blocked);
         if( get_log_size() != 0 )
         {
             strcat(str, ",\n");

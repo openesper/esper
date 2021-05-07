@@ -11,6 +11,13 @@ CONFIG_UPSTREAM_DNS_CLOUDFARE=y
 # end of Esper Configuration
 
 #
+# FreeRTOS
+#
+# CONFIG_FREERTOS_GENERATE_RUN_TIME_STATS is not set
+# CONFIG_FREERTOS_USE_TRACE_FACILITY is not set
+# end of FreeRTOS
+
+#
 # Compiler options
 #
 CONFIG_COMPILER_CXX_EXCEPTIONS=y

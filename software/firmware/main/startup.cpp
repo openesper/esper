@@ -4,12 +4,12 @@
 #include "settings.h"
 #include "gpio.h"
 #include "ip.h"
-#include "logging.h"
-#include "dns.h"
 #include "webserver.h"
 #include "datetime.h"
 #include "ota.h"
-// #include "dns/server"
+#include "dns/server.h"
+#include "dns/dns.h"
+#include "debug.h"
 
 #include "nvs_flash.h"
 
@@ -19,7 +19,9 @@ extern "C" {
     void app_main();
 }
 
+#ifdef CONFIG_LOCAL_LOG_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
 #include "esp_log.h"
 static const char *TAG = "BOOT";
 
@@ -97,13 +99,13 @@ static esp_err_t verify_nvs(nvs_handle nvs)
     verify_key(nvs, "phy_mdio", CONFIG_ETH_MDIO_GPIO);
     verify_key(nvs, "phy_mdc", CONFIG_ETH_MDC_GPIO);
     #ifdef CONFIG_ETH_PHY_LAN8720
-        verify_key(nvs, "phy", CONFIG_ETH_PHY_LAN8720);
+        verify_key(nvs, "phy", 1);
     #elif CONFIG_ETH_PHY_IP101
-        verify_key(nvs, "phy", CONFIG_ETH_PHY_IP101);
+        verify_key(nvs, "phy", 2);
     #elif CONFIG_ETH_PHY_RTL8201
-        verify_key(nvs, "phy", CONFIG_ETH_PHY_RTL8201);
+        verify_key(nvs, "phy", 3);
     #elif CONFIG_ETH_PHY_DP83848
-        verify_key(nvs, "phy", CONFIG_ETH_PHY_DP83848);
+        verify_key(nvs, "phy", 4);
     #endif
 #endif
 #ifdef CONFIG_WIFI_ENABLE
@@ -145,16 +147,16 @@ void app_main()
     set_logging_levels();
 
     try{
+        init_stack_watcher();
         init_event_group();
         init_nvs();
         init_gpio();
         init_fs();
         init_interfaces();
-
-        // CHECK(initialize_logging())
         start_dns();
 
         start_interfaces();
+        initialize_sntp();
         CHECK(start_webserver())
         CHECK(init_ota())
     } catch(const Err& e){

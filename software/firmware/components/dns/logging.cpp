@@ -1,4 +1,4 @@
-#include "logging.h"
+#include "dns/logging.h"
 #include "datetime.h"
 #include "error.h"
 #include "freertos/FreeRTOS.h"
@@ -7,7 +7,7 @@
 #include <stack>
 
 #ifdef CONFIG_LOCAL_LOG_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #endif
 #include "esp_log.h"
 static const char *TAG = "LOG";

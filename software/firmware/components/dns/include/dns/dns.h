@@ -6,13 +6,8 @@
 #include <string>
 #include <vector>
 
-#define DNS_PORT 53
 
 #define MAX_PACKET_SIZE 512
-#define MAX_URL_LENGTH 255
-
-#define A_RECORD_ANSWER_SIZE 16
-#define AAAA_RECORD_ANSWER_SIZE 28
 
 /**
   * @brief structs and enums used to parse DNS packets
@@ -61,7 +56,7 @@ class Question {
         std::vector<uint8_t> qname;
         uint16_t qtype;
         uint16_t qclass;
-        std::vector<uint8_t> serialize();
+        IRAM_ATTR std::vector<uint8_t> serialize();
 };
 
 class ResourceRecord {
@@ -72,18 +67,15 @@ class ResourceRecord {
         uint32_t ttl;
         uint16_t rdlength;
         std::vector<uint8_t> rddata;
-        std::vector<uint8_t> serialize();
+        IRAM_ATTR std::vector<uint8_t> serialize();
 };
 
 class DNS {
     private:
-        IRAM_ATTR esp_err_t parse_buffer(uint8_t* buffer, size_t size);
         IRAM_ATTR esp_err_t unpack_name(std::vector<uint8_t>* buffer, int* index, std::vector<uint8_t>* name);
         IRAM_ATTR esp_err_t unpack_vector(std::vector<uint8_t>* buffer, int* index, size_t size, std::vector<uint8_t>* dest);
-
         template<typename T>
         IRAM_ATTR esp_err_t unpack(std::vector<uint8_t>* buffer, int* index, T* dest);
-
     public:
         struct sockaddr_in addr;
         socklen_t addrlen;
@@ -94,22 +86,9 @@ class DNS {
         std::vector<ResourceRecord> records;
 
         IRAM_ATTR DNS(std::vector<uint8_t>* buffer, sockaddr_in addr_, socklen_t addrlen_);
-        
         IRAM_ATTR std::string convert_qname_url();
-        IRAM_ATTR esp_err_t add_answer(const char* ip);
+        IRAM_ATTR esp_err_t add_answer(const char* ip_str);
         IRAM_ATTR esp_err_t send(int socket, struct sockaddr_in addr);
 };
-
-typedef struct {
-    struct sockaddr_in src_address;
-	uint16_t id;
-    int64_t response_latency;
-} Client;
-
-/**
-  * @brief Start listening and DNS parsing tasks
-  *
-  */
-void start_dns();
 
 #endif

@@ -1,7 +1,7 @@
 #include "gpio.h"
 #include "error.h"
 #include "events.h"
-#include "dns.h"
+#include "dns/dns.h"
 #include "settings.h"
 #include "ota.h"
 

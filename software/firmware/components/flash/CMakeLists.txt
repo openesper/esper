@@ -1,6 +1,6 @@
 idf_component_register( SRCS "filesystem.cpp"
                         INCLUDE_DIRS "."
-                        PRIV_REQUIRES nvs_flash spiffs logging url error events netif json app_update littlefs settings
+                        PRIV_REQUIRES nvs_flash spiffs dns error events netif json app_update littlefs settings
                         EMBED_FILES files/blacklist.html
                                     files/connected.html
                                     files/defaultblacklist.txt
