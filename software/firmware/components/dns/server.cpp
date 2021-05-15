@@ -167,6 +167,7 @@ static IRAM_ATTR void dns_t(void* parameters)
                     std::string ip_str = setting::read_str(setting::IP);
                     packet->records.clear();
                     packet->header.arcount = 0;
+                    packet->question.qtype = A;
                     packet->add_answer(ip_str.c_str());
                     packet->send(dns_srv_sock, packet->addr);
                     log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
@@ -177,7 +178,10 @@ static IRAM_ATTR void dns_t(void* parameters)
                     ESP_LOGW(TAG, "Blocking question for %s", domain.c_str());
                     packet->records.clear();
                     packet->header.arcount = 0;
-                    packet->add_answer("0.0.0.0");
+                    if( qtype == A )
+                        packet->add_answer("0.0.0.0");
+                    else if( qtype == AAAA )
+                        packet->add_answer("::");
                     packet->send(dns_srv_sock, packet->addr);
                     log_query(domain, true, qtype, packet->addr.sin_addr.s_addr);
                     set_bit(BLOCKED_QUERY_BIT);
@@ -234,5 +238,5 @@ void start_dns()
 
     bool blocking = setting::read_bool(setting::BLOCK);
     blocking ? set_bit(BLOCKING_BIT):clear_bit(BLOCKING_BIT);
-    ESP_LOGI(TAG, "Blocking %s", blocking ? "on":"off");
+    ESP_LOGV(TAG, "Blocking %s", blocking ? "on":"off");
 }

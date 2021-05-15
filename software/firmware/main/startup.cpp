@@ -59,7 +59,9 @@ void init_event_bits(nvs_handle nvs)
     }
 
     bool gpio = false;
-    nvs_get_u8(nvs, "gpio", (uint8_t*)&gpio);
+    if( nvs_get_i8(nvs, "gpio", (int8_t*)&gpio) == ESP_ERR_NVS_NOT_FOUND ){
+        nvs_get_u8(nvs, "gpio", (uint8_t*)&gpio);
+    }
     if( gpio )
     {
         ESP_LOGI(TAG, "GPIO enabled");
@@ -67,7 +69,7 @@ void init_event_bits(nvs_handle nvs)
     }
 }
 
-static inline void verify_key(nvs_handle nvs, const char* key, uint8_t value)
+static void verify_key(nvs_handle nvs, const char* key, uint8_t value)
 {
     uint8_t buf = 0;                                                   
     esp_err_t status = nvs_get_u8(nvs, key, &buf);              

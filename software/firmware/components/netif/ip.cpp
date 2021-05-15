@@ -5,7 +5,8 @@
 #include "eth.h"
 #include "wifi.h"
 #include "string.h"
-// 
+
+#include "nvs_flash.h"
 #include "filesystem.h"
 #include "lwip/sockets.h"
 
@@ -93,6 +94,17 @@ static void set_static_ip(esp_netif_t* interface)
 {
     // Get network info from flash, if it exists
     esp_netif_ip_info_t ip_info;
+
+    // backwards compatibility
+    nvs_handle nvs;
+    TRY( nvs_open("storage", NVS_READONLY, &nvs) )
+    size_t length = sizeof(ip_info);
+    if( nvs_get_blob(nvs, "network_info", (void*)&ip_info, &length) == ESP_OK ) {
+        setting::write(setting::IP, inet_ntoa(ip_info.ip));
+        setting::write(setting::NETMASK, inet_ntoa(ip_info.netmask));
+        setting::write(setting::GATEWAY, inet_ntoa(ip_info.gw));
+        nvs_erase_key(nvs, "network_info");
+    }
     
     try{
         std::string ip = setting::read_str(setting::IP);

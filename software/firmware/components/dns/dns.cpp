@@ -176,14 +176,26 @@ IRAM_ATTR esp_err_t DNS::add_answer(const char* ip_str)
     answer.name.resize(sizeof(name));
     memcpy(answer.name.data(), &name, sizeof(name));
 
-    answer.type = 1;
     answer.clss = 1;
     answer.ttl = 128;
-    answer.rdlength = 4;
 
-    uint32_t ip = inet_addr(ip_str);
-    answer.rddata.resize(sizeof(ip));
-    memcpy(answer.rddata.data(), &ip, sizeof(ip));
+    if( question.qtype == A )
+    {
+        answer.type = A;
+        uint32_t ip = inet_addr(ip_str);
+        answer.rdlength = sizeof(ip);
+        answer.rddata.resize(answer.rdlength);
+        memcpy(answer.rddata.data(), &ip, answer.rdlength);
+    }
+    else if( question.qtype == AAAA )
+    {
+        answer.type = AAAA;
+        struct in6_addr ip;
+        inet_pton(AF_INET6, ip_str, &ip);
+        answer.rdlength = sizeof(ip.s6_addr);
+        answer.rddata.resize(answer.rdlength);
+        memcpy(answer.rddata.data(), &ip.s6_addr, answer.rdlength);
+    }
 
     records.insert(records.begin(), answer);
 

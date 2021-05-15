@@ -3,7 +3,7 @@
 #include "events.h"
 #include "dns/dns.h"
 #include "settings.h"
-#include "ota.h"
+#include "filesystem.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -47,7 +47,7 @@ static void button_task(void* args)             // Task keeping track of time be
     {
         xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 
-        ESP_LOGD(TAG, "Reset Pin intr, val: %d\n", gpio_get_level(button));
+        ESP_LOGV(TAG, "Reset Pin intr, val: %d", gpio_get_level(button));
 
         if(gpio_get_level(button) == 0) // Button is pressed down
         {
@@ -56,16 +56,17 @@ static void button_task(void* args)             // Task keeping track of time be
         else    // Button is released
         {
             length = esp_log_timestamp() - press_timestamp;
+            ESP_LOGI(TAG, "Press time %d", length);
             if( length > 8000 )
             {
-                ESP_LOGW(TAG, "Rolling back");
-                rollback();
-                esp_restart();
+                ESP_LOGW(TAG, "Resetting");
+                reset_fs();
             }
             else
             {
                 bool blocking = !setting::read_bool(setting::BLOCK);
                 setting::write(setting::BLOCK, blocking);
+                blocking ? set_bit(BLOCKING_BIT) : clear_bit(BLOCKING_BIT);
             }
         }
     }
@@ -95,7 +96,7 @@ static void led_task(void* args)
 {
     while(1)
     {
-        vTaskDelay( 100/portTICK_RATE_MS );
+        vTaskDelay( 50/portTICK_RATE_MS );
         // wait_for( ALL_BITS, portMAX_DELAY); // wait for any bit
         if( check_bit(ERROR_BIT) )
         {
@@ -108,8 +109,6 @@ static void led_task(void* args)
         else if( check_bit(BLOCKED_QUERY_BIT) )
         {
             set_rgb(OFF);
-            vTaskDelay( 50/portTICK_PERIOD_MS );
-
             clear_bit(BLOCKED_QUERY_BIT);
         }
         else if( setting::read_bool(setting::BLOCK) )
@@ -193,7 +192,6 @@ void init_gpio()
     if( check_bit(GPIO_ENABLED_BIT) )
     {
         ESP_LOGI(TAG, "Initializing GPIO...");
-
         
         nvs_handle nvs;
         esp_err_t err;
@@ -207,11 +205,13 @@ void init_gpio()
         err |= nvs_get_u8(nvs, "red_led", &r);
         err |= nvs_get_u8(nvs, "green_led", &g);
         err |= nvs_get_u8(nvs, "blue_led", &b);
+
         if( err != ESP_OK )
         {
             THROWE(GPIO_ERR_INIT, "Failed to load gpio settings from nvs");
         }
 
+        ESP_LOGV(TAG, "BTN: %d R: %d G: %d B: %d", btn, r, g, b);
         button    = static_cast<gpio_num_t>(btn);
         red_led   = static_cast<gpio_num_t>(r);
         green_led = static_cast<gpio_num_t>(g);

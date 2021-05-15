@@ -28,6 +28,7 @@ namespace fs
     void rename(std::string before, std::string after);
 }
 
+void reset_fs();
 void init_fs();
 
 #endif

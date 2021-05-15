@@ -172,13 +172,20 @@ static void copy_from_binary()
     setting::write(setting::VERSION, desc.version);
 }
 
+void reset_fs()
+{
+    fs::unlink("/settings.json");
+    fs::unlink("/blacklist.txt");
+    esp_restart();
+}
+
 void init_fs()
 {
     ESP_LOGI(TAG, "Initializing LittleFS...");
 
     esp_vfs_littlefs_conf_t conf = {
       .base_path = BASE_PATH,
-      .partition_label = "littlefs",
+      .partition_label = "spiffs", // *waves hand* this is not the filesystem you are looking for
       .format_if_mount_failed = true,
       .dont_mount = false
     };

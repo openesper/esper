@@ -4,7 +4,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
-#include <stack>
+#include <vector>
 
 #ifdef CONFIG_LOCAL_LOG_LEVEL
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
@@ -13,13 +13,11 @@
 static const char *TAG = "LOG";
 
 #define LOG_SIZE 100
-static std::stack<Log_Entry> log;
+static std::vector<Log_Entry> log;
 
-Log_Entry get_entry()
+Log_Entry get_entry(int index)
 {
-    Log_Entry entry = log.top();
-    log.pop();
-    ESP_LOGV(TAG, "Poping %s", entry.domain.c_str());
+    Log_Entry entry = log[index];
     return entry;
 }
 
@@ -38,10 +36,10 @@ esp_err_t log_query(std::string domain, bool blocked, uint16_t type, uint32_t cl
     entry.client = client;
 
     ESP_LOGV(TAG, "Adding %s", entry.domain.c_str());
-    log.push(entry);
+    log.insert(log.begin(), entry);
 
     if( log.size() == LOG_SIZE )
-        log.pop();
+        log.pop_back();
 
     return ESP_OK;
 }

@@ -138,11 +138,11 @@ esp_err_t querylog_csv_handler(httpd_req_t *req)
     httpd_resp_sendstr_chunk(req, "[");
 
     char str[500];
-    while( get_log_size() != 0 )
+    for( int i = 0; i < get_log_size(); i++ )
     {
-        Log_Entry entry = get_entry();
+        Log_Entry entry = get_entry(i);
         sprintf(str, "{ \"time\":\"%s\", \"domain\":\"%s\", \"client\":\"%s\", \"blocked\":%d}", get_time_str(entry.time).c_str(), entry.domain.c_str(), inet_ntoa(entry.client), entry.blocked);
-        if( get_log_size() != 0 )
+        if( i < get_log_size()-1 )
         {
             strcat(str, ",\n");
         }
@@ -150,7 +150,6 @@ esp_err_t querylog_csv_handler(httpd_req_t *req)
         {
             strcat(str, "]");
         }
-
         ESP_LOGV(TAG, "Sending %s", str);
         if( httpd_resp_sendstr_chunk(req, str) != ESP_OK )
         {

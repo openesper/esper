@@ -13,7 +13,7 @@ typedef struct {
 } Log_Entry;
 
 
-Log_Entry get_entry();
+Log_Entry get_entry(int index);
 size_t get_log_size();
 
 /**

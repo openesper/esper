@@ -1,6 +1,5 @@
 #include "eth.h"
 #include "error.h"
-// 
 
 #include "esp_system.h"
 #include "esp_eth.h"
@@ -71,9 +70,24 @@ esp_eth_handle_t init_eth_handle()
     TRY( nvs_open("storage", NVS_READONLY, &nvs) )
 
     uint8_t phy_id = 0, addr = 0, rst = 0;
-    TRY(nvs_get_u8(nvs, "phy", &phy_id))
-    TRY(nvs_get_u8(nvs, "phy_addr", &addr))
-    TRY(nvs_get_u8(nvs, "phy_rst", &rst))
+    if( nvs_get_u32(nvs, "phy", (uint32_t*)&phy_id) == ESP_ERR_NVS_NOT_FOUND ) {
+        TRY(nvs_get_u8(nvs, "phy", &phy_id))
+    }else{
+        nvs_erase_key(nvs, "phy");
+        nvs_set_u8(nvs, "phy", phy_id);
+    }
+    if( nvs_get_u32(nvs, "phy_addr", (uint32_t*)&addr) == ESP_ERR_NVS_NOT_FOUND ){
+        TRY(nvs_get_u8(nvs, "phy_addr", &addr))
+    }else{
+        nvs_erase_key(nvs, "phy_addr");
+        nvs_set_u8(nvs, "phy_addr", addr);
+    }
+    if( nvs_get_u32(nvs, "phy_rst", (uint32_t*)&rst) == ESP_ERR_NVS_NOT_FOUND ){
+        TRY(nvs_get_u8(nvs, "phy_rst", &rst))
+    }else{
+        nvs_erase_key(nvs, "phy_rst");
+        nvs_set_u8(nvs, "phy_rst", rst);
+    }
     
     // Setup phy configuration
     eth_phy_config_t phy_config = ETH_PHY_DEFAULT_CONFIG();
@@ -105,8 +119,18 @@ esp_eth_handle_t init_eth_handle()
 
     // Setup MAC configuration
     uint8_t  mdc = 0, mdio = 0;
-    TRY(nvs_get_u8(nvs, "phy_mdc", &mdc))
-    TRY(nvs_get_u8(nvs, "phy_mdio", &mdio))
+    if( nvs_get_u32(nvs, "phy_mdc", (uint32_t*)&mdc) == ESP_ERR_NVS_NOT_FOUND ){
+        TRY(nvs_get_u8(nvs, "phy_mdc", &mdc))
+    }else{
+        nvs_erase_key(nvs, "phy_mdc");
+        nvs_set_u8(nvs, "phy_mdc", mdc);
+    }
+    if( nvs_get_u32(nvs, "phy_mdio", (uint32_t*)&mdio) == ESP_ERR_NVS_NOT_FOUND ){
+        TRY(nvs_get_u8(nvs, "phy_mdio", &mdio))
+    }else{
+        nvs_erase_key(nvs, "phy_mdio");
+        nvs_set_u8(nvs, "phy_mdio", mdio);
+    }
 
     eth_mac_config_t mac_config = ETH_MAC_DEFAULT_CONFIG();
     mac_config.smi_mdc_gpio_num = mdc;

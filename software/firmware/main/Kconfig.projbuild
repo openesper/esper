@@ -9,7 +9,7 @@ menu "Esper Configuration"
     if ETHERNET_ENABLE
         choice ETH_PHY_MODEL
             prompt "Ethernet PHY Device"
-            default ETH_PHY_LAN8720
+            default ETH_PHY_DP83848
             help
                 Select the Ethernet PHY device to use in the example.
 
@@ -60,7 +60,7 @@ menu "Esper Configuration"
         config ETH_PHY_ADDR
             int "PHY Address"
             range 0 31
-            default 0
+            default 1
             help
                 Set PHY address according your board schematic.
     endif # ETHERNET_ENABLE
