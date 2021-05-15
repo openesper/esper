@@ -126,6 +126,7 @@ esp_netif_t* init_wifi_sta_netif()
     strcpy((char*)wifi_config.sta.password, pass.c_str());
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
     esp_wifi_set_mode(WIFI_MODE_STA);
+    esp_netif_set_hostname(sta_netif, "Esper");
 
     return sta_netif;
 }

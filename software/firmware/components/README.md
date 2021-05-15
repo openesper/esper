@@ -6,20 +6,19 @@ Used to get time from SNTP server
 
 ### DNS
 
-All DNS related activities are in here. This is where the socket, listening on port 53, is created and then parses any packets it receives.
+All DNS related activities, including logging, are in here. This is where the socket, listening on port 53, is created and then parses any packets it receives.
 
 ### Error
 
-This is where the ATTEMPT macro, as well as most errors are defined. 
+This is where the ATTEMPT, TRY, and THROWE macros are, as well as most errors are defined. 
 
 ### Events
 
-This component keeps track of the current state of the module using a FreeRTOS event group. 
-Any component get set/clear/check any of the event bits at any time.
+This component keeps track of the current state of the module using a FreeRTOS event group.
 
 ### Flash
 
-All methods that retreive data from flash are located in this component. It stores blacklist, settings, and logging data to be retreived by other components.
+Filesystem initialization and usage, as well as all of the files that will be embedded into the app binary
 
 ### GPIO
 
@@ -27,11 +26,19 @@ LED and button functions. LED task it notified any time the current state of the
 
 ### HTTP
 
-This is the largest component. It stores all the code for both the application and configuration websites.
+This is the largest component. It stores all the code for both the application website.
 
-### Logging
+### Lists
 
-The logging task is in here. The task is notified any time a DNS query is made and then adds it's data to the log file.
+All functions that relate to the blacklist are in here.
+
+### Lists
+
+All functions that relate to the blacklist are in here.
+
+### LittleFS
+
+Submodule that contains the LittleFS filesystem, which is an alternative to SPIFFS.
 
 ### NetIF
 
@@ -41,6 +48,7 @@ Ethernet and Wifi code. Not used much after device is initialized and running.
 
 Over-The-Air updates. This contains the tasks that periodically check for updates and then writes the new update to flash.
 
-### URL
+### Settings
 
-Slightly confusing name, this is where the blacklist is kept. All functions that relate to the blacklist as well as url parsing are in here.
+All functions related to parsing/editing the settings.json file
+

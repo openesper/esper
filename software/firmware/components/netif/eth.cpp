@@ -59,6 +59,7 @@ esp_netif_t* init_eth_netif()
     }
 
     TRY(esp_eth_set_default_handlers(eth_netif))
+    esp_netif_set_hostname(eth_netif, "Esper");
 
      return eth_netif;
 }

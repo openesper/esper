@@ -12,8 +12,21 @@ typedef struct {
     bool blocked;
 } Log_Entry;
 
-
+/**
+  * @brief Get log entry at specified index
+  * 
+  * @param index location of entry
+  *
+  * @return
+  *    - Log_Entry at index
+  */
 Log_Entry get_entry(int index);
+
+/**
+  * @brief Get size of log
+  * 
+  * @return size_t log_size
+  */
 size_t get_log_size();
 
 /**
