@@ -79,7 +79,7 @@ class Err : public std::exception {
 #define THROWE(err, str, ...) {                                     \
   size_t size = snprintf(NULL, 0, str ,##__VA_ARGS__);               \
   char buf[size+1];                                                 \
-  snprintf(buf, size, str ,##__VA_ARGS__);                        \
+  snprintf(buf, size+1, str ,##__VA_ARGS__);                        \
   throw Err(buf, err, __FILE__, __func__, __LINE__);                \
 }
 

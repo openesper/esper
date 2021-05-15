@@ -2,18 +2,18 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#ifdef CONFIG_LOCAL_LOG_LEVEL
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
+#endif
+#include "esp_log.h"
+static const char *TAG = "DEBUG";
+
 #ifndef CONFIG_FREERTOS_USE_TRACE_FACILITY
 void init_stack_watcher()
 {
     ESP_LOGW(TAG, "Debugging not enabled");
 }
 #else
-
-#ifdef CONFIG_LOCAL_LOG_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_INFO
-#endif
-#include "esp_log.h"
-static const char *TAG = "DEBUG";
 
 #define LOG_INTERVAL 5000
 

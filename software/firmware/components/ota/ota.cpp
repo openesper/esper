@@ -151,7 +151,7 @@ void update_checking_task(void* parameters)
     {
         try{
             xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
-            std::string updatesrv = sett::read_str(sett::UPDATE_SRV);
+            std::string updatesrv = setting::read_str(setting::UPDATE_SRV);
             ESP_LOGI(TAG, "Connecting to %s...", updatesrv.c_str());
             ota client(updatesrv);
 
@@ -173,19 +173,19 @@ void update_checking_task(void* parameters)
 
             if (memcmp(new_app_info.version, running_app_info.version, sizeof(new_app_info.version)) == 0) {
                 ESP_LOGW(TAG, "Current running version is the same as a new");
-                sett::write(sett::UPDATE_AVAILABLE, false);
+                setting::write(setting::UPDATE_AVAILABLE, false);
             }
             else if ( strncmp(running_app_info.version, new_app_info.version, 8) < 0 )
             {
                 ESP_LOGI(TAG, "Update Available!");
-                sett::write(sett::UPDATE_AVAILABLE, true);
+                setting::write(setting::UPDATE_AVAILABLE, true);
             }
             else
             {
-                sett::write(sett::UPDATE_AVAILABLE, false);
+                setting::write(setting::UPDATE_AVAILABLE, false);
             }
-        }catch(std::string e){
-            continue;
+        }catch(const Err& e){
+            ESP_LOGE(TAG, "%s", e.what());
         }
     }
 }
@@ -193,7 +193,7 @@ void update_checking_task(void* parameters)
 void update_firmware()
 {
     // Point to update server
-    std::string updatesrv = sett::read_str(sett::UPDATE_SRV);
+    std::string updatesrv = setting::read_str(setting::UPDATE_SRV);
     ESP_LOGI(TAG, "Connecting to %s...", updatesrv.c_str());
     ota client(updatesrv);
 
@@ -219,7 +219,7 @@ void update_firmware()
     }
 
     client.end();
-    sett::write(sett::UPDATE_AVAILABLE, false);
+    setting::write(setting::UPDATE_AVAILABLE, false);
     ESP_LOGI(TAG, "OTA Complete!");
 }
 

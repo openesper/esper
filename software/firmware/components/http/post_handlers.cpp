@@ -39,25 +39,25 @@ esp_err_t settings_post_handler(httpd_req_t *req)
     {
         ip4_addr_t addr;
         if( ip4addr_aton(param, &addr) > 0)
-            sett::write(sett::IP, param);
+            setting::write(setting::IP, param);
     }
 
     if( httpd_query_key_value(data, "url", param, sizeof(param)) == ESP_OK )
     {
-        sett::write(sett::HOSTNAME, param);
+        setting::write(setting::HOSTNAME, param);
     }
 
     if( httpd_query_key_value(data, "dnssrv", param, sizeof(param)) == ESP_OK )
     {
         ip4_addr_t addr;
         if( ip4addr_aton(param, &addr) > 0)
-            sett::write(sett::DNS_SRV, param);
+            setting::write(setting::DNS_SRV, param);
     }
 
 
     if( httpd_query_key_value(data, "updatesrv", param, sizeof(param)) == ESP_OK )
     {
-        sett::write(sett::UPDATE_SRV, param);
+        setting::write(setting::UPDATE_SRV, param);
     }
 
     httpd_resp_set_type(req, "text/html");
@@ -80,16 +80,16 @@ esp_err_t toggleblock_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "POST to %s", req->uri);
 
-    bool blocking = !sett::read_bool(sett::BLOCK);
-    sett::write(sett::BLOCK, blocking);
-    // if( sett::write(sett::BLOCK, blocking) != ESP_OK )
+    bool blocking = !setting::read_bool(setting::BLOCK);
+    setting::write(setting::BLOCK, blocking);
+    // if( setting::write(setting::BLOCK, blocking) != ESP_OK )
     // {
     //     SEND_ERR(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Error writing to settings.json")
     // }
 
     httpd_resp_set_type(req, "text/plain");
     httpd_resp_set_status(req, HTTPD_200);
-    httpd_resp_sendstr(req, (sett::read_bool(sett::BLOCK) ? "true":"false") );
+    httpd_resp_sendstr(req, (setting::read_bool(setting::BLOCK) ? "true":"false") );
 
     return ESP_OK;
 }

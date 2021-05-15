@@ -28,9 +28,9 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             ESP_LOGI(TAG, "IP_EVENT_ETH_GOT_IP");
 
             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
-            sett::write(sett::IP, inet_ntoa(ip_event.ip_info.ip));
-            sett::write(sett::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
-            sett::write(sett::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
+            setting::write(setting::IP, inet_ntoa(ip_event.ip_info.ip));
+            setting::write(setting::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
+            setting::write(setting::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
             set_bit(ETH_CONNECTED_BIT);
 
             break;
@@ -40,9 +40,9 @@ static void ip_event_handler(void* arg, esp_event_base_t event_base, int32_t eve
             ESP_LOGI(TAG, "IP_EVENT_STA_GOT_IP");
 
             ip_event_got_ip_t ip_event = *(ip_event_got_ip_t*)event_data;
-            sett::write(sett::IP, inet_ntoa(ip_event.ip_info.ip));
-            sett::write(sett::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
-            sett::write(sett::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
+            setting::write(setting::IP, inet_ntoa(ip_event.ip_info.ip));
+            setting::write(setting::NETMASK, inet_ntoa(ip_event.ip_info.netmask));
+            setting::write(setting::GATEWAY, inet_ntoa(ip_event.ip_info.gw));
             set_bit(WIFI_CONNECTED_BIT);
 
             break;
@@ -95,13 +95,13 @@ static void set_static_ip(esp_netif_t* interface)
     esp_netif_ip_info_t ip_info;
     
     try{
-        std::string ip = sett::read_str(sett::IP);
+        std::string ip = setting::read_str(setting::IP);
         if( inet_aton(ip.c_str(), &(ip_info.ip)) )
         {
-            ip = sett::read_str(sett::NETMASK);
+            ip = setting::read_str(setting::NETMASK);
             ip_info.netmask.addr = inet_addr(ip.c_str());
 
-            ip = sett::read_str(sett::GATEWAY);
+            ip = setting::read_str(setting::GATEWAY);
             ip_info.gw.addr = inet_addr(ip.c_str());
 
             esp_netif_dhcpc_stop(interface);
@@ -114,7 +114,7 @@ static void set_static_ip(esp_netif_t* interface)
         }
 
         esp_netif_dns_info_t dns = {};
-        ip = sett::read_str(sett::DNS_SRV);
+        ip = setting::read_str(setting::DNS_SRV);
         inet_aton(ip.c_str(), &dns.ip.u_addr.ip4);
         dns.ip.type = IPADDR_TYPE_V4;
         esp_netif_set_dns_info(interface, ESP_NETIF_DNS_MAIN, &dns);
@@ -141,9 +141,10 @@ void start_interfaces()
 
     if( check_bit(WIFI_INITIALIZED_BIT) )
     {
-        esp_wifi_start();
+        ESP_LOGI(TAG, "Starting Wifi");
+        TRY(esp_wifi_start())
         set_static_ip(wifi_sta_netif);
-        esp_wifi_connect();
+        TRY(esp_wifi_connect())
     }
 }
 

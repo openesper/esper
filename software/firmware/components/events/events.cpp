@@ -9,6 +9,7 @@
 static const char *TAG = "EVENT";
 
 EventGroupHandle_t event_group;
+const int ALL_BITS = 0x00FFFFFFUL;
 const int GPIO_ENABLED_BIT = BIT1;
 const int ETH_ENABLED_BIT = BIT2;
 const int ETH_INITIALIZED_BIT = BIT3;
@@ -19,11 +20,9 @@ const int WIFI_INITIALIZED_BIT = BIT7;
 const int WIFI_CONNECTED_BIT = BIT8;
 const int WIFI_GOT_IP_BIT = BIT9;
 
-const int PROVISIONING_BIT = BIT10;
 const int INITIALIZING_BIT = BIT12;
 const int ERROR_BIT = BIT13;
-const int OTA_BIT = BIT14;
-const int UPDATE_AVAILABLE_BIT = BIT15;
+const int BLOCKING_BIT = BIT15;
 const int BLOCKED_QUERY_BIT = BIT16;
 
 
@@ -55,12 +54,13 @@ bool check_bit(int bit)
 
 void wait_for(int bit, TickType_t xTicksToWait)
 {
-    ESP_LOGD(TAG, "Waiting for %d", bit);
+    ESP_LOGD(TAG, "Waiting for %X", bit);
     uint32_t bits_before = get_bits();
     uint32_t bits_after = xEventGroupWaitBits(event_group, bit, pdFALSE, pdFALSE, xTicksToWait);
     if( bits_before == bits_after ) // bits will be equal if timeout expired
     {
-        THROWE(ESP_ERR_TIMEOUT, "Timeout while waiting for bits %d", bit)
+        ESP_LOGD(TAG, "Timeout while waiting for bits %X", bit);
+        // THROWE(ESP_ERR_TIMEOUT, "Timeout while waiting for bits %X", bit)
     }
 }
 

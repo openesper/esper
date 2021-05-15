@@ -4,15 +4,7 @@
 #include "esp_system.h"
 #include <string>
 
-// class Settings {
-//         fs::file file_handle;
-//         void* json;
-//     public:
-//         Settings();
-//         ~Settings();
-// };
-
-namespace sett
+namespace setting
 {
     enum Key {
         IP = 0,

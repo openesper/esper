@@ -16,38 +16,39 @@ static const char *TAG = "SETTINGS";
 static SemaphoreHandle_t lock;
 static cJSON* settings;
 
-static const char* get_key(sett::Key s)
+using namespace setting;
+static const char* get_key(Key s)
 {
     switch( s )
     {
-        case sett::IP:
+        case IP:
             return "ip";
-        case sett::NETMASK:
+        case NETMASK:
             return "netmask";
-        case sett::GATEWAY:
+        case GATEWAY:
             return "gateway";
-        case sett::SSID:
+        case SSID:
             return "ssid";
-        case sett::PASSWORD:
+        case PASSWORD:
             return "password";
-        case sett::UPDATE_SRV:
+        case UPDATE_SRV:
             return "update_srv";
-        case sett::HOSTNAME:
+        case HOSTNAME:
             return "url";
-        case sett::DNS_SRV:
+        case DNS_SRV:
             return "dns_srv";
-        case sett::VERSION:
+        case VERSION:
             return "version";
-        case sett::BLOCK:
+        case BLOCK:
             return "blocking";
-        case sett::UPDATE_AVAILABLE:
+        case UPDATE_AVAILABLE:
             return "update_available";
         default:
             return "";
     }
 }
 
-void sett::load_settings()
+void setting::load_settings()
 {
     using namespace fs;
     if( lock == NULL )
@@ -74,7 +75,7 @@ void sett::load_settings()
     }
 }
 
-void sett::save_settings()
+void setting::save_settings()
 {
     using namespace fs;
     char* json_str = cJSON_Print(settings);
@@ -87,7 +88,7 @@ void sett::save_settings()
     f.write(json_str, 1, strlen(json_str));
 }
 
-std::string sett::read_str(sett::Key key)
+std::string setting::read_str(Key key)
 {
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !object )
@@ -103,7 +104,7 @@ std::string sett::read_str(sett::Key key)
     return std::string(object->valuestring);
 }
 
-bool sett::read_bool(sett::Key key)
+bool setting::read_bool(Key key)
 {
     cJSON* object = cJSON_GetObjectItem(settings, get_key(key));
     if( !object )
@@ -126,7 +127,7 @@ bool sett::read_bool(sett::Key key)
     }
 }
 
-void sett::write(sett::Key key, const char* value)
+void setting::write(Key key, const char* value)
 {
     ESP_LOGI(TAG, "Writing %s to %s", value, get_key(key) );
 
@@ -145,7 +146,7 @@ void sett::write(sett::Key key, const char* value)
     save_settings();
 }
 
-void sett::write(sett::Key key, bool value)
+void setting::write(Key key, bool value)
 {
     ESP_LOGI(TAG, "Writing %d to %s", value, get_key(key) );
 
@@ -163,6 +164,11 @@ void sett::write(sett::Key key, bool value)
     else
     {
         cJSON_AddFalseToObject(settings, get_key(key));
+    }
+
+    if( key == BLOCK)
+    {
+        value ? set_bit(BLOCKING_BIT):clear_bit(BLOCKING_BIT);
     }
 
     save_settings();

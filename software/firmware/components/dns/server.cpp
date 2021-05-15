@@ -119,14 +119,14 @@ static IRAM_ATTR void dns_t(void* parameters)
     struct sockaddr_in upstream_dns;
     upstream_dns.sin_family = PF_INET;
     upstream_dns.sin_port = htons(DNS_PORT);
-    std::string ip = sett::read_str(sett::DNS_SRV);
+    std::string ip = setting::read_str(setting::DNS_SRV);
     ip4addr_aton(ip.c_str(), (ip4_addr_t *)&upstream_dns.sin_addr.s_addr);
-    ESP_LOGI(TAG, "Upstream DNS: %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
+    ESP_LOGV(TAG, "Upstream DNS: %s", inet_ntoa(upstream_dns.sin_addr.s_addr));
 
     char device_url[MAX_URL_LENGTH];
-    std::string url = sett::read_str(sett::HOSTNAME);
+    std::string url = setting::read_str(setting::HOSTNAME);
     strcpy(device_url, url.c_str());
-    ESP_LOGI(TAG, "Device URL: %s", device_url);
+    ESP_LOGV(TAG, "Device URL: %s", device_url);
 
     DNS* packet = NULL;
     while(1) 
@@ -164,14 +164,15 @@ static IRAM_ATTR void dns_t(void* parameters)
                 if( memcmp(domain.c_str(), device_url, domain.size()) == 0 ) // Check is qname matches current device url
                 {
                     ESP_LOGW(TAG, "Capturing DNS request %s", domain.c_str());
-                    std::string ip_str = sett::read_str(sett::IP);
+                    std::string ip_str = setting::read_str(setting::IP);
                     packet->records.clear();
                     packet->header.arcount = 0;
                     packet->add_answer(ip_str.c_str());
                     packet->send(dns_srv_sock, packet->addr);
                     log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
+                    set_bit(BLOCKED_QUERY_BIT);
                 }
-                else if( sett::read_bool(sett::BLOCK) && in_blacklist(domain.c_str()) ) // check if url is in blacklist
+                else if( setting::read_bool(setting::BLOCK) && in_blacklist(domain.c_str()) ) // check if url is in blacklist
                 {
                     ESP_LOGW(TAG, "Blocking question for %s", domain.c_str());
                     packet->records.clear();
@@ -179,6 +180,7 @@ static IRAM_ATTR void dns_t(void* parameters)
                     packet->add_answer("0.0.0.0");
                     packet->send(dns_srv_sock, packet->addr);
                     log_query(domain, true, qtype, packet->addr.sin_addr.s_addr);
+                    set_bit(BLOCKED_QUERY_BIT);
                 }
                 else
                 {
@@ -229,4 +231,8 @@ void start_dns()
     {
         THROWE(DNS_ERR_INIT, "Failed to start dns tasks");
     }
+
+    bool blocking = setting::read_bool(setting::BLOCK);
+    blocking ? set_bit(BLOCKING_BIT):clear_bit(BLOCKING_BIT);
+    ESP_LOGI(TAG, "Blocking %s", blocking ? "on":"off");
 }

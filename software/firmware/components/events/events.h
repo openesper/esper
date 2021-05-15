@@ -7,11 +7,10 @@
 /**
   * @brief Status bits
   */
-extern const int PROVISIONING_BIT;          // Device is currently in provisioning mode
+extern const int ALL_BITS;  
 extern const int INITIALIZING_BIT;          // Device is currently initializing
 extern const int ERROR_BIT;                 // Device has detected an error
-extern const int OTA_BIT;                   // Device is currently undergoing an over-the-air update
-extern const int UPDATE_AVAILABLE_BIT;      // Device detected that an update is available
+extern const int BLOCKING_BIT;        
 extern const int BLOCKED_QUERY_BIT;         // A Query was blocked
 
 extern const int ETH_ENABLED_BIT;

@@ -64,8 +64,8 @@ static void button_task(void* args)             // Task keeping track of time be
             }
             else
             {
-                bool blocking = !sett::read_bool(sett::BLOCK);
-                sett::write(sett::BLOCK, blocking);
+                bool blocking = !setting::read_bool(setting::BLOCK);
+                setting::write(setting::BLOCK, blocking);
             }
         }
     }
@@ -93,11 +93,10 @@ TaskHandle_t getLEDTaskHandle()
 
 static void led_task(void* args)
 {
-    uint32_t state = 0;
     while(1)
     {
-        xTaskNotifyWait(0, 0, &state, portMAX_DELAY);
-        
+        vTaskDelay( 100/portTICK_RATE_MS );
+        // wait_for( ALL_BITS, portMAX_DELAY); // wait for any bit
         if( check_bit(ERROR_BIT) )
         {
             set_rgb(RED);
@@ -113,7 +112,7 @@ static void led_task(void* args)
 
             clear_bit(BLOCKED_QUERY_BIT);
         }
-        else if( sett::read_bool(sett::BLOCK) )
+        else if( setting::read_bool(setting::BLOCK) )
         {
             set_rgb(BLUE);
         }

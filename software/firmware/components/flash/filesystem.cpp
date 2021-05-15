@@ -152,24 +152,24 @@ static void copy_from_binary()
             THROWE(errno, "Error renameing %s, %s", old_path.c_str(), strerror(errno))
         }
 
-        sett::load_settings();
+        setting::load_settings();
     }
     else
     {
         ESP_LOGW(TAG, "Settings & blacklist not found, copying defaults...");
         COPY_EMBED("/settings.json", defaultsettings_json);
         COPY_EMBED("/blacklist.txt", defaultblacklist_txt);
-        sett::load_settings();
+        setting::load_settings();
 #ifdef CONFIG_WIFI_ENABLE
-        sett::write(sett::SSID, CONFIG_WIFI_SSID);
-        sett::write(sett::PASSWORD, CONFIG_WIFI_PASSWORD);
+        setting::write(setting::SSID, CONFIG_WIFI_SSID);
+        setting::write(setting::PASSWORD, CONFIG_WIFI_PASSWORD);
 #endif
     }
     // Save current version
     esp_app_desc_t desc;
     const esp_partition_t *running = esp_ota_get_running_partition();
     esp_ota_get_partition_description(running, &desc);
-    sett::write(sett::VERSION, desc.version);
+    setting::write(setting::VERSION, desc.version);
 }
 
 void init_fs()
@@ -187,31 +187,17 @@ void init_fs()
     // Get current & previous/next partition
     const esp_partition_t *running = esp_ota_get_running_partition();
     curr_dir += "/" + std::string(running->label);
-    ESP_LOGI(TAG, "Current base: %s", curr_dir.c_str());
+    ESP_LOGV(TAG, "Current base: %s", curr_dir.c_str());
 
     const esp_partition_t *prev_partition = esp_ota_get_next_update_partition(NULL);
     prev_dir += "/" + std::string(prev_partition->label);
-    ESP_LOGI(TAG, "Previous base: %s", prev_dir.c_str());
+    ESP_LOGV(TAG, "Previous base: %s", prev_dir.c_str());
 
     try {
-        sett::load_settings();
+        setting::load_settings();
     } catch (const Err& e) {
         ESP_LOGE(TAG, "Settings.json not found, copying files from binary");
         copy_from_binary();
     }
-    // if( !fs::exists("/settings.json") )
-    // {
-    //     ESP_LOGE(TAG, "Settings.json not found, copying files from binary");
-    //     copy_from_binary();
-    // }
-    // else
-    // {
-    //     sett::load_settings();
-    // }
-
-    // LittleFS stats
-    size_t total = 0, used = 0;
-    TRY(esp_littlefs_info(NULL, &total, &used))
-    ESP_LOGI(TAG, "LittleFS Partition size: total: %d, used: %d", total, used);
 }
 

@@ -160,17 +160,18 @@ void app_main()
         CHECK(start_webserver())
         CHECK(init_ota())
     } catch(const Err& e){
+        ESP_LOGE(TAG, "Error during boot: %s", e.what());
         rollback();
     }
 
     cancel_rollback();
-    clear_bit(INITIALIZING_BIT);
     wait_for(ETH_CONNECTED_BIT | WIFI_CONNECTED_BIT, portMAX_DELAY);
+    clear_bit(INITIALIZING_BIT);
     try{
         check_for_update();
     }
-    catch( std::string e )
+    catch( const Err& e )
     {
-        ESP_LOGE(TAG, "Error during OTA: %s", e.c_str());
+        ESP_LOGE(TAG, "Error during OTA: %s", e.what());
     }
 }

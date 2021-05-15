@@ -4,7 +4,7 @@
     "gateway": "",
     "ssid": "",
     "password": "",
-    "update_srv": "192.168.2.254",
+    "update_srv": "openesper.com",
     "url": "esper.com",
     "dns_srv": "8.8.8.8",
     "version": "",

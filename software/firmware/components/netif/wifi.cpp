@@ -96,12 +96,9 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base, int32_t e
 
 esp_netif_t* init_wifi_sta_netif()
 {
-    // esp_err_t err;
-
     wifi_init_config_t init_cfg = WIFI_INIT_CONFIG_DEFAULT();
     TRY(esp_wifi_init(&init_cfg))
     TRY(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &wifi_event_handler, NULL))
-    // esp_wifi_set_mode(WIFI_MODE_STA);
 
     esp_netif_config_t sta_cfg = {                                                 
         .base = ESP_NETIF_BASE_DEFAULT_WIFI_STA,      
@@ -118,8 +115,8 @@ esp_netif_t* init_wifi_sta_netif()
     TRY(esp_netif_attach_wifi_station(sta_netif))
     TRY(esp_wifi_set_default_wifi_sta_handlers())
 
-    std::string ssid = sett::read_str(sett::SSID);
-    std::string pass = sett::read_str(sett::PASSWORD);
+    std::string ssid = setting::read_str(setting::SSID);
+    std::string pass = setting::read_str(setting::PASSWORD);
 
     ESP_LOGI(TAG, "SSID: %s", ssid.c_str());
     ESP_LOGI(TAG, "PASS: %s", pass.c_str());
@@ -128,6 +125,7 @@ esp_netif_t* init_wifi_sta_netif()
     strcpy((char*)wifi_config.sta.ssid, ssid.c_str());
     strcpy((char*)wifi_config.sta.password, pass.c_str());
     esp_wifi_set_config(WIFI_IF_STA, &wifi_config);
+    esp_wifi_set_mode(WIFI_MODE_STA);
 
     return sta_netif;
 }

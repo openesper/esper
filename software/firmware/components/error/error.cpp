@@ -33,7 +33,7 @@ void log_error(int err, const char* msg, const char* function, const char* file,
     {
         ESP_LOGE(file, "%s at %d (%x, %s), %s", function, line, err, esp_err_to_name(err), msg);
     }
-    else if ( err < 0x3000 )
+    else
     {
         ESP_LOGE(file, "%s at %d (%x, %s), %s", function, line, err, esp_err_to_name(err), msg);
     }

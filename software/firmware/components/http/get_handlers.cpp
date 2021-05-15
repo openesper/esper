@@ -8,7 +8,7 @@
 #include "lwip/inet.h"
 
 #ifdef CONFIG_LOCAL_LOG_LEVEL
-#define LOG_LOCAL_LEVEL ESP_LOG_VERBOSE
+#define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #endif
 #include "esp_log.h"
 static const char* TAG = "HTTP";
@@ -174,10 +174,7 @@ static httpd_uri_t querylog = {
 
 esp_err_t register_get_handlers(httpd_handle_t server)
 {
-    if( !check_bit(PROVISIONING_BIT) )
-    {
-        ATTEMPT(httpd_register_uri_handler(server, &querylog))
-    }
+    ATTEMPT(httpd_register_uri_handler(server, &querylog))
     ATTEMPT(httpd_register_uri_handler(server, &get))
     
     return ESP_OK;
