@@ -26,7 +26,7 @@ At the same time, if you have no problem using a shell and Linux environment, th
 
 The easiest way, is to purchase a pre-made one from the [Tindie store](https://www.tindie.com/products/esper/esper/).
 
-If you have some ESP32 development boards collecting dust, it will work on those too! It will take some slight configuration ([see instructions here](https://github.com/openesper/esper/blob/main/software/README.md)), but you can have it running in no time.
+If you have some ESP32 development boards collecting dust, it will work on those too! ([Just follow the instructions here!](https://github.com/openesper/esper/blob/main/software/README.md))
 
 DISCLAIMER: It is **heavily** recommended to use a device with ethernet. Even the best Wifi will significantly increase latency and decrease reliability compared to a good copper connection.
 
@@ -42,7 +42,6 @@ Do you like the Esper hardware, but want to use it for something other than ad-b
 
 * KiCAD	- EDA tool used to design PCB
 * FreeCAD - 3D modeling tool for designing enclosure
-* Hugo - Static website generator used for embedded Esper website
 * ESP-IDF - Contains ESP32 API and build tools for firmware development
 * Python 3.7 - Scripts to glue everything together
 
@@ -56,8 +55,6 @@ Do you like the Esper hardware, but want to use it for something other than ad-b
     │   │   └── jtag-header             	# 10-pin header for JTAG & UART, meant to be used with programmer
     │   └── programmer                  # KiCad project for programmer/debugger
     └── software                    # Software root directory
-        ├── default blacklist           # List of URLs that will be blocked by default
         ├── firmware                    # ESP-IDF project that contains all code for Esper
         ├── scripts                     # Scripts used in build process and testing
-        ├── tests                       # Scripts used in testing (not started yet)
-        └── website                     # Hugo project used to generate website
+        └── website                     # For website development, contains symbolic links to HTML files

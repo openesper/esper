@@ -16,10 +16,6 @@
 ### Debugging
 - Add debug page to website
 - Add errors to error log
-- remaining memory
-    - total and for each task
-### OTA Updates
-- Don't let user rollback if there is nothing to roll back to
 ### DATETIME
 - Add timezone select
 ### CONFIGURATION
