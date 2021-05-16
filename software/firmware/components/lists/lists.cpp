@@ -9,7 +9,7 @@
 #define LOG_LOCAL_LEVEL ESP_LOG_INFO
 #endif
 #include "esp_log.h"
-static const char *TAG = "URL";
+static const char *TAG = "LIST";
 
 
 bool valid_url(const char* url)
@@ -73,7 +73,7 @@ IRAM_ATTR bool in_blacklist(const char* domain)
     }
 
     int64_t end = esp_timer_get_time();
-    ESP_LOGI(TAG, "Processing Time: %lld ms", (end-start)/1000);
+    ESP_LOGD(TAG, "Processing Time: %lld ms", (end-start)/1000);
 
     return inBlacklist;
 }

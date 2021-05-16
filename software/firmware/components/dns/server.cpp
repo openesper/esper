@@ -23,7 +23,7 @@
 #include "esp_log.h"
 static const char *TAG = "DNS";
 
-#define PACKET_QUEUE_SIZE 10
+#define PACKET_QUEUE_SIZE 50
 #define CLIENT_QUEUE_SIZE 50
 
 static int dns_srv_sock;                                // Socket handle for sending queries to upstream DNS 
@@ -58,7 +58,6 @@ static IRAM_ATTR void listening_t(void* parameters)
             packet = new DNS(&buffer, addr, addrlen);
         }catch(const std::out_of_range& oor){
             ESP_LOGV(TAG, "Received packet too small");
-            delete packet;
             continue;
         }
         
@@ -145,7 +144,7 @@ static IRAM_ATTR void dns_t(void* parameters)
 
         if( packet->header.qr == ANSWER ) // Forward all answers
         {
-            ESP_LOGI(TAG, "Forwarding answer for %s", domain.c_str());
+            ESP_LOGV(TAG, "Forwarding answer for %s", domain.c_str());
             forward_answer(packet);
         }
         else if( packet->header.qr == QUERY )
@@ -188,7 +187,7 @@ static IRAM_ATTR void dns_t(void* parameters)
                 }
                 else
                 {
-                    ESP_LOGV(TAG, "Forwarding question for %s", domain.c_str());
+                    ESP_LOGI(TAG, "Forwarding question for %s", domain.c_str());
                     if( add_client(packet) == ESP_OK )
                         packet->send(dns_srv_sock, upstream_dns);
                     log_query(domain, false, qtype, packet->addr.sin_addr.s_addr);
@@ -197,7 +196,7 @@ static IRAM_ATTR void dns_t(void* parameters)
         }
 
         int64_t end = esp_timer_get_time();
-        ESP_LOGD(TAG, "Processing Time: %lld ms", (end-packet->recv_timestamp)/1000);
+        ESP_LOGV(TAG, "Processing Time: %lld ms", (end-packet->recv_timestamp)/1000);
     }
 }
 
@@ -229,8 +228,8 @@ void start_dns()
         THROWE(errno, "Socket bind failed %s", strerror(errno))
     }
 
-    BaseType_t xErr = xTaskCreatePinnedToCore(listening_t, "listening_task", 8000, NULL, 9, &listening, 0);
-    xErr &= xTaskCreatePinnedToCore(dns_t, "dns_task", 15000, NULL, 9, &dns, 0);
+    BaseType_t xErr = xTaskCreatePinnedToCore(listening_t, "listening_task", 8000, NULL, 9, &listening, tskNO_AFFINITY);
+    xErr &= xTaskCreatePinnedToCore(dns_t, "dns_task", 15000, NULL, 9, &dns, tskNO_AFFINITY);
     if( xErr != pdPASS )
     {
         THROWE(DNS_ERR_INIT, "Failed to start dns tasks");
