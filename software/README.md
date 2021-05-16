@@ -10,8 +10,8 @@ At the moment there is no support for the Arduino environment yet, but it is bei
 
 ### Requirements
 
-In order to build and flash Esper, you will first need to [install ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/#installation-step-by-step) then [set up the environment variables](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#step-4-set-up-the-environment-variables). It is recommended to 
-get one of the example "hello world" projects working before flashing Espers, just to verify that your toolchain is working.
+In order to build and flash Esper, you will first need to [install ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/#installation-step-by-step) then [set up the ESP-IDF environment.](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#step-4-set-up-the-environment-variables). It is recommended to 
+get one of the "hello world" example projects working before flashing Esper, just to verify that your toolchain is working.
 
 After getting ESP-IDF setup, you will have to install the filesystem that Esper uses (LittleFS). This can be done with:
 
@@ -21,7 +21,7 @@ After getting ESP-IDF setup, you will have to install the filesystem that Esper 
 ### Configuration
 
 Before building the Esper firmware, you will have to do some configuration first. If you are using a ESP32 development board, such as the ESP32 DevKitC, you will only have to enter
-you wifi credentials. If you have other hardware, and you want to use ethernet or LEDs, then you will have to enable those features and then enter their respective GPIO numbers.
+your wifi credentials. If you have other hardware, and you want to use ethernet or LEDs, then you will have to enable those features and then enter their respective GPIO numbers.
 
 To edit the configuration, simply enter these commands:
 
