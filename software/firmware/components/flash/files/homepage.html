@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Esper</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+        <style>
+            @media only screen and (max-width: 480px) {
+                table, thead, tbody, th, td, tr { 
+                    display: block; 
+                }
+                thead tr { 
+                    position: absolute;
+                    top: -9999px;
+                    left: -9999px;
+                }
+                tr { 
+                    border: 1px solid #ccc;
+                    display: flex; 
+                    flex-direction: row;
+                    flex-wrap: wrap;
+                }
+                tr:hover {
+                    background-color: white;
+                }
+                td { 
+                    border: none;
+                    border-bottom: 1px solid #eee; 
+                    padding: 0.5em;
+                    box-sizing: border-box;
+                }
+                td:nth-of-type(1) { 
+                    width: 50%;
+                    order: 1;
+                }
+                td:nth-of-type(2) {
+                    width: 100%; 
+                    order: 3;
+                }
+                td:nth-of-type(3) { 
+                    width: 50%;
+                    order: 2;
+                    text-align: right;
+                }
+                td:nth-of-type(4) {
+                    padding: 1% 25%;
+                    width: 100%;
+                    order: 4;
+                }
+            }
+        </style>
+        <script src="/scripts.js"></script>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                    <ul class="nav">
+                        <ul class="nav">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/blacklist/">Blacklist</a></li>
+                            <li><a href="/settings/">Settings</a></li>
+                        </ul>
+                    </ul>
+            </div>
+        </nav>
+        <main>
+            <div>
+                <h1>Esper</h1>
+            </div>
+            <div>
+                <h3>Recent Queries</h3>
+                <div class='error' id='error'>
+                    Error
+                </div>
+                <div>
+                    <label>Entries per page</label>
+                    <select id='sizeselect' onchange=loadQueries()>
+                        <option value='10'>10</option>
+                        <option value='20'>25</option>
+                        <option value='50'>50</option>
+                    </select>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 6em">Time</th>
+                            <th>Domain</th>
+                            <th style="width: 8em">Client</th>
+                            <th style="width: 3em"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <script>
+                            loadQueries();
+                        </script>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </body>
+</html>

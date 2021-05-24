@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Esper</title>
+        <script src="/scripts.js"></script>
+        <link rel="stylesheet" href="/stylesheet.css">
+        <style>
+            button#blockStatus {
+                height: 2em;
+                font-size: 1.5em;
+                margin: auto auto 1rem auto;
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            form {
+                width: 30em;
+                margin: 2rem auto;
+            }
+            form div {
+                margin: 1rem auto;
+                text-align: left;
+            }
+            form label {
+                display: inline-block;
+                box-sizing: border-box;
+                text-align: right;
+                width: 45%;
+                padding-right: 1rem;
+            }
+            form input, select, #version {
+                display: inline-block;
+                max-width: 50%;
+            }
+        </style>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                    <ul class="nav">
+                        <ul class="nav">
+                            <li><a href="/">Home</a></li>
+                            <li><a href="/blacklist/">Blacklist</a></li>
+                            <li><a href="/settings/">Settings</a></li>
+                        </ul>
+                    </ul>
+            </div>
+        </nav>
+        <main>
+            <div>
+                <h1>Settings</h1>
+            </div>
+            <div>
+                <button id="blockStatus" disabled=true style="visibility: hidden;" onclick="toggleBlock()">Blocking On</button>
+                <div class='error' id='error'>
+                    <script>
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const myParam = urlParams.get('status');
+                        console.log(myParam);
+                        let err = document.getElementById('error');
+                        if( myParam == "success")
+                        {
+                            err.innerHTML = "Restart to apply new settings";
+                            err.style.visibility = 'visible';
+                        }
+                        else if( myParam == "failed" )
+                        {
+                            err.innerHTML = "Error saving settings";
+                            err.style.visibility = 'visible';
+                        }
+                    </script>
+                </div>
+                <form action="/settings" method="POST">
+                    <div>
+                        <label for="ip">Device IP</label>
+                        <input name="ip" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
+                    </div>
+                    <div>
+                        <label for="url">Device URL</label>
+                        <input name="url" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
+                    </div>
+                    <div>
+                        <label for="dnssrv">Server</label>
+                        <select name='dnssrv' id='dnssrv' disabled=true>
+                            <option value='8.8.8.8'>Google</option>
+                            <option value='1.1.1.1'>Cloudfare</option>
+                            <option value='208.67.222.222'>OpenDNS</option>
+                            <option value='94.140.14.14'>AdGuard</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for='updatesrv'>Update Server</label>
+                        <input name="updatesrv" type="text" autocorrect="off" autocapitalize="none" disabled=true/>
+                    </div>
+                    <div>
+                        <label>Version</label><div id="version"></div>
+                    </div>
+                    <br>
+                    <button>Save</button>
+                </form>
+                <script>
+                    loadSettings();
+                </script>
+                <br>
+
+                <div id="update_available">
+                    <p>Update Available!</p>
+                    <button id="updateButton" onclick="updateFirmware()">Update Firmware</button>
+                </div>
+                <div class='modal' id='updateModal'>
+                    <div class="modal-content">
+                        <p id='updatestatus'>Updating firmware, this may take a few minutes...</p>
+                        <div class="loader"></div>
+                        <br><br>
+                        <button class="altbtn" id="closemodal" onclick="closeModal()">Cancel</button>
+                    </div>
+                </div>
+                <div class='modal' id='restartModal'>
+                    <div class="modal-content">
+                        <p>Restarting...</p>
+                        <div class="loader"></div>
+                        <br><br>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </body>
+</html>

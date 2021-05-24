@@ -1,4 +1,4 @@
-menu "Application Configuration"
+menu "Esper Configuration"
 
     menuconfig ETHERNET_ENABLE
         bool "Enable Ethernet"
@@ -9,7 +9,7 @@ menu "Application Configuration"
     if ETHERNET_ENABLE
         choice ETH_PHY_MODEL
             prompt "Ethernet PHY Device"
-            default ETH_PHY_LAN8720
+            default ETH_PHY_DP83848
             help
                 Select the Ethernet PHY device to use in the example.
 
@@ -60,7 +60,7 @@ menu "Application Configuration"
         config ETH_PHY_ADDR
             int "PHY Address"
             range 0 31
-            default 0
+            default 1
             help
                 Set PHY address according your board schematic.
     endif # ETHERNET_ENABLE
@@ -70,6 +70,20 @@ menu "Application Configuration"
         default y
         help
             Turn wifi on
+
+    if WIFI_ENABLE
+        config WIFI_SSID
+            string "Access point SSID (2.4GHz only)"
+            default "myssid"
+            help
+            Name of your wifi
+
+        config WIFI_PASSWORD
+            string "Access point password"
+            default "password"
+            help
+            Wifi password
+    endif # WIFI_ENABLE
  
     menuconfig GPIO_ENABLE
         bool "Enable GPIO"
@@ -99,30 +113,7 @@ menu "Application Configuration"
             default 34
     endif # GPIO_ENABLE
 
-    choice DEFAULT_UPSTREAM_DNS
-        prompt "Default Upstream DNS"
-        default UPSTREAM_DNS_CLOUDFARE
-        help
-            Select which provider to use for DNS
-
-        config UPSTREAM_DNS_GOOGLE
-            bool "Google"
-
-        config UPSTREAM_DNS_CLOUDFARE
-            bool "Cloudfare"
-
-        config UPSTREAM_DNS_OPENDNS
-            bool "OpenDNS"
-
-        config UPSTREAM_DNS_ADGUARD
-            bool "AdGuard"
-    endchoice
-
-    config DEFAULT_DEVICE_URL
-        string "Default device url"
-        default "esper.com"
-
-    config DEFAULT_UPDATE_URI
-        string "Default update uri"
-        default "openesper.com/OpenEsper.bin"
+    config LOCAL_LOG_LEVEL
+        bool "Enable local (per file) log levels"
+            default n
 endmenu

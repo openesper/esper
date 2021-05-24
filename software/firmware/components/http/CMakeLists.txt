@@ -1,18 +1,3 @@
-idf_component_register( SRCS            "webserver.c"
-                                        "application/home.c"
-                                        "application/blacklist.c"
-                                        "application/settings.c"
-                                        "configuration/wifi_select.c"
-                                        "configuration/connected.c"
-
-                        INCLUDE_DIRS    "application/include/"
-                                        "configuration/include/"
-                                        "."
-                    
-                        PRIV_REQUIRES   netif dns flash logging datetime url spiffs esp_http_server ota json app_update error events
-
-                        EMBED_FILES     "configuration/html/wifi_select.html"
-                                        "configuration/html/connected.html"
-                                        "application/html/home.html"
-                                        "application/html/blacklist.html"
-                                        "application/html/settings.html")
+idf_component_register( SRCS            "webserver.cpp" "post_handlers.cpp" "get_handlers.cpp" "put_handlers.cpp" "delete_handlers.cpp"
+                        INCLUDE_DIRS    "include/"
+                        PRIV_REQUIRES   netif dns flash datetime lists spiffs esp_http_server ota json app_update error events settings)

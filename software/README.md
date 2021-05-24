@@ -10,37 +10,34 @@ At the moment there is no support for the Arduino environment yet, but it is bei
 
 ### Requirements
 
-In order to build and flash Esper, you will first need to [install ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/#installation-step-by-step) then [set up the environment variables](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#step-4-set-up-the-environment-variables).
+In order to build and flash Esper, you will first need to [install ESP-IDF](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/#installation-step-by-step) then [set up the ESP-IDF environment.](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#step-4-set-up-the-environment-variables). It is recommended to 
+get one of the "hello world" example projects working before flashing Esper, just to verify that your toolchain is working.
 
+After getting ESP-IDF setup, you will have to install the filesystem that Esper uses (LittleFS). This can be done with:
+
+    cd esper
+    git submodule init
 
 ### Configuration
 
-If you are not using the Esper hardware, you will need to configure the project for your device. To do this, run 
+Before building the Esper firmware, you will have to do some configuration first. If you are using a ESP32 development board, such as the ESP32 DevKitC, you will only have to enter
+your wifi credentials. If you have other hardware, and you want to use ethernet or LEDs, then you will have to enable those features and then enter their respective GPIO numbers.
 
-    cd esper/software/firmware
+To edit the configuration, simply enter these commands:
+
+    cd software/firmware
     idf.py menuconfig
 
-Then configure the options under Application Configuration to match your device's capabilities.
+Then configure the options under Esper Configuration to match your device's capabilities.
 
 ### Building & Flashing
 
-After installing ESP-IDF, build and flash your device by running these commands.
+After installing ESP-IDF, build and flash your device by running these commands (must be executed from firmware directroy)
 
-    cd esper/software/firmware
     idf.py build
-    idf.py -p PORT [-b BAUD] flash
-
-### Monitoring
-
-If logging is enabled in your build, you can monitor the device while it is connected to your PC with this command
-
-    idf.py -p PORT monitor
+    idf.py -p PORT [-b BAUD] erase
+    idf.py -p PORT [-b BAUD] flash monitor
 
 ### Issues
 
 If you have any issues, [this section](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/get-started/index.html#encountered-issues-while-flashing) may be able to help.
-
-### Website & Blacklist
-
-If any changes are made to the website or blacklist in their respective directories, you will have to run the reformat scripts in the Scripts folder in order for the changes to be put into the build.
-Examples of running the scripts can be seen in the build.sh script

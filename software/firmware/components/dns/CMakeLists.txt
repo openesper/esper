@@ -1,3 +1,3 @@
-idf_component_register( SRCS "dns.c"
-                        INCLUDE_DIRS "."
-                        PRIV_REQUIRES flash logging datetime gpio url netif error events json)
+idf_component_register( SRCS "dns.cpp" "server.cpp" "logging.cpp"
+                        INCLUDE_DIRS "include/"
+                        PRIV_REQUIRES error events settings datetime lists)

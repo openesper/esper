@@ -2,6 +2,8 @@
 #define DATETIME_H
 
 #include <esp_system.h>
+#include "sys/time.h"
+#include <string>
 
 /**
   * @brief Convert time_t scruct into string
@@ -10,7 +12,7 @@
   *
   * @return pointer to static buffer strftime_buf[64]
   */
-char* get_time_str(time_t time);
+std::string get_time_str(time_t time);
 
 /**
   * @brief Initialize sntp.
@@ -20,6 +22,6 @@ char* get_time_str(time_t time);
   *
   * @param None
   */
-esp_err_t initialize_sntp();
+void initialize_sntp();
 
 #endif

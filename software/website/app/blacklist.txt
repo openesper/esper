@@ -1,0 +1,8 @@
+*.ad.*
+*.ads.*
+ads.*
+ad.*
+*.googlesyndication.com
+*.doubleclick.com
+*.doubleclick.net
+*.googleadservices.com

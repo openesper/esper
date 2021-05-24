@@ -1,0 +1,13 @@
+{
+    "ip": "",
+    "netmask": "",
+    "gateway": "",
+    "ssid": "",
+    "password": "",
+    "update_srv": "update.openesper.com",
+    "url": "esper.com",
+    "dns_srv": "1.1.1.1",
+    "version": "",
+    "blocking": true,
+    "update_available": false
+}

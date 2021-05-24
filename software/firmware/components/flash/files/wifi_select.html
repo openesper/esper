@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Esper</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+        <script src="/scripts.js"></script>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                    <ul class="nav">
+                        <ul class="nav">
+                        </ul>
+                    </ul>
+            </div>
+        </nav>
+    </body>
+    <main>
+        <div>
+            <h1>Select Wifi</h1>
+        </div>
+        <div>
+            <div class='error' id="error">
+                Error
+            </div>
+            <div id="ssid_select">
+                <div id="scanning">
+                    <span >Scanning...</span>
+                    <div class="loader" style="visibility: inherit;"></div>
+                </div>
+                <select id="ssid">
+                    <script> get_wifi_json() </script>
+                </select>
+                <button onclick="scan()">Scan</button>
+            </div>
+            <div id="password">
+                <label for="pw">Password:</label>
+                <input name="pw" id="pw" type="text" autocorrect="off" autocapitalize="none"/>
+                <button onclick='submit_auth_data()'>Submit</button>
+            </div>
+        </div>
+        <div class='modal' id='modal'>
+            <div class="modal-content">
+                <p>Attempting to connect...</p>
+                <div class="loader"></div>
+                <br><br>
+            </div>
+        </div>
+    </main>
+</html>

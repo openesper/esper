@@ -1,0 +1,21 @@
+[{
+    "ssid":	"Zamudio",
+    "rssi":	-44,
+    "authmode":	3
+}, {
+    "ssid":	"SNR",
+    "rssi":	-52,
+    "authmode":	3
+}, {
+    "ssid":	"Snider",
+    "rssi":	-55,
+    "authmode":	3
+}, {
+    "ssid":	"Canucks1",
+    "rssi":	-56,
+    "authmode":	3
+}, {
+    "ssid":	"Fang8635",
+    "rssi":	-57,
+    "authmode":	3
+}]

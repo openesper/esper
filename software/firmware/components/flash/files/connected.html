@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Esper</title>
+        <link rel="stylesheet" href="/stylesheet.css">
+        <script src="/scripts.js"></script>
+    </head>
+    <body>
+        <nav class="navbar">
+            <div class="nav-container">
+                    <ul class="nav">
+                        <ul class="nav">
+                        </ul>
+                    </ul>
+            </div>
+        </nav>
+    </body>
+    <main>
+        <div>
+            <h1>Connected!</h1>
+        </div>
+        <div class='error' id="error">
+            Error
+        </div>
+        <h2 id="network"></h2>
+        <h2 id="ip"></h2>
+        <script> getNetworkInfo() </script>
+        <br>
+        <button id="finishbutton" onclick=showConfirmation() disabled=true>
+            Finish Setup
+        </button>
+        <div class='modal' id='confirmation'>
+            <div class="modal-content">
+                <p>Are you sure?</p>
+                <p>Make sure to write down your IP before finishing!</p>
+                <!-- <div class="loader" id="loader"></div> -->
+                <br>
+                <button class="txtbtn" onclick=finishSetup()>Finish Setup</button>
+                <button class="txtbtn altbtn" onclick=hideConfirmation()>Cancel</button>
+            </div>
+        </div>
+        <div class='modal' id='finished'>
+            <div class="modal-content">
+                <h3>All Done!</h3>
+                <p>You may reconnect to your wifi now</p>
+                <p>To activate ad blocking on your network, configure this device as your DNS server in your router settings</p>
+                <br><br>
+            </div>
+        </div>
+    </main>
+</html>
